@@ -8,4 +8,49 @@ use Illuminate\Database\Eloquent\Model;
 class OrderPayment extends Model
 {
     use HasFactory;
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var string[]
+     */
+    protected $fillable = [
+        'order_id',
+        'payment_type_id',
+        'payment_amount',
+        'payment_change',
+        'payment_date',
+        'payment_status',
+        'proof_of_payment',
+        'approved_by',
+    ];
+
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array
+     */
+    protected $hidden = [
+        // 
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        // 
+    ];
+
+    // Relationship
+    public function order()
+    {
+        return $this->belongsTo(Order::class, 'order_id', 'id');
+    }
+
+    public function paymentType()
+    {
+        return $this->hasOne(PaymentType::class, 'id', 'payment_id');
+    }
 }

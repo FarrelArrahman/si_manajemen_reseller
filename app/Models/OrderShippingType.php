@@ -8,4 +8,38 @@ use Illuminate\Database\Eloquent\Model;
 class OrderShippingType extends Model
 {
     use HasFactory;
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var string[]
+     */
+    protected $fillable = [
+        'order_shipping_type',
+        'order_shipping_type_desc',
+        'order_shipping_type_status',
+    ];
+
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array
+     */
+    protected $hidden = [
+        // 
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        // 
+    ];
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class, 'order_shipping_type_id');
+    }
 }

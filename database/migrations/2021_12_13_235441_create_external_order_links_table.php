@@ -17,7 +17,7 @@ class CreateExternalOrderLinksTable extends Migration
             $table->id();
             $table->foreignId('order_id')->constrained();
             $table->string('link');
-            $table->foreignId('added_by')->constrained('admins');
+            $table->foreignId('added_by')->constrained('users');
             $table->datetime('added_at');
             $table->datetime('valid_until');
         });

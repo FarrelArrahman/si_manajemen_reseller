@@ -18,7 +18,7 @@ class CreateReportsTable extends Migration
             $table->string('report_code');
             $table->string('report_type');
             $table->string('report_file');
-            $table->foreignId('requested_by')->constrained('admins');
+            $table->foreignId('requested_by')->constrained('users');
             $table->datetime('request_date');
             $table->integer('report_status');
         });

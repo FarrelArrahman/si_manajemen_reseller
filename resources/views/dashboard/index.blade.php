@@ -5,11 +5,15 @@ Dashboard
 @endsection
 
 @section('sub-title')
-Selamat datang, Guest!
+Selamat datang, <strong>{{ auth()->user()->name }}</strong>!
 @endsection
 
 @section('content')
 <section class="section">
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <i class="fa fa-info-circle me-1"></i> Untuk dapat mengakses seluruh menu dan melakukan pemesanan, harap lengkapi data reseller terlebih dahulu, <a href="#" class="alert-link">klik di sini.</a>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
     <div class="card">
         <div class="card-header">
             <h4 class="card-title">Default Layout</h4>

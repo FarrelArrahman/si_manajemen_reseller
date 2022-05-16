@@ -22,7 +22,7 @@ class CreateOrderPaymentsTable extends Migration
             $table->datetime('payment_date');
             $table->integer('payment_status');
             $table->string('proof_of_payment');
-            $table->foreignId('approved_by')->constrained('admins');
+            $table->foreignId('approved_by')->constrained('users');
             $table->timestamps();
         });
     }

@@ -18,7 +18,7 @@ class CreatePaymentTypesTable extends Migration
             $table->string('payment_code')->unique();
             $table->string('payment_name');
             $table->string('payment_detail');
-            $table->foreignId('last_edited_by')->constrained('admins');
+            $table->foreignId('last_edited_by')->constrained('users');
             $table->timestamps();
             $table->softDeletes();
         });

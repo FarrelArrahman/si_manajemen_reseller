@@ -2,9 +2,9 @@
     <div class="sidebar-wrapper active">
         <div class="sidebar-header">
             <div class="d-flex justify-content-between">
-                <div class="logo">
+                <!-- <div class="logo">
                     <a href="index.html"><img src="{{ asset('images/logo/logo.png') }}" alt="Logo" srcset=""></a>
-                </div>
+                </div> -->
                 <div class="toggler">
                     <a href="#" class="sidebar-hide d-xl-none d-block"><i class="bi bi-x bi-middle"></i></a>
                 </div>
@@ -12,53 +12,75 @@
         </div>
         <div class="sidebar-menu">
             <ul class="menu">
-                <li class="sidebar-title">
-                    <div class="row">
-                        <div class="col-3">
-                            <div role="button" class="avatar avatar-lg bg-warning">
-                                <img src="{{ asset('images/faces/2.jpg') }}" alt="">
+                <li class="sidebar-title" style="margin-left: -15px">
+                    <a href="#" title="User" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <div class="row">
+                            <div class="col-3">
+                                <div class="avatar avatar-lg bg-warning">
+                                    <img src="{{ asset('images/faces/2.jpg') }}" alt="">
+                                </div>
+                            </div>
+                            <div class="col-9">
+                                <h5 class="mb-0" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ auth()->user()->name ?? 'Guest' }}</h5>
+                                <p>{{ auth()->user()->role ?? 'User' }}</p>
                             </div>
                         </div>
-                        <div class="col-9">
-                            <h4 class="mb-0">Admin123</h4>
-                            <p>Admin</p>
+                        <div class="dropdown-menu shadow">
+                            <a href="#" class="dropdown-item link-primary" href="#"><i class="fa fa-user me-2 text-primary"></i> Profil</a>
+                            <a onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="dropdown-item link-danger logout-button" href="#"><i class="fa fa-power-off me-2 text-danger"></i> Logout</a>
+                            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
                         </div>
-                    </div>
+                    </a>
                 </li>
                 
-                <li class="sidebar-item active ">
+                <li class="sidebar-item {{ request()->is('dashboard') ? 'active' : '' }}">
                     <a href="{{ route('dashboard') }}" class='sidebar-link'>
                         <i class="bi bi-house-door-fill"></i>
                         <span>Dashboard</span>
                     </a>
                 </li>
 
-                <li class="sidebar-item has-sub">
+                @if(auth()->user()->isAdmin())
+                <li class="sidebar-item has-sub {{ request()->is('product*') || request()->is('category*') || request()->is('product_variant/*') ? 'active' : '' }} text-danger">
                     <a href="#" class='sidebar-link'>
                         <i class="bi bi-tags-fill"></i>
                         <span>Produk</span>
                     </a>
-                    <ul class="submenu ">
-                        <li class="submenu-item ">
-                            <a href="#">
-                                Nama Produk
+                    <ul class="submenu {{ request()->is('product*') || request()->is('category*') || request()->is('product_variant*') ? 'active' : '' }}">
+                        <li class="submenu-item {{ request()->is('category*') ? 'active' : '' }}">
+                            <a href="{{ route('category.index') }}">
+                                Kategori
                             </a>
                         </li>
-                        <li class="submenu-item ">
-                            <a href="#">
-                                Inventori Produk
+                        <li class="submenu-item {{ request()->is('product*') || request()->is('product_variant*') ? 'active' : '' }}">
+                            <a href="{{ route('product.index') }}">
+                                Master
+                            </a>
+                        </li>
+                        <li class="submenu-item {{ request()->is('inventory*') ? 'active' : '' }}">
+                            <a href="{{ route('inventory.index') }}">
+                                Inventori
                             </a>
                         </li>
                     </ul>
                 </li>
+                @else
+                <li class="sidebar-item {{ request()->is('inventory*') ? 'active' : '' }} text-danger">
+                    <a href="#" class='sidebar-link'>
+                        <i class="bi bi-tags-fill"></i>
+                        <span>Produk</span>
+                    </a>
+                </li>
+                @endif
 
                 <li class="sidebar-item">
                     <a href="#" class='sidebar-link'>
                         <i class="bi bi-cart-fill"></i>
                         <span>Pesanan</span>
                     </a>
-                </li>
+                </li>   
 
+                @if(auth()->user()->isAdmin())
                 <li class="sidebar-item has-sub">
                     <a href="#" class='sidebar-link'>
                         <i class="bi bi-cash-stack"></i>
@@ -77,7 +99,16 @@
                         </li>
                     </ul>
                 </li>
+                @else
+                <li class="sidebar-item">
+                    <a href="#" class='sidebar-link'>
+                        <i class="bi bi-cash-stack"></i>
+                        <span>Pembayaran</span>
+                    </a>
+                </li>
+                @endif
 
+                @if(auth()->user()->isAdmin())
                 <li class="sidebar-item has-sub">
                     <a href="#" class='sidebar-link'>
                         <i class="bi bi-files"></i>
@@ -96,7 +127,9 @@
                         </li>
                     </ul>
                 </li>
+                @endif
                 
+                @if(auth()->user()->isAdmin())
                 <li class="sidebar-item has-sub">
                     <a href="#" class='sidebar-link'>
                         <i class="bi bi-people-fill"></i>
@@ -115,20 +148,25 @@
                         </li>
                     </ul>
                 </li>
+                @endif
 
+                @if(auth()->user()->isAdmin())
                 <li class="sidebar-item">
                     <a href="#" class='sidebar-link'>
                         <i class="bi bi-newspaper"></i>
                         <span>Pengumuman</span>
                     </a>
                 </li>
+                @endif
 
+                @if(auth()->user()->isAdmin())
                 <li class="sidebar-item">
                     <a href="#" class='sidebar-link'>
                         <i class="bi bi-gear-fill"></i>
                         <span>Pengaturan</span>
                     </a>
                 </li>
+                @endif
 
             </ul>
         </div>
