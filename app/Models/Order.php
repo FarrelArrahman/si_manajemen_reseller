@@ -17,15 +17,15 @@ class Order extends Model
     protected $fillable = [
         'reseller_id',
         'handled_by',
-        'order_notes',
+        'notes',
         'discount',
-        'order_address',
+        'address',
         'province',
         'city',
         'zip_code',
         'order_shipping_type_id',
-        'order_date',
-        'order_status',
+        'date',
+        'status',
     ];
 
     /**

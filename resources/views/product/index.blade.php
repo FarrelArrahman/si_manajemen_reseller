@@ -62,6 +62,7 @@ Daftar master produk yang tersedia pada sistem.
                 <thead>
                     <tr>
                         <th width="10%">#</th>
+                        <th>Foto Utama</th>
                         <th>Nama Produk</th>
                         <th>Kategori</th>
                         <th width="20%">Tampilkan produk?</th>
@@ -151,6 +152,7 @@ Daftar master produk yang tersedia pada sistem.
                 orderable: false, 
                 searchable: false
             },
+            {data: 'default_photo', name: 'default_photo'},
             {data: 'product_name', name: 'product_name'},
             {data: 'category', name: 'category'},
             {
@@ -159,7 +161,13 @@ Daftar master produk yang tersedia pada sistem.
                 orderable: false, 
                 searchable: false
             },
-        ]
+        ],
+        fnDrawCallback: () => {
+            $('.image-popup').magnificPopup({
+                type: 'image'
+                // other options
+            })
+        }
     });
 
     var dTable = $('.yajra-datatable').dataTable().api()

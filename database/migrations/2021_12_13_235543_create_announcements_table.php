@@ -15,13 +15,13 @@ class CreateAnnouncementsTable extends Migration
     {
         Schema::create('announcements', function (Blueprint $table) {
             $table->id();
-            $table->string('announcement_title');
-            $table->text('announcement_content');
+            $table->string('title');
+            $table->text('content');
             $table->foreignId('created_by')->constrained('users');
             $table->datetime('start_from');
             $table->datetime('valid_until');
+            $table->integer('is_private');
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 

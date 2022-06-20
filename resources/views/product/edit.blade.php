@@ -33,7 +33,7 @@ Mengubah data master produk.
                                 <div class="row">
                                     <div class="col-12">
                                         <div class="form-group">
-                                            <label for="product-name-vertical">Nama Produk</label>
+                                            <label for="product-name-vertical">Nama Produk <span class="text-danger">*</span></label>
                                             <input type="text" id="product-name-vertical" class="form-control @error('product_name') is-invalid @enderror"
                                                 name="product_name" value="{{ old('product_name') ?? $product->product_name }}">
                                             @error('product_name')
@@ -45,7 +45,7 @@ Mengubah data master produk.
                                     </div>
                                     <div class="col-12">
                                         <div class="form-group">
-                                            <label for="category-vertical">Kategori</label>
+                                            <label for="category-vertical">Kategori <span class="text-danger">*</span></label>
                                             <select name="category_id" class="form-control @error('category') is-invalid @enderror select2">
                                                 @foreach($categories as $item)
                                                 <option @if($product->category_id == $item->id) selected @endif value="{{ $item->id }}">{{ $item->category_name }}</option>
@@ -60,7 +60,7 @@ Mengubah data master produk.
                                     </div>
                                     <div class="col-12">
                                         <div class="form-group">
-                                            <label for="unit-vertical">Satuan / Unit</label>
+                                            <label for="unit-vertical">Satuan / Unit <span class="text-danger">*</span></label>
                                             <select name="unit_id" class="form-control @error('unit') is-invalid @enderror select2">
                                                 @foreach($units as $item)
                                                 <option @if($item->id == $product->unit_id) selected @endif value="{{ $item->id }}">{{ $item->name }}</option>
@@ -77,7 +77,7 @@ Mengubah data master produk.
                                         <div class="form-group">
                                             <label for="unit-vertical">Foto Utama Produk</label>
                                             <br>
-                                            <a class="image-preview-old" href="{{ Storage::url($product->default_photo) }}"><img src="{{ Storage::url($product->default_photo) }}" alt="" width="192"></a>
+                                            <a class="image-preview-old image-popup" href="{{ Storage::url($product->default_photo) }}"><img src="{{ Storage::url($product->default_photo) }}" alt="" width="192"></a>
                                             <img class="image-preview-new mb-2" src="#" alt="" width="192">
                                             <input type="file" class="form-control @error('unit') is-invalid @enderror mt-2 image-preview-edit" name="default_photo" id="">
                                             <small class="fw-bold">Kosongkan isian ini jika tidak ingin mengubah foto utama.</small>

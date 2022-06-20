@@ -20,7 +20,7 @@ class CreateOrderDetailsTable extends Migration
             $table->integer('quantity');
             $table->integer('price');
             $table->integer('discount');
-            $table->integer('order_detail_status');
+            $table->integer('detail_status');
             $table->timestamps();
         });
     }

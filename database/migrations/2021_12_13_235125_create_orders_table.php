@@ -17,15 +17,15 @@ class CreateOrdersTable extends Migration
             $table->id();
             $table->foreignId('reseller_id')->constrained();
             $table->foreignId('handled_by')->constrained('users');
-            $table->text('order_notes');
+            $table->text('notes');
             $table->integer('discount');
-            $table->text('order_address');
+            $table->text('address');
             $table->string('province');
             $table->string('city');
             $table->string('zip_code');
             $table->foreignId('order_shipping_type_id')->constrained();
-            $table->datetime('order_date');
-            $table->string('order_status');
+            $table->datetime('date');
+            $table->string('status');
             $table->timestamps();
         });
     }

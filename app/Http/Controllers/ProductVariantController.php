@@ -53,8 +53,14 @@ class ProductVariantController extends Controller
             ->addColumn('switch_button', function($row) {
                 return $row->statusSwitchButton();
             })
+            ->editColumn('photo', function($row){
+                return '<a class="image-popup" href="' . Storage::url($row->photo) . '"><img style="object-fit: cover; width: 96px; height: 96px;" src="' . Storage::url($row->photo) . '"></a>';
+            })
             ->editColumn('color', function($row) {
                 return '<div class="rounded-circle" style="border:1px solid black;background-color:' . $row->color . ';width:20px;height:20px;">&nbsp;</div>';
+            })
+            ->editColumn('reseller_price', function($row) {
+                return number_format($row->reseller_price, 0, '', '.');
             })
             ->filter(function ($instance) use ($request) {
                 if($request->get('product_variant_status') != null) {
@@ -70,7 +76,7 @@ class ProductVariantController extends Controller
                     });
                 }
             })
-            ->rawColumns(['action', 'color', 'switch_button'])
+            ->rawColumns(['action', 'color', 'switch_button', 'photo'])
             ->make(true);
     }
 

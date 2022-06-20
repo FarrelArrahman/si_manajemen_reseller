@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\Category;
 use DataTables;
 use Illuminate\Http\Request;
+use Storage;
 
 class InventoryController extends Controller
 {
@@ -35,56 +37,78 @@ class InventoryController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function inventory_dt(Request $request)
+    public function index_dt(Request $request)
     {
-        $data = Product::select('*');
+        $data = ProductVariant::select([
+            'id',
+            'product_id',
+            'product_variant_name',
+            'reseller_price',
+            'photo',
+            'stock',
+            'color',
+        ]);
 
         return DataTables::of($data)
             ->addIndexColumn()
             ->addColumn('action', function($row){                
-                if($row->trashed()) {
-                    $actionBtn = '<button data-id="' . $row->id . '" class="btn btn-text text-primary me-1 ms-1 restore-button"><i class="fa fa-undo-alt fa-sm"></i></button>';
-                } else {
-                    $actionBtn = '<a href="' . route('product.show', $row->id) . '" class="text-info me-1 ms-1"><i class="fa fa-search fa-sm"></i></a>';
-                    $actionBtn .= '<a href="' . route('product.edit', $row->id) . '" data-id="' . $row->id . '" class="btn btn-link p-0 text-warning me-1 ms-1"><i class="fa fa-edit fa-sm"></i></a>';
-                    $actionBtn .= '<button data-id="' . $row->id . '" class="btn btn-link p-0 text-danger me-1 ms-1 delete-button"><i class="fa fa-trash-alt fa-sm"></i></button>';
-                }
+                $actionBtn = '<a href="' . route('product.show', $row->id) . '" class="text-info me-1 ms-1"><i class="fa fa-search fa-sm"></i></a>';
+                $actionBtn .= '<a href="' . route('product.edit', $row->id) . '" data-id="' . $row->id . '" class="btn btn-link p-0 text-warning me-1 ms-1"><i class="fa fa-edit fa-sm"></i></a>';
                 return $actionBtn;
             })
-            ->editColumn('product_status', function($row) {
-                return $row->statusBadge();
+            ->editColumn('photo', function($row){                
+                return '<a class="image-popup" href="' . Storage::url($row->photo) . '"><img style="object-fit: cover; width: 96px; height: 96px;" src="' . Storage::url($row->photo) . '"></a>';
+            })
+            ->editColumn('color', function($row) {
+                return '<div class="rounded-circle" style="border:1px solid black;background-color:' . $row->color . ';width:20px;height:20px;">&nbsp;</div>';
+            })
+            ->addColumn('product_name', function($row) {
+                return $row->product->product_name . " (" . $row->product_variant_name . ")";
             })
             ->addColumn('category', function($row) {
-                return $row->category->category_name;
+                return $row->product->category->category_name;
             })
-            ->addColumn('switch_button', function($row) {
-                return $row->statusSwitchButton();
+            ->editColumn('reseller_price', function($row) {
+                return number_format($row->reseller_price, 0, '', '.');
             })
             ->filter(function ($instance) use ($request) {
-                if($request->get('product_status') != null) {
-                    $instance->where('product_status', $request->get('product_status'));
+                $category_id = $request->get('category_id');
+                $product_id = $request->get('product_id');
+                $min_price = $request->get('min_price');
+                $max_price = $request->get('max_price');
+
+                if($category_id != null && $category_id != 0) {
+                    $instance->whereHas('product', function($q) use ($category_id) {
+                        $q->where('category_id', $category_id);
+                    });
                 }
 
-                if($request->get('category_id') != null) {
-                    $instance->where('category_id', $request->get('category_id'));
+                if($product_id != null && $product_id != 0) {
+                    $instance->where('product_id', $product_id);
                 }
 
-                if($request->get('show') != null) {
-                    if($request->get('show') == 0) {
-                        $instance->onlyTrashed();
-                    } else if($request->get('show') == 1) {
-                        $instance->withTrashed();
-                    }
+                if($min_price != null) {
+                    $instance->where('reseller_price', '>=', $min_price);
+                }
+
+                if($max_price != null) {
+                    $instance->where('reseller_price', '<=', $max_price);
                 }
                 
                 if( ! empty($request->get('search'))) {
-                     $instance->where(function($w) use ($request){
+                    $instance->where(function($w) use ($request){
                         $search = $request->get('search');
-                        $w->orWhere('product_name', 'LIKE', "%$search%");
+                        $w->whereHas('product', function($q) use ($search) {
+                            $q->where('product_name', 'LIKE', "%$search%");
+                        });
+
+                        $w->orWhere('product_variant_name', 'LIKE', "%$search%");
+                        $w->orWhere('reseller_price', 'LIKE', "%$search%");
+                        $w->orWhere('stock', 'LIKE', "%$search%");
                     });
                 }
             })
-            ->rawColumns(['action', 'product_status', 'switch_button'])
+            ->rawColumns(['action', 'photo', 'color'])
             ->make(true);
     }
 }

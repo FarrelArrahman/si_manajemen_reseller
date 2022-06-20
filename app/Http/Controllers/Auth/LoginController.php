@@ -66,7 +66,11 @@ class LoginController extends Controller
         ];
 
         if(auth()->attempt($data, $remember_me)) {
-            return redirect()->route('dashboard');
+            if(auth()->user()->status == 0) {
+                auth()->logout();
+                return redirect()->back()->withErrors(['error' => 'Akun terdaftar namun telah dinonaktifkan. Silahkan kontak admin melalui WhatsApp.'])->withInput($request->all());
+            }
+            return redirect()->intended('dashboard');
         } else {
             return redirect()->back()->withErrors(['error' => 'Email atau password tidak ditemukan.'])->withInput($request->all());
         }

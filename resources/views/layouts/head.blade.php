@@ -21,6 +21,8 @@
     <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/css/bootstrap4-toggle.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <!-- Magnific Popup core CSS file -->
+    <link rel="stylesheet" href="{{ asset('css/magnific-popup.css') }}">
     
     <link rel="shortcut icon" href="{{ asset('mazer-admin/images/favicon.svg') }}" type="image/x-icon">
     <style>

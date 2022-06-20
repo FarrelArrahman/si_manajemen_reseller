@@ -28,7 +28,7 @@ Mengubah data kategori.
                                 <div class="row">
                                     <div class="col-12">
                                         <div class="form-group">
-                                            <label for="category-name-vertical">Nama Kategori</label>
+                                            <label for="category-name-vertical">Nama Kategori <span class="text-danger">*</span></label>
                                             <input type="text" id="category-name-vertical" class="form-control @error('category_name') is-invalid @enderror"
                                                 name="category_name" value="{{ old('category_name') ?? $category->category_name }}">
                                             @error('category_name')

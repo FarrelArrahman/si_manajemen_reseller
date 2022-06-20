@@ -16,9 +16,9 @@ class PaymentType extends Model
      * @var string[]
      */
     protected $fillable = [
-        'payment_code',
-        'payment_name',
-        'payment_detail',
+        'code',
+        'name',
+        'detail',
         'last_edited_by',
     ];
 

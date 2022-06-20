@@ -16,11 +16,11 @@ class OrderDetail extends Model
      */
     protected $fillable = [
         'order_id',
-        'article_variant_id',
+        'product_variant_id',
         'quantity',
         'price',
         'discount',
-        'order_detail_status',
+        'detail_status',
     ];
 
     /**
@@ -47,8 +47,8 @@ class OrderDetail extends Model
         return $this->belongsTo(Order::class, 'order_id', 'id');
     }
 
-    public function variant()
+    public function productVariant()
     {
-        return $this->hasOne(ArticleVariant::class, 'id', 'article_variant_id');
+        return $this->hasOne(ProductVariant::class, 'id', 'product_variant_id');
     }
 }

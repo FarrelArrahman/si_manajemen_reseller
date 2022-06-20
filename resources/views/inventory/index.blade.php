@@ -1,17 +1,18 @@
 @extends('layouts.template')
 
 @section('title')
-Master Produk
+Inventori
 @endsection
 
 @section('sub-title')
-Daftar master produk yang tersedia pada sistem.
+Daftar inventori produk yang tersedia.
 @endsection
 
-@section('action-button')
-<a href="{{ route('product.create') }}" class="btn btn-primary">
-<i class="fa fa-plus me-2"></i> Tambah Master Produk
-</a>
+@section('css')
+<!-- jQuery UI CSS -->
+<link rel="stylesheet" href="{{ asset('css/jquery-ui.css') }}">
+<!-- Price Range Style CSS -->
+<link rel="stylesheet" href="{{ asset('css/price_range_style.css') }}">
 @endsection
 
 @section('content')
@@ -25,35 +26,24 @@ Daftar master produk yang tersedia pada sistem.
                     <h6 class="mb-1">Filter Data</h6>
                 </div>
                 <div class="col-md-4">
-                    <small>Tampilan Produk Pada Pencarian</small>
-                    <div class="input-group mb-3">
-                        <select class="form-select filter select2" id="product_status">
-                            <option value="">Semua Produk</option>
-                            <option value="1">Hanya Produk Yang Tampil</option>
-                            <option value="0">Hanya Produk Yang Tidak Tampil</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <small>Status Produk</small>
-                    <div class="input-group mb-3">
-                        <select class="form-select filter select2" id="show">
-                            <option value="">Aktif</option>
-                            <option value="0">Dihapus Sementara</option>
-                            <option value="1">Semua Produk</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-4">
                     <small>Kategori</small>
                     <div class="input-group mb-3">
-                        <select class="form-control filter select2" id="category_id">
-                            <option value="">Semua Kategori</option>
-                            @foreach($categories as $item)
-                            <option value="{{ $item->id }}">{{ $item->category_name }}</option>
-                            @endforeach
+                        <select class="form-control filter" id="category_id">
                         </select>
                     </div>
+                </div>
+                <div class="col-md-4">
+                    <small>Produk</small>
+                    <div class="input-group mb-3">
+                        <select class="form-select filter" id="product_id">
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <small>Harga (Rp.)</small>
+                    <div id="slider-range" class="price-filter-range" name="rangeInput"></div>
+                    <input type="number" min=0 max="95000" oninput="validity.valid||(value='0');" id="min_price" class="price-range-field" />
+                    <input type="number" min=0 max="100000" oninput="validity.valid||(value='100000');" id="max_price" class="price-range-field" />
                 </div>
             </div>
         </div>
@@ -62,9 +52,12 @@ Daftar master produk yang tersedia pada sistem.
                 <thead>
                     <tr>
                         <th width="10%">#</th>
+                        <th>Foto</th>
                         <th>Nama Produk</th>
                         <th>Kategori</th>
-                        <th width="20%">Tampilkan produk?</th>
+                        <th>Warna</th>
+                        <th>Stok</th>
+                        <th width="20%">Harga (Rp.)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -82,47 +75,56 @@ Daftar master produk yang tersedia pada sistem.
 @endsection
 
 @section('js')
+<script src="https://code.jquery.com/ui/1.13.1/jquery-ui.min.js" integrity="sha256-eTyxS0rkjpLEo16uXTS0uVCS4815lc40K2iVpWDvdSY=" crossorigin="anonymous"></script>
+<script src="{{ asset('js/price_range_script.js') }}"></script>
+
 <script>
-    function deleteProduct(id) {
-        var url = "{{ route('product.destroy', '') }}/" + id
-        return fetch(url, {
-            method: 'DELETE',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json; charset=UTF-8',
-                'X-CSRF-Token': csrfToken
-            },
-        }).then(response => response.json())
+    let getCategories = () => {
+        let category = $('#category_id')
+        let url = "{{ route('category.index_api') }}"
+        let html = ""
+
+        fetch(url)
+            .then(response => response.json())
+            .then(json => {
+                html += '<option value="0">(Semua Kategori)</option>'
+                for(let item of json.data) {
+                    html += '<option value="' + item.id + '">' + item.category_name + '</option>'
+                }
+                category.html(html)
+                category.select2({
+                    placeholder: 'Pilih kategori...'
+                })
+            })       
     }
 
-    function restoreProduct(id) {
-        var url = "{{ route('product.restore', 0) }}/".replace("0", id)
-        return fetch(url, {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json; charset=UTF-8',
-                'X-CSRF-Token': csrfToken
-            },
-        }).then(response => response.json())
+    let getProducts = (categoryId) => {
+        let product = $('#product_id')
+        let url = "{{ route('product.index_api') }}?category_id=" + categoryId
+        let html = ""
+
+        fetch(url)
+            .then(response => response.json())
+            .then(json => {
+                html += '<option value="0">(Semua Produk)</option>'
+                for(let item of json.data) {
+                    html += '<option value="' + item.id + '">' + item.product_name + '</option>'
+                }
+                product.html(html)
+                product.select2({
+                    placeholder: 'Pilih produk...'
+                })
+            })       
     }
 
-    function changeProductStatus(id, status) {
-        var url = "{{ route('product.changeStatus', 0) }}/".replace("0", id)
-        var data = {
-            product_status: status
-        }
-        
-        return fetch(url, {
-            method: 'PATCH',
-            body: JSON.stringify(data),
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json; charset=UTF-8',
-                'X-CSRF-Token': csrfToken
-            },
-        }).then(response => response.json())
-    }
+    getCategories()
+    getProducts()
+
+    $(document).ready(function() {
+        $('#category_id').on('change', function() {
+            getProducts($(this).val())
+        })
+    })
     
     // Jquery Datatable
     var table = $('.yajra-datatable').DataTable({
@@ -130,19 +132,20 @@ Daftar master produk yang tersedia pada sistem.
         serverSide: true,
         searchDelay: 1000,
         ajax: {
-            url: "{{ route('product.index_dt') }}",
+            url: "{{ route('inventory.index_dt') }}",
             data: function (d) {
                 d.category_id = $('#category_id').val(),
-                d.product_status = $('#product_status').val(),
-                d.show = $('#show').val(),
+                d.product_id = $('#product_id').val(),
+                d.min_price = $('#min_price').val(),
+                d.max_price = $('#max_price').val(),
                 d.search = $('input[type="search"]').val()
             }
         },
         columnDefs: [
             {
                 targets: 0,
-                className: 'text-center'
-            }
+                className: 'dt-center',
+            },
         ],
         columns: [
             {
@@ -151,15 +154,19 @@ Daftar master produk yang tersedia pada sistem.
                 orderable: false, 
                 searchable: false
             },
+            {data: 'photo', name: 'photo'},
             {data: 'product_name', name: 'product_name'},
             {data: 'category', name: 'category'},
-            {
-                data: 'switch_button', 
-                name: 'switch_button',
-                orderable: false, 
-                searchable: false
-            },
-        ]
+            {data: 'color', name: 'color'},
+            {data: 'stock', name: 'stock'},
+            {data: 'reseller_price', name: 'reseller_price'},
+        ],
+        fnDrawCallback: () => {
+            $('.image-popup').magnificPopup({
+                type: 'image'
+                // other options
+            })
+        }
     });
 
     var dTable = $('.yajra-datatable').dataTable().api()
@@ -176,55 +183,6 @@ Daftar master produk yang tersedia pada sistem.
             }
             return
         })
-
-    $('.yajra-datatable').on('click', '.delete-button', function() {
-        let id = $(this).data('id')
-
-        Swal.fire({
-            title: 'Hapus Produk',
-            text: "Apakah Anda ingin menghapus produk ini?",
-            footer: "<small>Data yang telah dihapus bersifat sementara sehingga dipulihkan kembali.</small>",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Hapus'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                deleteProduct(id)
-                    .then((json) => {
-                        toast(json.success, json.message)
-                        table.draw()
-                    })
-                    .catch(error => error)
-            }
-        })
-    })
-
-    $('.yajra-datatable').on('click', '.restore-button', function() {
-        let id = $(this).data('id')
-
-        restoreProduct(id)
-            .then((json) => {
-                toast(json.success, json.message)
-                table.draw()
-            })
-            .catch(error => error)
-    })
-
-    $('.yajra-datatable').on('change', '.switch-button', function() {
-        let id = $(this).data('id')
-        let status = $(this).is(':checked')
-
-        changeProductStatus(id, status)
-            .then((json) => {
-                // toast(json.success, json.message)
-                if($('#product_status').val() != "") {
-                    table.draw()
-                }
-            })
-            .catch(error => error)
-    })
 
     $('.filter').on('change', function() {
         table.draw()

@@ -30,7 +30,7 @@ Menambah master produk baru.
                                 <div class="row">
                                     <div class="col-12">
                                         <div class="form-group">
-                                            <label for="product-name-vertical">Nama Produk</label>
+                                            <label for="product-name-vertical">Nama Produk <span class="text-danger">*</span></label>
                                             <input type="text" id="product-name-vertical" class="form-control @error('product_name') is-invalid @enderror"
                                                 name="product_name" value="{{ old('product_name') }}">
                                             @error('product_name')
@@ -42,7 +42,7 @@ Menambah master produk baru.
                                     </div>
                                     <div class="col-12">
                                         <div class="form-group">
-                                            <label for="category-vertical">Kategori</label>
+                                            <label for="category-vertical">Kategori <span class="text-danger">*</span></label>
                                             <select name="category_id" class="form-control @error('category') is-invalid @enderror select2">
                                                 @foreach($categories as $item)
                                                 <option value="{{ $item->id }}">{{ $item->category_name }}</option>
@@ -57,7 +57,7 @@ Menambah master produk baru.
                                     </div>
                                     <div class="col-12">
                                         <div class="form-group">
-                                            <label for="unit-vertical">Satuan / Unit</label>
+                                            <label for="unit-vertical">Satuan / Unit <span class="text-danger">*</span></label>
                                             <select name="unit_id" class="form-control @error('unit') is-invalid @enderror select2">
                                                 @foreach($units as $item)
                                                 <option value="{{ $item->id }}">{{ $item->name }}</option>

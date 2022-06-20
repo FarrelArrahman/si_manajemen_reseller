@@ -32,7 +32,7 @@ Menambah varian baru dari master produk.
                                 <div class="row">
                                     <div class="col-6">
                                         <div class="form-group">
-                                            <label for="product-variant-vertical">Varian</label>
+                                            <label for="product-variant-vertical">Varian <span class="text-danger">*</span></label>
                                             <!-- <input type="text" class="form-control @error('product_variant_name') is-invalid @enderror" name="product_variant_name"> -->
                                             <select name="product_variant_name" class="form-control @error('product_variant_name') is-invalid @enderror" id="product_variant_name" required>
                                             <option value="" disabled selected>Pilih varian atau ketik varian baru...</option>
@@ -50,7 +50,7 @@ Menambah varian baru dari master produk.
                                     </div>
                                     <div class="col-6">
                                         <div class="form-group">
-                                            <label for="color-vertical">Warna</label>
+                                            <label for="color-vertical">Warna <span class="text-danger">*</span></label>
                                             <input type="color" class="form-control form-control-color @error('color') is-invalid @enderror" id="color" name="color" list="preset-colors">
                                             <datalist id="preset-colors">
 
@@ -77,7 +77,7 @@ Menambah varian baru dari master produk.
                                     </div>
                                     <div class="col-12">
                                         <div class="form-group">
-                                            <label for="stock-vertical">Stok Awal</label>
+                                            <label for="stock-vertical">Stok Awal <span class="text-danger">*</span></label>
                                             <input type="number" min="0" class="form-control @error('stock') is-invalid @enderror" name="stock" value="1">
                                             @error('stock')
                                             <div class="invalid-feedback">
@@ -88,7 +88,7 @@ Menambah varian baru dari master produk.
                                     </div>
                                     <div class="col-12">
                                         <div class="form-group">
-                                            <label for="product-variant-vertical">Harga Pokok</label>
+                                            <label for="product-variant-vertical">Harga Pokok <span class="text-danger">*</span></label>
                                             <div class="input-group mb-3">
                                                 <span class="input-group-text" id="rupiah-prefix">Rp.</span>
                                                 <input type="text" class="form-control @error('base_price') is-invalid @enderror money" aria-describedby="rupiah-prefix" name="base_price" value="{{ $product->productVariants->last()->base_price ?? 0 }}">
@@ -102,7 +102,7 @@ Menambah varian baru dari master produk.
                                     </div>
                                     <div class="col-12">
                                         <div class="form-group">
-                                            <label for="product-variant-vertical">Harga Umum</label>
+                                            <label for="product-variant-vertical">Harga Umum <span class="text-danger">*</span></label>
                                             <div class="input-group mb-3">
                                                 <span class="input-group-text" id="rupiah-prefix">Rp.</span>
                                                 <input type="text" class="form-control @error('base_price') is-invalid @enderror money" aria-describedby="rupiah-prefix" name="general_price" value="{{ $product->productVariants->last()->general_price ?? 0 }}">
@@ -116,7 +116,7 @@ Menambah varian baru dari master produk.
                                     </div>
                                     <div class="col-12">
                                         <div class="form-group">
-                                            <label for="product-variant-vertical">Harga Reseller</label>
+                                            <label for="product-variant-vertical">Harga Reseller <span class="text-danger">*</span></label>
                                             <div class="input-group">
                                                 <span class="input-group-text" id="rupiah-prefix">Rp.</span>
                                                 <input type="text" class="form-control @error('reseller_price') is-invalid @enderror money" aria-describedby="rupiah-prefix" name="reseller_price" value="{{ $product->productVariants->last()->reseller_price ?? 0 }}">

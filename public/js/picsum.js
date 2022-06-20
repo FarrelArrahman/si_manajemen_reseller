@@ -31,10 +31,12 @@ let getRandomPicture = () => {
     if( ! checkCookie('picsum')) {
         fetch(url).then(response => {
             setCookie('picsum', response.url)
+            setBackgroundPicture(response.url)
         })
+    } else {
+        let picsum = getCookie('picsum')
+        setBackgroundPicture(picsum)
     }
-    let picsum = getCookie('picsum')
-    setBackgroundPicture(picsum)
 }
 
 let setBackgroundPicture = (url) => {

@@ -26,11 +26,15 @@
                     </div>
                     <h1 class="auth-title">Log in.</h1>
                     <p class="auth-subtitle mb-4">Log in dengan email dan password Anda.</p>
-        
+                    @if($errors->has('error'))
+                    <div class="alert alert-danger">
+                        {{ $errors->first('error') }}
+                    </div>
+                    @endif
                     <form action="{{ route('login') }}" method="POST">
                         @csrf
                         <div class="form-group position-relative mb-4">
-                            <input type="text" class="form-control form-control-lg @error('email') is-invalid @enderror" placeholder="Email" name="email">
+                            <input type="text" class="form-control form-control-lg @error('email') is-invalid @enderror" placeholder="Email" name="email" value="{{ old('email') }}">
                             @error('email')
                             <div class="invalid-feedback">
                                 {{ $message }}
@@ -46,7 +50,7 @@
                             @enderror
                         </div>
                         <div class="form-check form-check-lg d-flex align-items-end">
-                            <input class="form-check-input me-2" type="checkbox" value="" id="flexCheckDefault" name="remember_me">
+                            <input {{ old('remember_me') == 'on' ? 'checked' : '' }} class="form-check-input me-2" type="checkbox" id="flexCheckDefault" name="remember_me">
                             <label class="form-check-label text-gray-600" for="flexCheckDefault">
                                 Ingat saya
                             </label>
@@ -54,8 +58,8 @@
                         <button class="btn btn-primary btn-block btn-lg shadow-lg mt-5">Log in</button>
                     </form>
                     <div class="text-center mt-5 text-lg fs-6">
-                        <p class="text-gray-600">Belum punya akun reseller? <a href="{{ route('register') }}" class="font-bold">Daftar Sekarang</a>.</p>
-                        <p><a class="font-bold" href="auth-forgot-password.html">Lupa Password?</a></p>
+                        <p class="text-gray-600">Belum punya akun reseller? <a href="{{ route('register') }}" class="font-bold">Daftar sekarang</a>.</p>
+                        <p><a class="font-bold" href="auth-forgot-password.html">Lupa password?</a></p>
                     </div>
                 </div>
             </div>

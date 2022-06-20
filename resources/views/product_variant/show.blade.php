@@ -32,7 +32,7 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <a href="{{ Storage::url($productVariant->photo) }}">
+                                    <a class="image-popup" href="{{ Storage::url($productVariant->photo) }}">
                                         <img src="{{ Storage::url($productVariant->photo) }}" alt="" width="100%">
                                     </a>
                                 </div>
@@ -42,7 +42,7 @@
                                     <div class="col-6">
                                         <div class="form-group">
                                             <label for="product-name-vertical">Nama Produk</label>
-                                            <p class="fs-5 text-dark">{{ $productVariant->product->product_name }}</p>
+                                            <p class="fs-5 text-dark"><a href="{{ route('product.show', $productVariant->product->id) }}">{{ $productVariant->product->product_name }}</a></p>
                                         </div>
                                     </div>
                                     <div class="col-6">

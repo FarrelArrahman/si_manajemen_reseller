@@ -13,21 +13,21 @@
         <div class="sidebar-menu">
             <ul class="menu">
                 <li class="sidebar-title" style="margin-left: -15px">
-                    <a href="#" title="User" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <a href="#" title="" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <div class="row">
                             <div class="col-3">
                                 <div class="avatar avatar-lg bg-warning">
-                                    <img src="{{ asset('images/faces/2.jpg') }}" alt="">
+                                    <img src="{{ Storage::url(auth()->user()->photo) }}" alt="">
                                 </div>
                             </div>
                             <div class="col-9">
-                                <h5 class="mb-0" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ auth()->user()->name ?? 'Guest' }}</h5>
+                                <h5 title="{{ auth()->user()->name ?? 'Guest' }}" class="mb-0" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ auth()->user()->name ?? 'Guest' }}</h5>
                                 <p>{{ auth()->user()->role ?? 'User' }}</p>
                             </div>
                         </div>
                         <div class="dropdown-menu shadow">
-                            <a href="#" class="dropdown-item link-primary" href="#"><i class="fa fa-user me-2 text-primary"></i> Profil</a>
-                            <a onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="dropdown-item link-danger logout-button" href="#"><i class="fa fa-power-off me-2 text-danger"></i> Logout</a>
+                            <a href="{{ route('user.profile') }}" class="dropdown-item link-primary"><i class="fa fa-user me-2 text-primary"></i> Profil</a>
+                            <a onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="dropdown-item link-danger logout-button" href=""><i class="fa fa-power-off me-2 text-danger"></i> Logout</a>
                             <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
                         </div>
                     </a>
@@ -40,13 +40,13 @@
                     </a>
                 </li>
 
-                @if(auth()->user()->isAdmin())
-                <li class="sidebar-item has-sub {{ request()->is('product*') || request()->is('category*') || request()->is('product_variant/*') ? 'active' : '' }} text-danger">
+                @if(auth()->user()->isAdmin() || auth()->user()->isReseller())
+                <li class="sidebar-item has-sub {{ request()->is('product*') || request()->is('category*') || request()->is('product_variant*') || request()->is('inventory*') ? 'active' : '' }} text-danger">
                     <a href="#" class='sidebar-link'>
                         <i class="bi bi-tags-fill"></i>
                         <span>Produk</span>
                     </a>
-                    <ul class="submenu {{ request()->is('product*') || request()->is('category*') || request()->is('product_variant*') ? 'active' : '' }}">
+                    <ul class="submenu {{ request()->is('product*') || request()->is('category*') || request()->is('product_variant*') || request()->is('inventory*') ? 'active' : '' }}">
                         <li class="submenu-item {{ request()->is('category*') ? 'active' : '' }}">
                             <a href="{{ route('category.index') }}">
                                 Kategori
@@ -130,20 +130,21 @@
                 @endif
                 
                 @if(auth()->user()->isAdmin())
-                <li class="sidebar-item has-sub">
+                <li class="sidebar-item has-sub {{ request()->is('user*') ? 'active' : '' }}">
                     <a href="#" class='sidebar-link'>
                         <i class="bi bi-people-fill"></i>
                         <span>User</span>
+                        <span class="badge bg-danger">4</span>
                     </a>
-                    <ul class="submenu ">
-                        <li class="submenu-item ">
-                            <a href="#">
-                                Admin
+                    <ul class="submenu {{ request()->is('user*') ? 'active' : '' }}">
+                        <li class="submenu-item {{ request()->is('*staff*') ? 'active' : '' }}">
+                            <a href="{{ route('user.index', 'staff') }}">
+                                Staff
                             </a>
                         </li>
-                        <li class="submenu-item ">
-                            <a href="#">
-                                Reseller
+                        <li class="submenu-item {{ request()->is('*reseller*') ? 'active' : '' }}">
+                            <a href="{{ route('user.index', 'reseller') }}">
+                                Reseller <span class="text-danger">•</span>
                             </a>
                         </li>
                     </ul>
@@ -151,8 +152,8 @@
                 @endif
 
                 @if(auth()->user()->isAdmin())
-                <li class="sidebar-item">
-                    <a href="#" class='sidebar-link'>
+                <li class="sidebar-item {{ request()->is('announcement*') ? 'active' : '' }}">
+                    <a href="{{ route('announcement.index') }}" class='sidebar-link'>
                         <i class="bi bi-newspaper"></i>
                         <span>Pengumuman</span>
                     </a>

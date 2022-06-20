@@ -16,17 +16,19 @@ class CreateResellersTable extends Migration
         Schema::create('resellers', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained();
-            $table->string('reseller_shop_name');
-            $table->string('reseller_shop_address');
+            $table->string('shop_name');
+            $table->string('shop_address');
             $table->string('province');
             $table->string('city');
-            $table->string('zip_code');
+            $table->string('postal_code');
             $table->string('phone_number');
-            $table->string('social_media');
+            $table->json('social_media')->nullable();
             $table->string('shopee_link');
             $table->string('reseller_status');
-            $table->string('reseller_preferences');
-            $table->string('reseller_approval_date');
+            $table->string('reseller_registration_proof_of_payment')->nullable();
+            $table->string('approval_date')->nullable();
+            $table->foreignId('approved_by')->nullable()->constrained('users');
+            $table->string('rejection_reason')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

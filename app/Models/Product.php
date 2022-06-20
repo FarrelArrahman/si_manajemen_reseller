@@ -47,7 +47,7 @@ class Product extends Model
     ];
 
     protected $appends = [
-        "default_photo_url"
+        // 
     ];
 
     // Appends

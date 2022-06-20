@@ -15,9 +15,9 @@ class OrderShippingType extends Model
      * @var string[]
      */
     protected $fillable = [
-        'order_shipping_type',
-        'order_shipping_type_desc',
-        'order_shipping_type_status',
+        'name',
+        'description',
+        'status',
     ];
 
     /**

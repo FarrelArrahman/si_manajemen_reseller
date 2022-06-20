@@ -15,9 +15,9 @@ class CreateOrderShippingTypesTable extends Migration
     {
         Schema::create('order_shipping_types', function (Blueprint $table) {
             $table->id();
-            $table->string('order_shipping_type');
-            $table->text('order_shipping_type_desc');
-            $table->integer('order_shipping_type_status');
+            $table->string('name');
+            $table->text('description');
+            $table->integer('status');
         });
     }
 

@@ -15,12 +15,12 @@ class CreateReportsTable extends Migration
     {
         Schema::create('reports', function (Blueprint $table) {
             $table->id();
-            $table->string('report_code');
-            $table->string('report_type');
-            $table->string('report_file');
+            $table->string('code');
+            $table->string('type');
+            $table->string('file');
             $table->foreignId('requested_by')->constrained('users');
             $table->datetime('request_date');
-            $table->integer('report_status');
+            $table->integer('status');
         });
     }
 

@@ -103,10 +103,10 @@
                                 </div>
                             </div>
                         </div>
-                        <button class="btn btn-primary btn-block btn-lg shadow-lg mt-2">Daftar Sekarang</button>
+                        <button class="btn btn-primary btn-block btn-lg shadow-lg mt-1">Daftar Sekarang</button>
                     </form>
-                    <div class="mt-3 text-lg fs-6">
-                        <p class='text-gray-600'>Sudah punya akun reseller? <a href="{{ route('login') }}" class="font-bold">Klik Disini</a> untuk login.</p>
+                    <div class="mt-3 text-lg fs-6 text-center">
+                        <p class='text-gray-600'>Sudah punya akun reseller? <a href="{{ route('login') }}" class="font-bold">Klik di sini</a> untuk login.</p>
                     </div>
                 </div>
             </div>

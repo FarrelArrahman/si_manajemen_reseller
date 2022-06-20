@@ -5,7 +5,7 @@ Dashboard
 @endsection
 
 @section('sub-title')
-Selamat datang, <strong>{{ auth()->user()->name }}</strong>!
+Selamat datang, <strong>{{ auth()->user()->name }}</strong>
 @endsection
 
 @section('content')

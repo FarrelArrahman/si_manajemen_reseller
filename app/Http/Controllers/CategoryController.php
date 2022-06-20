@@ -51,6 +51,24 @@ class CategoryController extends Controller
     }
 
     /**
+     * Display a listing of the resource as json.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index_api(Request $request)
+    {
+        $categories = Category::select(['id', 'category_name'])->get()->toArray();
+
+        return response()->json([
+            'success' => true,
+            'type' => 'category_list',
+            'message' => 'Daftar kategori',
+            'data' => $categories,
+            'statusCode' => 200
+        ], 200);
+    }
+
+    /**
      * Show the form for creating a new resource.
      *
      * @return \Illuminate\Http\Response

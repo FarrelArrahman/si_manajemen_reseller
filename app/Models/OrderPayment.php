@@ -17,10 +17,10 @@ class OrderPayment extends Model
     protected $fillable = [
         'order_id',
         'payment_type_id',
-        'payment_amount',
-        'payment_change',
-        'payment_date',
-        'payment_status',
+        'amount',
+        'change',
+        'date',
+        'status',
         'proof_of_payment',
         'approved_by',
     ];
@@ -51,6 +51,6 @@ class OrderPayment extends Model
 
     public function paymentType()
     {
-        return $this->hasOne(PaymentType::class, 'id', 'payment_id');
+        return $this->hasOne(PaymentType::class, 'id', 'payment_type_id');
     }
 }

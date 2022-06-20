@@ -54,6 +54,9 @@ class ProductController extends Controller
                 }
                 return $actionBtn;
             })
+            ->editColumn('default_photo', function($row){                
+                return '<a class="image-popup" href="' . Storage::url($row->default_photo) . '"><img style="object-fit: cover; width: 96px; height: 96px;" src="' . Storage::url($row->default_photo) . '"></a>';
+            })
             ->editColumn('product_status', function($row) {
                 return $row->statusBadge();
             })
@@ -87,8 +90,32 @@ class ProductController extends Controller
                     });
                 }
             })
-            ->rawColumns(['action', 'product_status', 'switch_button'])
+            ->rawColumns(['action', 'product_status', 'switch_button', 'default_photo'])
             ->make(true);
+    }
+
+    /**
+     * Display a listing of the resource as json.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index_api(Request $request)
+    {
+        $products = Product::select(['id', 'product_name']);
+
+        if($request->has('category_id') && $request->category_id != 0) {
+            $products = $products->where('category_id', $request->category_id);
+        }
+
+        $products = $products->get()->toArray();
+
+        return response()->json([
+            'success' => true,
+            'type' => 'product_list',
+            'message' => 'Daftar produk',
+            'data' => $products,
+            'statusCode' => 200
+        ], 200);
     }
 
     /**

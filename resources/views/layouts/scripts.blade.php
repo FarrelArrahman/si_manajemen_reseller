@@ -11,6 +11,8 @@
 <script src="{{ asset('js/jquery.mask.min.js')}}"></script>
 <script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/js/bootstrap4-toggle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="{{ asset('js/jquery.magnific-popup.js') }}"></script>
+
 <script type="text/javascript">
     let csrfToken = $('meta[name=csrf-token]').attr('content')
 
@@ -117,6 +119,11 @@
         $(".image-preview-edit").change(function(){
             imagePreviewEdit(this)
         })
-    });
+
+        $('.image-popup').magnificPopup({
+            type: 'image'
+            // other options
+        })
+    })
 </script>
 @yield('js')
