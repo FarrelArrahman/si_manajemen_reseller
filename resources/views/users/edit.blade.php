@@ -13,10 +13,6 @@ Mengubah profil dari {{ $role }}.
 <a href="{{ route('reseller.edit') }}" class="btn btn-warning">
 <i class="fa fa-cog me-2"></i> Ubah Data Reseller
 </a>
-@else
-<a href="{{ route('reseller.verify') }}" class="btn btn-info">
-<i class="fa fa-check-circle me-2"></i> Verifikasi Data Reseller
-</a>
 @endif
 @endsection
 

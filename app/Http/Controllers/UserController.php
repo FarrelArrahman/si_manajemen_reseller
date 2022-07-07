@@ -24,6 +24,10 @@ class UserController extends Controller
     public function index($role)
     {
         if($this->check($role)) {
+            if($role == "reseller") {
+                return redirect()->route('reseller.index');
+            }
+
             $users = User::where('role', $role)->get();
             return view('users.index', compact('users', 'role'));
         }

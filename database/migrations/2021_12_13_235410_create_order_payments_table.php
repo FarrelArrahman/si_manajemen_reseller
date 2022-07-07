@@ -16,7 +16,6 @@ class CreateOrderPaymentsTable extends Migration
         Schema::create('order_payments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('order_id')->constrained();
-            $table->foreignId('payment_type_id')->constrained();
             $table->integer('amount');
             $table->integer('change');
             $table->datetime('date');

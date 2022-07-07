@@ -46,7 +46,7 @@ class ProductVariantController extends Controller
                 } else {
                     $actionBtn = '<a href="' . route('product_variant.show', ['product' => $row->product->id, 'productVariant' => $row->id]) . '" class="text-info me-1 ms-1"><i class="fa fa-search fa-sm"></i></a>';
                     $actionBtn .= '<a href="' . route('product_variant.edit', ['product' => $row->product->id, 'productVariant' => $row->id]) . '" data-id="' . $row->id . '" class="btn btn-link p-0 text-warning me-1 ms-1"><i class="fa fa-edit fa-sm"></i></a>';
-                    $actionBtn .= '<button data-id="' . $row->id . '" class="btn btn-link p-0 text-danger me-1 ms-1 delete-button"><i class="fa fa-trash-alt fa-sm"></i></button>';
+                    $actionBtn .= '<button data-product-variant-id="' . $row->id . '" class="btn btn-link p-0 text-danger me-1 ms-1 delete-button"><i class="fa fa-trash-alt fa-sm"></i></button>';
                 }
                 return $actionBtn;
             })
@@ -160,6 +160,7 @@ class ProductVariantController extends Controller
             'base_price'            => 'required',
             'reseller_price'        => 'required',
             'general_price'         => 'required',
+            'weight'                => 'required|numeric',
         ]);
 
         $productVariant = ProductVariant::create([
@@ -171,6 +172,7 @@ class ProductVariantController extends Controller
             'reseller_price'            => str_replace('.', '', $request->reseller_price),
             'general_price'             => str_replace('.', '', $request->general_price),
             'photo'                     => $request->hasFile('photo') ? $request->file('photo')->store('public/products/' . $product->id) : 'public/no-image.png',
+            'weight'                    => $request->weight,
             'added_by'                  => auth()->user()->id ?? null,
             'last_edited_by'            => auth()->user()->id ?? null,
             'product_variant_status'    => $request->product_variant_status == 'on' ? 1 : 0,
@@ -203,6 +205,52 @@ class ProductVariantController extends Controller
     }
 
     /**
+     * Display the detail of the specified resource.
+     *
+     * @param  \App\Models\ProductVariant  $productVariant
+     * @return \Illuminate\Http\Response
+     */
+    public function detail($productVariant)
+    {
+        $productVariant = ProductVariant::select([
+            'id',
+            'product_id',
+            'product_variant_name',
+            'base_price',
+            'general_price',
+            'reseller_price',
+            'stock',
+            'color',
+            'photo',
+            'weight',
+            'product_variant_status',
+        ])->with('product')->find($productVariant);
+        
+        $productVariant->base_price_rp = "Rp. " . number_format($productVariant->base_price, 0, '', '.');
+        $productVariant->general_price_rp = "Rp. " . number_format($productVariant->general_price, 0, '', '.');
+        $productVariant->reseller_price_rp = "Rp. " . number_format($productVariant->reseller_price, 0, '', '.');
+        $productVariant->photo = Storage::url($productVariant->photo);
+
+        if($productVariant) {
+            return response()->json([
+                'success' => true,
+                'type' => 'detail_product_variant',
+                'message' => 'Data varian produk',
+                'data' => $productVariant,
+                'statusCode' => 200
+            ], 200);
+        }
+        
+        return response()->json([
+            'success' => false,
+            'type' => 'detail_product_variant',
+            'message' => 'Varian produk tidak ditemukan!',
+            'data' => [],
+            'statusCode' => 404
+        ], 404);
+    }
+
+    /**
      * Show the form for editing the specified resource.
      *
      * @param  \App\Models\ProductVariant  $productVariant
@@ -230,6 +278,7 @@ class ProductVariantController extends Controller
             'base_price'            => 'required',
             'reseller_price'        => 'required',
             'general_price'         => 'required',
+            'weight'                => 'required|numeric',
         ]);
 
         $photo = $productVariant->photo;
@@ -246,6 +295,7 @@ class ProductVariantController extends Controller
             'reseller_price'            => str_replace('.', '', $request->reseller_price),
             'general_price'             => str_replace('.', '', $request->general_price),
             'photo'                     => $photo,
+            'weight'                    => $request->weight,
             'added_by'                  => auth()->user()->id ?? null,
             'last_edited_by'            => auth()->user()->id ?? null,
             'product_variant_status'    => $request->product_variant_status == 'on' ? 1 : 0,

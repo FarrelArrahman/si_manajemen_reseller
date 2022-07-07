@@ -7,6 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
+    const APPROVED = "DITERIMA";
+    const PENDING = "PENDING";
+    const REJECTED = "DITOLAK";
+    const CANCELED = "DIBATALKAN";
+
     use HasFactory;
 
     /**
@@ -15,17 +20,19 @@ class Order extends Model
      * @var string[]
      */
     protected $fillable = [
-        'reseller_id',
+        'code',
+        'ordered_by',
         'handled_by',
         'notes',
         'discount',
         'address',
         'province',
         'city',
-        'zip_code',
-        'order_shipping_type_id',
+        'postal_code',
+        'order_type_id',
         'date',
         'status',
+        'rejection_reason',
     ];
 
     /**

@@ -1,11 +1,11 @@
 @extends('layouts.template')
 
 @section('title')
-Daftar Request Verifikasi Reseller
+Daftar Reseller
 @endsection
 
 @section('sub-title')
-Daftar user yang telah mengisi data reseller untuk diverifikasi.
+Daftar reseller yang ada pada sistem.
 @endsection
 
 @section('action-button')
@@ -52,21 +52,23 @@ Daftar user yang telah mengisi data reseller untuk diverifikasi.
             </div>
         </div>
         <div class="card-body">
-            <table class="table yajra-datatable">
-                <thead>
-                    <tr>
-                        <th width="10%">#</th>
-                        <th>Foto</th>
-                        <th>Nama User</th>
-                        <th>Nama Toko</th>
-                        <th>Nomor Telepon</th>
-                        <th>Status</th>
-                        <th width="20%">Ubah Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="table yajra-datatable">
+                    <thead>
+                        <tr>
+                            <th width="10%">#</th>
+                            <th>Foto</th>
+                            <th>Nama User</th>
+                            <th>Nama Toko</th>
+                            <th>Nomor Telepon</th>
+                            <th>Status</th>
+                            <th width="20%">Ubah Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -106,7 +108,7 @@ Daftar user yang telah mengisi data reseller untuk diverifikasi.
                             <div class="col-md-10">
                                 <h4 class="pb-0 mb-0">
                                     <span id="shop_name"></span>
-                                    <small id="reseller_name fw-light">(Reseller)</small>
+                                    <small class="fw-light" id="reseller_name">(Reseller)</small>
                                 </h4>
                                 <small id="email">reseller@email.com</small>
                                 <span id="status_badge"></span>
@@ -167,6 +169,22 @@ Daftar user yang telah mengisi data reseller untuk diverifikasi.
                                             
                                         </div>
                                     </div>
+                                    <div class="form-group row align-items-center pb-0 mb-0" id="approval_date">
+                                        <div class="col-lg-4 col-4">
+                                            <label class="col-form-label fw-bold">Tgl. Verif. Diterima</label>
+                                        </div>
+                                        <div class="col-lg-8 col-8" id="approval_date_label">
+                                            
+                                        </div>
+                                    </div>
+                                    <div class="form-group row align-items-center pb-0 mb-0" id="approved_by">
+                                        <div class="col-lg-4 col-4">
+                                            <label class="col-form-label fw-bold">Diverifikasi oleh</label>
+                                        </div>
+                                        <div class="col-lg-8 col-8" id="approved_by_label">
+                                            
+                                        </div>
+                                    </div>
                                     <div class="form-group row align-items-center pb-0 mb-0 mt-3" id="rejection_reason">
                                         <div class="col-lg-4 col-4">
                                             <label class="col-form-label fw-bold">Alasan Penolakan</label>
@@ -187,10 +205,9 @@ Daftar user yang telah mengisi data reseller untuk diverifikasi.
                     <i class="bx bx-x d-block d-sm-none"></i>
                     <span class="d-none d-sm-block">Kembali</span>
                 </button>
-                <button id="verify_button" type="button" class="btn btn-primary ml-1"
-                    data-bs-dismiss="modal">
+                <button id="verify_button" type="button" class="btn btn-primary ml-1">
                     <i class="bx bx-check d-block d-sm-none"></i>
-                    <span class="d-none d-sm-block">Verifikasi</span>
+                    <span class="d-none d-sm-block" id="verify_button_label">Verifikasi</span>
                 </button>
             </div>
         </div>
@@ -240,7 +257,7 @@ Daftar user yang telah mengisi data reseller untuk diverifikasi.
                 {data: 'name', name: 'name'},
                 {data: 'shop_name', name: 'shop_name'},
                 {data: 'phone_number', name: 'phone_number'},
-                {data: 'status', name: 'status'},
+                {data: 'reseller_status', name: 'reseller_status'},
                 {
                     data: 'switch_button', 
                     name: 'switch_button',
@@ -369,6 +386,8 @@ Daftar user yang telah mengisi data reseller untuk diverifikasi.
                 $('#shop_name').text(reseller.shop_name)
                 $('#shop_address').text(reseller.shop_address)
                 $('#shoppee').attr('href', reseller.shoppee)
+                $('#reseller_name').text(`(${reseller.user.name})`)
+                $('#email').text(reseller.user.email)
                 $('#reseller_province').text(p.province)
                 $('#reseller_city').text(c.type + ' ' + c.city_name)
                 $('#phone_number').text(reseller.phone_number)
@@ -378,6 +397,17 @@ Daftar user yang telah mengisi data reseller untuk diverifikasi.
                 $('#photo').attr('src', reseller.user.photo)
                 $('#status_badge').html(reseller.status_badge)
                 $('#verification_status').html(reseller.verification_status)
+                if(reseller.verification_status == "AKTIF") {
+                    $('#approval_date').show()
+                    $('#approval_date_label').text(reseller.approval_date)
+                    $('#approved_by').show()
+                    $('#approved_by_label').text(reseller.approved_by.name)
+                    $('#verify_button').hide()
+                } else {
+                    $('#approval_date').hide()
+                    $('#approved_by').hide()
+                    $('#verify_button').show()
+                }
 
                 for(var k in reseller.social_media) {
                     $('#' + k).attr('href', reseller.social_media[k])
@@ -393,6 +423,8 @@ Daftar user yang telah mengisi data reseller untuk diverifikasi.
             proofOfPayment.hide()
             spinner.show()
             rejectionReason.hide()
+            $('#verify_button').prop('disabled', false)
+            $('#verify_button_label').text("Verifikasi")
         })
 
         $('#verification_status').on('change', '#reseller_verification_status', function() {
@@ -420,6 +452,9 @@ Daftar user yang telah mengisi data reseller untuk diverifikasi.
         }
 
         $('#verify_button').on('click', function() {
+            $(this).attr('disabled', 'disabled')
+            $('#verify_button_label').text("Loading...")
+
             let verificationStatus = $('#reseller_verification_status')
             let rejectionReason = $('#rejection_reason_input')
 
@@ -427,7 +462,7 @@ Daftar user yang telah mengisi data reseller untuk diverifikasi.
                 reseller_status: verificationStatus.val(),
             }
 
-            if(verificationStatus == "DITOLAK") {
+            if(verificationStatus.val() == "DITOLAK") {
                 data.rejection_reason = rejectionReason.val()
             }
 
@@ -435,6 +470,18 @@ Daftar user yang telah mengisi data reseller untuk diverifikasi.
                 toast(json.success, json.message)
                 rejectionReason.val("")
                 table.draw()
+
+                pendingReseller().then(json => {
+                    if(json.data.count < 1) {
+                        $('#pending_reseller_count').hide()
+                        $('#pending_reseller_dots').hide()
+                    } else {
+                        $('#pending_reseller_count').text(json.data.count)
+                        $('#pending_reseller_dots').show()
+                    }
+
+                    $('.close').click()
+                })
             })
         })
     })

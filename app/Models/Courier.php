@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
-class PaymentType extends Model
+class Courier extends Model
 {
-    use HasFactory, SoftDeletes;
+    public $timestamps = false;
+    
+    use HasFactory;
 
     /**
      * The attributes that are mass assignable.
@@ -18,8 +19,8 @@ class PaymentType extends Model
     protected $fillable = [
         'code',
         'name',
-        'detail',
-        'last_edited_by',
+        'description',
+        'status',
     ];
 
     /**
@@ -40,9 +41,13 @@ class PaymentType extends Model
         // 
     ];
 
-    // Relationship
-    public function admin()
+    public function shipping()
     {
-        return $this->hasOne(Admin::class, 'id', 'admin_id');
+        return $this->belongsTo(Order::class, 'id', 'courier_id');
+    }
+
+    public function shippings()
+    {
+        return $this->hasMany(Order::class, 'courier_id');
     }
 }

@@ -15,17 +15,19 @@ class CreateOrdersTable extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('reseller_id')->constrained();
-            $table->foreignId('handled_by')->constrained('users');
+            $table->string('code')->unique();
+            $table->foreignId('ordered_by')->constrained('users');
+            $table->foreignId('handled_by')->nullable()->constrained('users');
             $table->text('notes');
             $table->integer('discount');
             $table->text('address');
             $table->string('province');
             $table->string('city');
-            $table->string('zip_code');
-            $table->foreignId('order_shipping_type_id')->constrained();
+            $table->string('postal_code');
+            $table->foreignId('order_type_id')->constrained();
             $table->datetime('date');
             $table->string('status');
+            $table->string('rejection_reason');
             $table->timestamps();
         });
     }

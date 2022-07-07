@@ -84,6 +84,17 @@ Mengubah data varian produk.
                                     </div>
                                     <div class="col-12">
                                         <div class="form-group">
+                                            <label for="weight-vertical">Berat Produk (gr) <span class="text-danger">*</span></label>
+                                            <input type="number" min="1" class="form-control @error('weight') is-invalid @enderror" name="weight" value="{{ $productVariant->weight }}">
+                                            @error('weight')
+                                            <div class="invalid-feedback">
+                                                {{ $message }}
+                                            </div>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-group">
                                             <label for="stock-vertical">Stok</label>
                                             <input type="number" min="0" class="form-control @error('stock') is-invalid @enderror" name="stock" value="{{ $productVariant->stock }}">
                                             <small class="fw-bold">PERHATIAN! Stok yang diubah pada halaman ini tidak dicatat pada log perubahan stok. Harap ubah stok pada halaman inventori.</small>

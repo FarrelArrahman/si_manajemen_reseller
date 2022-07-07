@@ -47,6 +47,7 @@ class ProductSeeder extends Seeder
                     'reseller_price'            => $rp,
                     'general_price'             => $gp,
                     'photo'                     => 'public/no-image.png',
+                    'weight'                    => 80,
                     'added_by'                  => 1,
                     'last_edited_by'            => 1,
                     'product_variant_status'    => 1,

@@ -25,6 +25,7 @@ class ProductVariant extends Model
         'color',
         'photo',
         'product_variant_status',
+        'weight',
         'added_by',
         'last_edited_by',
     ];

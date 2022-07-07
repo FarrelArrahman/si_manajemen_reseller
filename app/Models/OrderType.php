@@ -5,8 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class OrderShippingType extends Model
+class OrderType extends Model
 {
+    public $timestamps = false;
+    
     use HasFactory;
 
     /**
@@ -15,6 +17,7 @@ class OrderShippingType extends Model
      * @var string[]
      */
     protected $fillable = [
+        'code',
         'name',
         'description',
         'status',
@@ -40,6 +43,6 @@ class OrderShippingType extends Model
 
     public function orders()
     {
-        return $this->hasMany(Order::class, 'order_shipping_type_id');
+        return $this->hasMany(Order::class, 'order_type_id');
     }
 }

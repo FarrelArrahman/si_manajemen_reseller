@@ -11,7 +11,7 @@ Daftar {{ $role }} yang terdaftar pada sistem.
 @section('action-button')
 @if($role == "reseller")
 <a href="{{ route('reseller.index') }}" class="btn btn-warning">
-<i class="fa fa-check-circle me-2"></i> Request Verifikasi Reseller <span class="badge bg-danger">4</span>
+<i class="fa fa-check-circle me-2"></i> Request Verifikasi Reseller @if($pending_reseller_count > 0)<span class="badge bg-danger">{{ $pending_reseller_count }}</span>@endif
 </a>
 @endif
 <a href="{{ route('user.create', $role) }}" class="btn btn-primary">

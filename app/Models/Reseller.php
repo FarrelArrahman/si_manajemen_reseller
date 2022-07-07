@@ -61,6 +61,21 @@ class Reseller extends Model
         return $this->hasOne(User::class, 'id', 'user_id');
     }
 
+    public function approvedBy()
+    {
+        return $this->hasOne(User::class, 'id', 'approved_by');
+    }
+
+    public function carts()
+    {
+        return $this->hasMany(Cart::class, 'reseller_id');
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class, 'reseller_id');
+    }
+
     // Helper
     public function isActive()
     {
@@ -74,7 +89,7 @@ class Reseller extends Model
 
     public function isPending()
     {
-        return $this->reseller_registration_proof_of_payment != NULL && $this->reseller_status == self::PENDING;
+        return $this->reseller_registration_proof_of_payment != NULL || $this->reseller_status == self::PENDING;
     }
 
     public function isRejected()
@@ -123,12 +138,16 @@ class Reseller extends Model
 
     public function verificationStatus()
     {
-        $dropdown = "<select class='form-control' name='reseller_verification_status' id='reseller_verification_status'>";
-        $dropdown .= "<option " . ($this->isActive() ? "selected " : "") . "value='" . self::ACTIVE . "' class='form-control'>TERIMA</option>";
-        $dropdown .= "<option " . ($this->isRejected() ? "selected " : "") . "value='" . self::REJECTED . "' class='form-control'>TOLAK</option>";
-        $dropdown .= "</select>";
+        if($this->isPending() || $this->isRejected()) {
+            $element = "<select class='form-control' name='reseller_verification_status' id='reseller_verification_status'>";
+            $element .= "<option " . ($this->isActive() ? "selected " : "") . "value='" . self::ACTIVE . "' class='form-control'>TERIMA</option>";
+            $element .= "<option " . ($this->isRejected() ? "selected " : "") . "value='" . self::REJECTED . "' class='form-control'>TOLAK</option>";
+            $element .= "</select>";
+        } else {
+            $element = $this->reseller_status;
+        }
 
-        return $dropdown;
+        return $element;
     }
 
     public function statusSwitchButton()
@@ -144,7 +163,7 @@ class Reseller extends Model
             $disabled = "disabled";
         }
 
-        $switchButton = "<div class='form-check form-switch'><div class='checkbox'><input data-id='" . $this->id . "' " . $checked . " " . $disabled . " type='checkbox' class='form-check-input switch-button' name='reseller_status'></div></div>";
+        $switchButton = "<div class='form-check form-switch'><div class='checkbox'><input $disabled data-id='" . $this->id . "' " . $checked . " " . $disabled . " type='checkbox' class='form-check-input switch-button' name='reseller_status'></div></div>";
         return $switchButton;
     }
 }

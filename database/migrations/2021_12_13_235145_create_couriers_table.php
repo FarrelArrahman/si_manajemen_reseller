@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateOrderShippingTypesTable extends Migration
+class CreateCouriersTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,10 +13,11 @@ class CreateOrderShippingTypesTable extends Migration
      */
     public function up()
     {
-        Schema::create('order_shipping_types', function (Blueprint $table) {
+        Schema::create('couriers', function (Blueprint $table) {
             $table->id();
+            $table->string('code')->unique();
             $table->string('name');
-            $table->text('description');
+            $table->string('description');
             $table->integer('status');
         });
     }
@@ -28,6 +29,6 @@ class CreateOrderShippingTypesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('order_shipping_types');
+        Schema::dropIfExists('couriers');
     }
 }

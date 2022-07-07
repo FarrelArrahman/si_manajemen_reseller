@@ -59,7 +59,8 @@ class UserSeeder extends Seeder
                 'social_media'  => null,
                 'shopee_link'  => $faker->url,
                 'rejection_reason' => NULL,
-                'reseller_status' => 'PENDING'
+                'reseller_status' => $i == 1 ? 'AKTIF' : 'PENDING',
+                'approval_date' => $i == 1 ? now() : null
             ]);
         }
     }

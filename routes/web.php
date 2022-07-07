@@ -1,14 +1,21 @@
 <?php
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Events\NotificationEvent;
+use App\Events\VerifiedResellerEvent;
 use App\Http\Controllers\AnnouncementController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ColorController;
+use App\Http\Controllers\ConfigurationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductVariantController;
 use App\Http\Controllers\ProductVariantStockLogController;
+use App\Http\Controllers\RajaongkirController;
 use App\Http\Controllers\ResellerController;
 use App\Http\Controllers\UserController;
 
@@ -22,9 +29,31 @@ use App\Http\Controllers\UserController;
 | contains the "web" middleware group. Now create something great!
 |
 */
-Route::get('/test', function() {
-    $product = App\Models\ProductVariant::where('product_id', 1)->withTrashed()->get();
-    return response()->json(['data' => $product]);
+
+// Route for testing and debugging
+// Route::get('/test', function() {
+//     $product = App\Models\ProductVariant::where('product_id', 1)->withTrashed()->get();
+//     return response()->json(['data' => $product]);
+// });
+
+Route::get('/test', function(Request $request) {
+    $cart = \App\Models\Cart::where([
+        'reseller_id' => auth()->user()->reseller->id,
+        'status' => \App\Models\Cart::ACTIVE
+    ])->latest()->first();
+
+    // dd(count($cart->cartDetail) == 0);
+    return $cart->cartDetail->where('product_variant_id', 1)->first();
+});
+
+Route::post('verified', function(Request $request) {
+    $message = [
+        'id' => 1,
+        'success' => true,
+        'message' => $request->message
+    ];
+
+    VerifiedResellerEvent::dispatch($message);
 });
 
 Auth::routes();
@@ -52,6 +81,7 @@ Route::middleware(['auth'])->group(function() {
         // Product Variant API
         Route::get('/product/{product}/variant', [ProductVariantController::class, 'index_dt'])->name('product_variant.index_dt');
         Route::get('/product/{product}/variant/{productVariant}', [ProductVariantController::class, 'checkVariant'])->name('product_variant.checkVariant');
+        Route::get('/variant/{productVariant}', [ProductVariantController::class, 'detail'])->name('product_variant.detail');
         Route::get('/variant/{productVariant}/color', [ProductVariantController::class, 'color'])->name('product_variant.color');
 
         // Product Variant Stock Log API
@@ -63,14 +93,24 @@ Route::middleware(['auth'])->group(function() {
 
         // Reseller API
         Route::get('/reseller/datatable', [ResellerController::class, 'index_dt'])->name('reseller.index_dt');
+        Route::get('/reseller/pending', [ResellerController::class, 'pending'])->name('reseller.pending');
         Route::get('/reseller/{reseller}', [ResellerController::class, 'detail'])->name('reseller.detail');
         
         // Announcement API
         Route::get('/announcement/datatable', [AnnouncementController::class, 'index_dt'])->name('announcement.index_dt');
 
         // Rajaongkir API
-        Route::get('/province', [ResellerController::class, 'provinceAPI'])->name('reseller.province');
-        Route::get('/city', [ResellerController::class, 'cityAPI'])->name('reseller.city');
+        Route::get('/province', [RajaongkirController::class, 'provinceAPI'])->name('rajaongkir.province');
+        Route::get('/city', [RajaongkirController::class, 'cityAPI'])->name('rajaongkir.city');
+        Route::post('/cost', [RajaongkirController::class, 'costAPI'])->name('rajaongkir.cost');
+
+        // Cart API
+        Route::post('/cart', [CartController::class, 'store'])->name('cart.store');
+        Route::get('/cart/datatable', [CartController::class, 'index_dt'])->name('cart.index_dt');
+        Route::get('/cart/show', [CartController::class, 'show'])->name('cart.show');
+        Route::patch('/cart/{cartDetail}/change-quantity', [CartController::class, 'changeQuantity'])->name('cart.changeQuantity');
+        Route::delete('/cart/{cartDetail}/delete', [CartController::class, 'removeCartItem'])->name('cart.removeCartItem');
+        Route::delete('/cart/delete', [CartController::class, 'removeAll'])->name('cart.removeAll');
     });
     
     // Product
@@ -118,4 +158,14 @@ Route::middleware(['auth'])->group(function() {
     // Announcement
     Route::patch('/announcement/{announcement}/change-status', [AnnouncementController::class, 'changeStatus'])->name('announcement.changeStatus');
     Route::resource('announcement', AnnouncementController::class);
+
+    // Order
+    Route::get('/order', [OrderController::class, 'index'])->name('order.index');
+    Route::get('/order/create', [OrderController::class, 'create'])->name('order.create');
+    Route::post('/order', [OrderController::class, 'store'])->name('order.store');
+    Route::patch('/order/{order}/verify', [OrderController::class, 'verify'])->name('order.verify');
+
+    // Configuration
+    Route::get('/configuration', [ConfigurationController::class, 'index'])->name('configuration.index');
+    Route::put('/configuration', [ConfigurationController::class, 'update'])->name('configuration.update');
 });

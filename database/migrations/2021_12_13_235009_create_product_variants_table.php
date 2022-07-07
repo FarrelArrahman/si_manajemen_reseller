@@ -23,6 +23,7 @@ class CreateProductVariantsTable extends Migration
             $table->integer('stock');
             $table->string('color');
             $table->string('photo');
+            $table->integer('weight');
             $table->string('product_variant_status');
             $table->foreignId('added_by')->constrained('users');
             $table->foreignId('last_edited_by')->constrained('users');

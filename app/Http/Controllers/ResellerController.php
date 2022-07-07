@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\VerifiedResellerEvent;
+use App\Events\VerificationRequestEvent;
 use App\Models\Reseller;
+use App\Traits\Rajaongkir;
 use DataTables;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
@@ -10,6 +13,8 @@ use Storage;
 
 class ResellerController extends Controller
 {
+    use Rajaongkir;
+    
     /**
      * Display a listing of the resource.
      *
@@ -48,7 +53,7 @@ class ResellerController extends Controller
             ->editColumn('phone_number', function($row) {
                 return $row->phoneNumberBadge();
             })
-            ->editColumn('status', function($row) {
+            ->editColumn('reseller_status', function($row) {
                 return $row->statusBadge();
             })
             ->filter(function ($instance) use ($request) {
@@ -72,24 +77,8 @@ class ResellerController extends Controller
                     });
                 }
             })
-            ->rawColumns(['action','photo','status','switch_button','dropdown','phone_number'])
+            ->rawColumns(['action','photo','reseller_status','switch_button','dropdown','phone_number'])
             ->make(true);
-    }
-
-    public function provinceAPI()
-    {
-        $client = new Client(['base_uri' => env('RAJAONGKIR_BASE_URI', 'https://api.rajaongkir.com/')]);
-        $response = $client->request('GET', env('RAJAONGKIR_PROVINCE', '/starter/province'), ['query' => ['key' => env('RAJAONGKIR_API_KEY', 'e22f1c6f62ab0ff49b35f91cf61a3362')]]);
-        $json = json_decode($response->getBody());
-        return $json->rajaongkir->results;
-    }
-
-    public function cityAPI(Request $request)
-    {
-        $client = new Client(['base_uri' => env('RAJAONGKIR_BASE_URI', 'https://api.rajaongkir.com/')]);
-        $response = $client->request('GET', env('RAJAONGKIR_CITY', '/starter/city'), ['query' => ['key' => env('RAJAONGKIR_API_KEY', 'e22f1c6f62ab0ff49b35f91cf61a3362'), 'province' => $request->province]]);
-        $json = json_decode($response->getBody());
-        return $json->rajaongkir->results;
     }
 
     /**
@@ -132,7 +121,7 @@ class ResellerController extends Controller
      */
     public function detail($reseller)
     {
-        $reseller = Reseller::with('user')->find($reseller);
+        $reseller = Reseller::with(['user', 'approvedBy'])->find($reseller);
         $reseller->verification_status = $reseller->verificationStatus();
         $reseller->user->photo = Storage::url($reseller->user->photo);
         $reseller->reseller_registration_proof_of_payment = Storage::url($reseller->reseller_registration_proof_of_payment);
@@ -185,6 +174,7 @@ class ResellerController extends Controller
             'province' => 'required|numeric',
             'city' => 'required|numeric',
             'postal_code'  => 'required|numeric',
+            'phone_number'  => 'required|numeric',
             'social_media'  => 'nullable|array:facebook,twitter,instagram,tiktok',
             'social_media.facebook'  => 'nullable|url',
             'social_media.twitter'  => 'nullable|url',
@@ -222,12 +212,22 @@ class ResellerController extends Controller
             ]);
         }
 
-        if( ! $reseller->isApproved() && $request->hasFile('reseller_registration_proof_of_payment')) {
+        if( ! $reseller->isActive() && $request->hasFile('reseller_registration_proof_of_payment')) {
             $reseller->update([
                 'reseller_registration_proof_of_payment' => $request->file('reseller_registration_proof_of_payment')->store('public/reseller_registration_proof_of_payment'),
                 'rejection_reason' => NULL,
             ]);
+
         }
+        
+        $data = [
+            'id' => $reseller->user->id,
+            'success' => true,
+            'action' => "update_pending_reseller_count",
+            'message' => 'User "' . $reseller->user->name . '" telah mengajukan data reseller untuk diverifikasi.'
+        ];
+    
+        VerificationRequestEvent::dispatch($data);
 
         return redirect()->route('reseller.edit')->with('success', 'Berhasil mengisi data reseller. Harap tunggu verifikasi oleh admin.');
     }
@@ -240,22 +240,37 @@ class ResellerController extends Controller
      */
     public function verify(Request $request, $reseller)
     {
+        $action = "hide_unverified_alert";
+        $success = true;
         $reseller = Reseller::withTrashed()->find($reseller);
         
         $reseller->reseller_status = $request->reseller_status;
         if($request->reseller_status == Reseller::ACTIVE) {
             $reseller->approval_date = now();
             $reseller->approved_by = auth()->user()->id;
+            $message = "Data reseller Anda telah berhasil terverifikasi oleh Admin.";
         } else if($request->reseller_status == Reseller::REJECTED) {
+            $success = false;
+            $action = "show_unverified_alert";
             $reseller->rejection_reason = $request->rejection_reason;
+            $message = "Permintaan verifikasi data reseller Anda ditolak. Silakan perbarui pengajuan data reseller Anda.";
         }
+
+        $data = [
+            'id' => $reseller->user->id,
+            'success' => $success,
+            'action' => $action,
+            'message' => $message
+        ];
+    
+        VerifiedResellerEvent::dispatch($data);
         
         if($reseller->save()) {
             return response()->json([
                 'success' => true,
                 'type' => 'change_reseller_status',
                 'message' => 'Berhasil melakukan verifikasi data reseller.',
-                'data' => [],
+                'data' => $request->all(),
                 'statusCode' => 200
             ], 200);
         }
@@ -311,8 +326,6 @@ class ResellerController extends Controller
             ], 200);
         }
 
-        $changeStatus = $reseller->update($status);
-
         return response()->json([
             'success' => false,
             'type' => 'change_reseller_status',
@@ -320,5 +333,25 @@ class ResellerController extends Controller
             'data' => [],
             'statusCode' => 404
         ], 404);
+    }
+
+    /**
+     * Return the pending reseller user count.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function pending()
+    {
+        $count = Reseller::where('reseller_status', Reseller::PENDING)->count();
+
+        return response()->json([
+            'success' => true,
+            'type' => 'pending_reseller_count',
+            'message' => 'Jumlah reseller pending',
+            'data' => [
+                'count' => $count,
+            ],
+            'statusCode' => 200
+        ], 200);
     }
 }

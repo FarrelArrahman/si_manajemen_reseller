@@ -18,11 +18,11 @@ Mengisi data reseller agar dapat dilakukan verifikasi oleh Admin.
         <div class="col-md-12 col-24">
             <form class="form form-horizontal" method="POST" action="{{ route('reseller.update', ['reseller' => $reseller->id ?? '']) }}" enctype="multipart/form-data">
                 <input type="hidden" name="user_id" value="{{ auth()->user()->id }}">
-                @if($reseller && ! $reseller->isApproved() && $reseller->isPending())
+                @if($reseller && ! $reseller->isActive() && $reseller->isPending())
                 <div class="alert alert-info">
                     <i class="fa fa-info-circle me-1"></i> Data reseller telah dikirimkan. Harap tunggu verifikasi oleh Admin.
                 </div>
-                @elseif(! $reseller || ! $reseller->isApproved())
+                @elseif(! $reseller || ! $reseller->isActive())
                 <div class="alert alert-warning">
                     <i class="fa fa-exclamation-circle me-1"></i> Data reseller belum terverifikasi oleh Admin.
                 </div>
@@ -117,12 +117,12 @@ Mengisi data reseller agar dapat dilakukan verifikasi oleh Admin.
                                             <div class="input-group mb-3">
                                                 <input type="text" id="phone-number-vertical" class="form-control @error('phone_number') is-invalid @enderror"
                                                     name="phone_number" value="{{ $reseller->phone_number ?? old('phone_number') }}" placeholder="085123xxxxxx">
+                                                @error('phone_number')
+                                                <div class="invalid-feedback">
+                                                    {{ $message }}
+                                                </div>
+                                                @enderror
                                             </div>
-                                            @error('phone_number')
-                                            <div class="invalid-feedback">
-                                                {{ $message }}
-                                            </div>
-                                            @enderror
                                         </div>
                                     </div>
                                     <div class="col-12">

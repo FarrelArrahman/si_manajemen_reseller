@@ -9,6 +9,8 @@ class CartDetail extends Model
 {
     use HasFactory;
 
+    public $timestamps = false;
+
     /**
      * The attributes that are mass assignable.
      *
@@ -37,4 +39,14 @@ class CartDetail extends Model
     protected $casts = [
         // 
     ];
+
+    public function cart()
+    {
+        return $this->belongsTo(Cart::class, 'cart_id', 'id');
+    }
+
+    public function productVariant()
+    {
+        return $this->belongsTo(ProductVariant::class, 'product_variant_id', 'id');
+    }
 }

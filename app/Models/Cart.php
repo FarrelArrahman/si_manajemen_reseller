@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Cart extends Model
 {
+    const ACTIVE = "AKTIF";
+    const ORDERED = "DIPESAN";
+
     use HasFactory;
 
     /**
@@ -36,4 +39,11 @@ class Cart extends Model
     protected $casts = [
         // 
     ];
+
+    // Relationship
+
+    public function cartDetail()
+    {
+        return $this->hasMany(CartDetail::class, 'cart_id');
+    }
 }

@@ -16,10 +16,10 @@
 <script type="text/javascript">
     let csrfToken = $('meta[name=csrf-token]').attr('content')
 
-    let toast = (success, message) => {
+    let toast = (success, message, duration = 2000) => {
         Toastify({
             text: message,
-            duration: 2000,
+            duration: duration,
             close: true,
             gravity: "top",
             position: "right",
@@ -125,5 +125,101 @@
             // other options
         })
     })
+</script>
+
+<!-- Pusher -->
+<script src="http://js.pusher.com/3.1/pusher.min.js"></script>
+<script src="{{ url('js/app.js') }}"></script>
+<script type="text/javascript">
+    let pendingReseller = () => {
+        var url = "{{ route('reseller.pending') }}"
+
+        return fetch(url).then(response => response.json())
+    }
+
+    const Echo = window.Echo
+    const axios = window.axios
+    const message = $("#message")
+    
+    $('#send-notification').on('click', function() {
+        window.axios.post("{{ url('verified') }}", {
+            'message': message.val()
+        }).then(() => {
+            message.val("")
+        })
+    })
+
+    // let channel = Echo.channel('channel-notification')
+    // channel.listen('NotificationEvent', function(data) {
+    //     toast(data.message.success, data.message.message)
+    // })
+    
+    let verifiedResellerChannel = Echo.private('channel-verified-reseller.{{ auth()->user()->id }}')
+    verifiedResellerChannel.listen('VerifiedResellerEvent', function(data) {
+        if(data.data.action == "hide_unverified_reseller") {
+            $('#unverified-reseller').slideUp()
+        } else {
+            $('#unverified-reseller').slideDown()
+        }
+        toast(data.data.success, data.data.message, 5000)
+        // console.log(data)
+    })
+
+    let verificationRequestChannel = Echo.private('channel-verification-request')
+    verificationRequestChannel.listen('VerificationRequestEvent', function(data) {
+        toast(data.data.success, data.data.message, 5000)
+        // console.log(data)
+    })
+
+    // let adminChannel = Echo.private('channel-verification-request')
+    // adminChannel.listen('VerificationRequestEvent', function(res) {
+    //     pendingReseller().then(json => {
+    //         if(json.data.count < 1) {
+    //             $('#pending_reseller_count').hide()
+    //             $('#pending_reseller_dots').hide()
+    //         } else {
+    //             $('#pending_reseller_count').text(json.data.count)
+    //             $('#pending_reseller_dots').show()
+    //         }
+    //     })
+
+    //     toast(res.data.success, res.data.message)
+    // })
+
+    var pusher = new Pusher('941eb537e5915d9f7913', {
+        cluster: 'ap1',
+        forceTLS: true,
+        encrypted: true
+    })
+
+    var channel = pusher.subscribe('notification')
+
+    channel.bind('notification', function(data) {
+        toast(data.data.success, data.data.message)
+    })
+
+    // let echo = new Echo({
+    //     broadcaster: "pusher",
+    //     cluster: 'ap1',
+    //     encrypted: true,
+    //     forceTLS: true,
+    //     key: '941eb537e5915d9f7913',
+    //     authorizer: (channel) => {
+    //         return {
+    //             authorize: (socketId, callback) => {
+    //                 window.axios.post("{{ url('broadcasting/auth') }}", {
+    //                     socket_id: sockedId,
+    //                     channel_name: channel.name
+    //                 })
+    //                 .then(response => {
+    //                     callback(false, response.data)
+    //                 })
+    //                 .catch(error => {
+    //                     callback(true, error)
+    //                 })
+    //             }
+    //         }
+    //     }
+    // })
 </script>
 @yield('js')

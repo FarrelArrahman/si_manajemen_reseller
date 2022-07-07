@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PaymentType;
+use App\Models\OrderType;
 use Illuminate\Http\Request;
 
-class PaymentTypeController extends Controller
+class OrderTypeController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -41,10 +41,10 @@ class PaymentTypeController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\PaymentType  $paymentType
+     * @param  \App\Models\OrderType  $orderType
      * @return \Illuminate\Http\Response
      */
-    public function show(PaymentType $paymentType)
+    public function show(OrderType $orderType)
     {
         //
     }
@@ -52,10 +52,10 @@ class PaymentTypeController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\PaymentType  $paymentType
+     * @param  \App\Models\OrderType  $orderType
      * @return \Illuminate\Http\Response
      */
-    public function edit(PaymentType $paymentType)
+    public function edit(OrderType $orderType)
     {
         //
     }
@@ -64,10 +64,10 @@ class PaymentTypeController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\PaymentType  $paymentType
+     * @param  \App\Models\OrderType  $orderType
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, PaymentType $paymentType)
+    public function update(Request $request, OrderType $orderType)
     {
         //
     }
@@ -75,10 +75,10 @@ class PaymentTypeController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\PaymentType  $paymentType
+     * @param  \App\Models\OrderType  $orderType
      * @return \Illuminate\Http\Response
      */
-    public function destroy(PaymentType $paymentType)
+    public function destroy(OrderType $orderType)
     {
         //
     }

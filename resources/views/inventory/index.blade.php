@@ -8,6 +8,12 @@ Inventori
 Daftar inventori produk yang tersedia.
 @endsection
 
+@section('action-button')
+<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#show_cart_modal">
+<i class="fa fa-shopping-cart me-2"></i> Lihat Keranjang
+</button>
+@endsection
+
 @section('css')
 <!-- jQuery UI CSS -->
 <link rel="stylesheet" href="{{ asset('css/jquery-ui.css') }}">
@@ -15,6 +21,7 @@ Daftar inventori produk yang tersedia.
 <link rel="stylesheet" href="{{ asset('css/price_range_style.css') }}">
 @endsection
 
+@if(auth()->user()->isReseller() && auth()->user()->reseller->isActive())
 @section('content')
 <!-- Basic Tables start -->
 <section class="section">
@@ -42,8 +49,8 @@ Daftar inventori produk yang tersedia.
                 <div class="col-md-4">
                     <small>Harga (Rp.)</small>
                     <div id="slider-range" class="price-filter-range" name="rangeInput"></div>
-                    <input type="number" min=0 max="95000" oninput="validity.valid||(value='0');" id="min_price" class="price-range-field" />
-                    <input type="number" min=0 max="100000" oninput="validity.valid||(value='100000');" id="max_price" class="price-range-field" />
+                    <input type="number" min=0 max="95000" oninput="validity.valid||(value='0');" id="min_price" class="price-range-field filter" />
+                    <input type="number" min=0 max="100000" oninput="validity.valid||(value='100000');" id="max_price" class="price-range-field filter" />
                 </div>
             </div>
         </div>
@@ -72,60 +79,128 @@ Daftar inventori produk yang tersedia.
     @csrf
     @method('DELETE')
 </form>
+
+<!-- Add to Cart Modal -->
+<div class="modal fade text-left w-100" id="add_to_cart" tabindex="-1" role="dialog"
+    aria-labelledby="myModalLabel16" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"
+        role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel16">Tambahkan ke Keranjang</h4>
+                <button type="button" class="close" data-bs-dismiss="modal"
+                    aria-label="Close">
+                    <i data-feather="x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12 text-center spinner">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    <div class="col-md-12" id="product_variant_detail">
+                        <div class="row">
+                            <div class="col-md-4 col-sm-12">
+                                <img src="#" class="rounded" width="168" id="photo">
+                            </div>
+                            <div class="col-md-8 col-sm-12">
+                                <h4 class="pb-0 mb-0">
+                                    <span id="shop_name"></span>
+                                    <small class="fw-light" id="product_variant_name">Nama Produk</small>
+                                </h4>
+                                <small>Stok: <span id="stock"></span></small>
+                                <span id="status_badge"></span>
+                                <div class="col-md-12 pb-0 mb-0">
+                                    <div class="form-group row align-items-center pb-0 mb-0">
+                                        <div class="col-lg-12 col-12">
+                                            <label class="col-form-label fw-bold">Jumlah Pesan</label>
+                                            <div class="input-group mb-3">
+                                                <button class="btn btn-outline-secondary input-group-text" id="decrease">-</button>
+                                                <input type="hidden" id="product_variant_id">
+                                                <input type="number" class="form-control" id="qty" value="1" min="1">
+                                                <button class="btn btn-outline-secondary input-group-text" id="increase">+</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light-secondary"
+                    data-bs-dismiss="modal">
+                    <i class="bx bx-x d-block d-sm-none"></i>
+                    <span class="d-none d-sm-block">Kembali</span>
+                </button>
+                <button id="add_to_cart_button" type="button" class="btn btn-primary ml-1">
+                    <i class="bx bx-check d-block d-sm-none"></i>
+                    <span class="d-none d-sm-block" id="add_to_cart_label">Tambahkan</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cart Modal -->
+<div class="modal fade text-left w-100" id="show_cart_modal" tabindex="-1" role="dialog"
+    aria-labelledby="myModalLabel16" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg"
+        role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel16">Keranjang Saya</h4>
+                <button type="button" class="close" data-bs-dismiss="modal"
+                    aria-label="Close">
+                    <i data-feather="x"></i>
+                </button>
+                <button id="remove_all_item" class="btn btn-sm btn-danger"><i class="fa fa-trash me-1"></i> Kosongkan Keranjang</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12" id="cart_detail">
+                        <table class="table cart_detail_table" width="100%">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Foto</th>
+                                    <th>Varian</th>
+                                    <th>Harga (pcs)</th>
+                                    <th>Jumlah</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cart_detail_body">
+                                
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light-secondary"
+                    data-bs-dismiss="modal">
+                    <i class="bx bx-x d-block d-sm-none"></i>
+                    <span class="d-none d-sm-block">Kembali</span>
+                </button>
+                <a href="{{ route('order.create') }}" class="btn btn-success ml-1">
+                    <i class="bx bx-check d-block d-sm-none"></i>
+                    <span class="d-none d-sm-block">Pesan Sekarang</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
+@endif
 
 @section('js')
 <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.min.js" integrity="sha256-eTyxS0rkjpLEo16uXTS0uVCS4815lc40K2iVpWDvdSY=" crossorigin="anonymous"></script>
 <script src="{{ asset('js/price_range_script.js') }}"></script>
 
 <script>
-    let getCategories = () => {
-        let category = $('#category_id')
-        let url = "{{ route('category.index_api') }}"
-        let html = ""
-
-        fetch(url)
-            .then(response => response.json())
-            .then(json => {
-                html += '<option value="0">(Semua Kategori)</option>'
-                for(let item of json.data) {
-                    html += '<option value="' + item.id + '">' + item.category_name + '</option>'
-                }
-                category.html(html)
-                category.select2({
-                    placeholder: 'Pilih kategori...'
-                })
-            })       
-    }
-
-    let getProducts = (categoryId) => {
-        let product = $('#product_id')
-        let url = "{{ route('product.index_api') }}?category_id=" + categoryId
-        let html = ""
-
-        fetch(url)
-            .then(response => response.json())
-            .then(json => {
-                html += '<option value="0">(Semua Produk)</option>'
-                for(let item of json.data) {
-                    html += '<option value="' + item.id + '">' + item.product_name + '</option>'
-                }
-                product.html(html)
-                product.select2({
-                    placeholder: 'Pilih produk...'
-                })
-            })       
-    }
-
-    getCategories()
-    getProducts()
-
-    $(document).ready(function() {
-        $('#category_id').on('change', function() {
-            getProducts($(this).val())
-        })
-    })
-    
     // Jquery Datatable
     var table = $('.yajra-datatable').DataTable({
         processing: true,
@@ -167,25 +242,302 @@ Daftar inventori produk yang tersedia.
                 // other options
             })
         }
-    });
+    })
 
-    var dTable = $('.yajra-datatable').dataTable().api()
+    $(document).ready(function() {
+        let productVariantDetail = $('#product_variant_detail')
+        let cartDetail = $('#cart_detail')
+        let cartDetailBody = $('#cart_detail_body')
+        let spinner = $('.spinner')
+        let qtyInput = $('#qty')
+        let qtyMin = 0
+        let qtyMax = qtyInput.attr('max')
 
-    $('.dataTables_filter input')
-        .unbind()
-        .bind("input", function(e) {
-            if(this.value.length >= 3 || e.keyCode == 13) {
-                dTable.search(this.value).draw()
-            }
+        productVariantDetail.hide()
+        cartDetail.hide()
 
-            if(this.value == "") {
-                dTable.search("").draw()
-            }
-            return
+        let getCategories = () => {
+            let category = $('#category_id')
+            let url = "{{ route('category.index_api') }}"
+            let html = ""
+
+            fetch(url)
+                .then(response => response.json())
+                .then(json => {
+                    html += '<option value="0">(Semua Kategori)</option>'
+                    for(let item of json.data) {
+                        html += '<option value="' + item.id + '">' + item.category_name + '</option>'
+                    }
+                    category.html(html)
+                    category.select2({
+                        placeholder: 'Pilih kategori...'
+                    })
+                })       
+        }
+
+        let getProducts = (categoryId) => {
+            let product = $('#product_id')
+            let url = "{{ route('product.index_api') }}?category_id=" + categoryId
+            let html = ""
+
+            fetch(url)
+                .then(response => response.json())
+                .then(json => {
+                    html += '<option value="0">(Semua Produk)</option>'
+                    for(let item of json.data) {
+                        html += '<option value="' + item.id + '">' + item.product_name + '</option>'
+                    }
+                    product.html(html)
+                    product.select2({
+                        placeholder: 'Pilih produk...'
+                    })
+                })       
+        }
+
+        getCategories()
+        getProducts()
+
+        $('#category_id').on('change', function() {
+            getProducts($(this).val())
         })
 
-    $('.filter').on('change', function() {
-        table.draw()
+        var dTable = $('.yajra-datatable').dataTable().api()
+
+        $('.dataTables_filter input')
+            .unbind()
+            .bind("input", function(e) {
+                if(this.value.length >= 3 || e.keyCode == 13) {
+                    dTable.search(this.value).draw()
+                }
+
+                if(this.value == "") {
+                    dTable.search("").draw()
+                }
+                return
+            })
+
+        $('.filter').on('change', function() {
+            table.draw()
+        })
+
+        var cartDetailTable = $('.cart_detail_table').DataTable({
+            processing: true,
+            serverSide: true,
+            searchDelay: 1000,
+            searching: false,
+            ordering: false,
+            paging: false,
+            ajax: "{{ route('cart.index_dt') }}",
+            columnDefs: [
+                {
+                    targets: 0,
+                    className: 'dt-center',
+                },
+            ],
+            columns: [
+                {
+                    data: 'action', 
+                    name: 'action', 
+                    orderable: false, 
+                    searchable: false
+                },
+                {data: 'photo', name: 'photo'},
+                {data: 'product_name', name: 'product_name'},
+                {data: 'reseller_price', name: 'reseller_price'},
+                {data: 'quantity', name: 'quantity'},
+            ],
+            fnDrawCallback: () => {
+                $('.image-popup').magnificPopup({
+                    type: 'image'
+                    // other options
+                })
+            }
+        });
+
+        let getProductVariantDetail = (productVariantId) => {
+            var url = "{{ route('product_variant.detail', 'x') }}/".replace("x", productVariantId)
+            return fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json; charset=UTF-8',
+                    'X-CSRF-Token': csrfToken
+                },
+            }).then(response => response.json())
+        }
+
+        var addToCartModal = document.getElementById('add_to_cart')
+        addToCartModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget
+            productVariantId = button.getAttribute('data-product-variant-id')
+
+            getProductVariantDetail(productVariantId).then(json => {                        
+                $('#product_variant_name').text(`${json.data.product.product_name} (${json.data.product_variant_name})`)
+                $('#stock').text(json.data.stock)
+                $('#photo').attr('src', json.data.photo)
+                $('#qty').attr('max', json.data.stock)
+                $('#product_variant_id').val(json.data.id)
+                
+                spinner.slideUp()
+                productVariantDetail.slideDown()
+            }).catch(error => error)
+        })
+
+        addToCartModal.addEventListener('hidden.bs.modal', function (event) {
+            productVariantDetail.hide()
+            spinner.show()
+            $('#add_to_cart_button').prop('disabled', false)
+            $('#add_to_cart_label').text("Tambahkan")
+            qtyInput.val(1)
+        })
+
+        $('#increase').on('click', function() {
+            let qty = parseInt(qtyInput.val()) + 1
+            let qtyMax = qtyInput.attr('max')
+
+            qtyInput.val(qty > parseInt(qtyMax) ? parseInt(qtyMax) : qty)
+        })
+
+        $('#decrease').on('click', function() {
+            let qty = qtyInput.val() - 1
+            qtyInput.val(qty < 1 ? 1 : qty)
+        })
+
+        qtyInput.on('keyup keypress keydown', function() {
+            if(parseInt($(this).val()) > parseInt($(this).attr('max'))) {
+                $(this).val($(this).attr('max'))
+            } else if(parseInt($(this).val()) < 1 || $(this).val() == "") {
+                $(this).val(1)
+            }
+        })
+
+        let addToCart = (data) => {
+            var url = "{{ route('cart.store') }}"
+
+            return fetch(url, {
+                method: 'POST',
+                body: JSON.stringify(data),
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json; charset=UTF-8',
+                    'X-CSRF-Token': csrfToken
+                },
+            }).then(response => response.json())
+        }
+
+        $('#add_to_cart_button').on('click', function() {
+            $(this).attr('disabled', 'disabled')
+            $('#add_to_cart_label').text("Loading...")
+
+            let data = {
+                product_variant_id: $('#product_variant_id').val(),
+                quantity: $('#qty').val(),
+            }
+
+            addToCart(data).then(json => {
+                toast(json.success, json.message)
+
+                $('.close').click()
+                cartDetailTable.draw()
+            })
+        })
+
+        let getCartDetail = () => {
+            var url = "{{ route('cart.show') }}"
+            return fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json; charset=UTF-8',
+                    'X-CSRF-Token': csrfToken
+                },
+            }).then(response => response.json())
+        }
+
+        var showCartModal = document.getElementById('show_cart_modal')
+        showCartModal.addEventListener('show.bs.modal', function (event) {
+            cartDetailTable.draw()
+            cartDetail.show()
+        })
+
+        showCartModal.addEventListener('hidden.bs.modal', function (event) {
+            cartDetail.hide()
+        })
+
+        let changeQuantity = (cartDetail, quantity) => {
+            var url = "{{ route('cart.changeQuantity', 'x') }}".replace('x', cartDetail)
+
+            return fetch(url, {
+                method: 'PATCH',
+                body: JSON.stringify({
+                    quantity: quantity
+                }),
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json; charset=UTF-8',
+                    'X-CSRF-Token': csrfToken
+                },
+            }).then(response => response.json())
+        }
+
+        $(document).on('change', '.change-quantity', function() {
+            let cartDetail = $(this).data('cart-detail-id')
+            let quantity = $(this).val()
+            
+            if(quantity < 1) {
+                quantity = 1
+            } else if(quantity > parseInt($(this).attr('max'))) {
+                quantity = parseInt($(this).attr('max'))
+            }
+
+            $(this).val(quantity)
+            
+            changeQuantity(cartDetail, quantity).then(json => {
+                // console.log(json)
+            })
+        })
+
+        let removeItemFromCart = (cartDetail) => {
+            var url = "{{ route('cart.removeCartItem', 'x') }}".replace('x', cartDetail)
+
+            return fetch(url, {
+                method: 'DELETE',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json; charset=UTF-8',
+                    'X-CSRF-Token': csrfToken
+                },
+            }).then(response => response.json())
+        }
+
+        $(document).on('click', '.removefromcart-button', function() {
+            let cartDetail = $(this).data('cart-detail-id')
+
+            removeItemFromCart(cartDetail).then(json => {
+                toast(json.success, json.message)
+                cartDetailTable.draw()
+            })
+        })
+
+        let removeAll = () => {
+            var url = "{{ route('cart.removeAll', 'x') }}"
+
+            return fetch(url, {
+                method: 'DELETE',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json; charset=UTF-8',
+                    'X-CSRF-Token': csrfToken
+                },
+            }).then(response => response.json())
+        }
+
+        $(document).on('click', '#remove_all_item', function() {
+            removeAll().then(json => {
+                toast(json.success, json.message)
+                cartDetailTable.draw()
+            })
+        })
     })
 </script>
 @endsection

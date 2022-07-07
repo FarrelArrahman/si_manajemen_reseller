@@ -51,13 +51,18 @@ class InventoryController extends Controller
 
         return DataTables::of($data)
             ->addIndexColumn()
-            ->addColumn('action', function($row){                
-                $actionBtn = '<a href="' . route('product.show', $row->id) . '" class="text-info me-1 ms-1"><i class="fa fa-search fa-sm"></i></a>';
-                $actionBtn .= '<a href="' . route('product.edit', $row->id) . '" data-id="' . $row->id . '" class="btn btn-link p-0 text-warning me-1 ms-1"><i class="fa fa-edit fa-sm"></i></a>';
+            ->addColumn('action', function($row){
+                $actionBtn = "";
+                if(auth()->user()->isAdmin()) {
+                    $actionBtn .= '<a href="' . route('product.show', $row->id) . '" class="text-info me-1 ms-1"><i class="fa fa-search fa-sm"></i></a>';
+                    $actionBtn .= '<a href="' . route('product.edit', $row->id) . '" data-id="' . $row->id . '" class="btn btn-link p-0 text-warning me-1 ms-1"><i class="fa fa-edit fa-sm"></i></a>';
+                } else {
+                    $actionBtn .= '<button data-product-variant-id="' . $row->id . '" data-bs-toggle="modal" data-bs-target="#add_to_cart" class="btn btn-link p-0 text-success me-1 ms-1 addtocart-button"><i class="fa fa-plus fa-sm"></i></button>';
+                }
                 return $actionBtn;
             })
             ->editColumn('photo', function($row){                
-                return '<a class="image-popup" href="' . Storage::url($row->photo) . '"><img style="object-fit: cover; width: 96px; height: 96px;" src="' . Storage::url($row->photo) . '"></a>';
+                return '<a class="image-popup" href="' . Storage::url($row->photo) . '"><img style="object-fit: cover; width: 64px; height: 64px;" src="' . Storage::url($row->photo) . '"></a>';
             })
             ->editColumn('color', function($row) {
                 return '<div class="rounded-circle" style="border:1px solid black;background-color:' . $row->color . ';width:20px;height:20px;">&nbsp;</div>';
@@ -111,4 +116,5 @@ class InventoryController extends Controller
             ->rawColumns(['action', 'photo', 'color'])
             ->make(true);
     }
+
 }

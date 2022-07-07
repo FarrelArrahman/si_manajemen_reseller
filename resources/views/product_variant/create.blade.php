@@ -77,6 +77,17 @@ Menambah varian baru dari master produk.
                                     </div>
                                     <div class="col-12">
                                         <div class="form-group">
+                                            <label for="weight-vertical">Berat Produk (gr) <span class="text-danger">*</span></label>
+                                            <input type="number" min="1" class="form-control @error('weight') is-invalid @enderror" name="weight" value="1">
+                                            @error('weight')
+                                            <div class="invalid-feedback">
+                                                {{ $message }}
+                                            </div>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-group">
                                             <label for="stock-vertical">Stok Awal <span class="text-danger">*</span></label>
                                             <input type="number" min="0" class="form-control @error('stock') is-invalid @enderror" name="stock" value="1">
                                             @error('stock')
