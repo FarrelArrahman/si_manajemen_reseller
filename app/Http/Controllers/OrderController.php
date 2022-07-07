@@ -135,7 +135,7 @@ class OrderController extends Controller
             'postal_code' => auth()->user()->reseller->postal_code,
             'order_type_id' => $orderType->id,
             'date' => date('Y-m-d'),
-            'status' => Order::
+            'status' => Order::PENDING
         ]);
 
         $message = 'Berhasil melakukan pemesanan. Harap tunggu konfirmasi oleh Admin berupa link shopee dari pemesanan tersebut.';
