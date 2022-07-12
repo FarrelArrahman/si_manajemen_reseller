@@ -22,7 +22,7 @@ trait Rajaongkir {
         return $json->rajaongkir->results;
     }
 
-    public function shippingCostAPI($origin, $destination, $weight = 1000, $courier)
+    public function shippingCostAPI($origin, $destination, $weight, $courier)
     {
         $client = new Client(['base_uri' => env('RAJAONGKIR_BASE_URI', 'https://api.rajaongkir.com/')]);
         $response = $client->request('POST', env('RAJAONGKIR_COST', '/starter/cost'), [
@@ -38,6 +38,16 @@ trait Rajaongkir {
         $json = json_decode($response->getBody());
         
         return $json;
+    }
+
+    public function serviceDetailAPI($origin, $destination, $weight, $courier, $service)
+    {
+        $shippingCostAPI = $this->shippingCostAPI($origin, $destination, $weight, $courier);
+
+        $cost = $shippingCostAPI->rajaongkir->results[0]->costs;
+        $key = array_search($service, array_column($cost, 'service'));
+
+        return $cost[$key];
     }
 }
 

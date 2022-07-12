@@ -36,15 +36,9 @@ use App\Http\Controllers\UserController;
 //     return response()->json(['data' => $product]);
 // });
 
-Route::get('/test', function(Request $request) {
-    $cart = \App\Models\Cart::where([
-        'reseller_id' => auth()->user()->reseller->id,
-        'status' => \App\Models\Cart::ACTIVE
-    ])->latest()->first();
-
-    // dd(count($cart->cartDetail) == 0);
-    return $cart->cartDetail->where('product_variant_id', 1)->first();
-});
+// Route::get('/test', function(Request $request) {
+//     dd(App\Models\Order::find(1)->orderShipping);
+// });
 
 Route::post('verified', function(Request $request) {
     $message = [
@@ -111,6 +105,11 @@ Route::middleware(['auth'])->group(function() {
         Route::patch('/cart/{cartDetail}/change-quantity', [CartController::class, 'changeQuantity'])->name('cart.changeQuantity');
         Route::delete('/cart/{cartDetail}/delete', [CartController::class, 'removeCartItem'])->name('cart.removeCartItem');
         Route::delete('/cart/delete', [CartController::class, 'removeAll'])->name('cart.removeAll');
+
+        // Order API
+        Route::get('/order/datatable', [OrderController::class, 'index_dt'])->name('order.index_dt');
+        Route::get('/order/pending', [OrderController::class, 'pending'])->name('order.pending');
+        Route::get('/order/{order}', [OrderController::class, 'detail'])->name('order.detail');
     });
     
     // Product
@@ -164,6 +163,7 @@ Route::middleware(['auth'])->group(function() {
     Route::get('/order/create', [OrderController::class, 'create'])->name('order.create');
     Route::post('/order', [OrderController::class, 'store'])->name('order.store');
     Route::patch('/order/{order}/verify', [OrderController::class, 'verify'])->name('order.verify');
+    Route::delete('/order/{order}/cancel', [OrderController::class, 'destroy'])->name('order.destroy');
 
     // Configuration
     Route::get('/configuration', [ConfigurationController::class, 'index'])->name('configuration.index');

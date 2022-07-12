@@ -57,7 +57,7 @@ class InventoryController extends Controller
                     $actionBtn .= '<a href="' . route('product.show', $row->id) . '" class="text-info me-1 ms-1"><i class="fa fa-search fa-sm"></i></a>';
                     $actionBtn .= '<a href="' . route('product.edit', $row->id) . '" data-id="' . $row->id . '" class="btn btn-link p-0 text-warning me-1 ms-1"><i class="fa fa-edit fa-sm"></i></a>';
                 } else {
-                    $actionBtn .= '<button data-product-variant-id="' . $row->id . '" data-bs-toggle="modal" data-bs-target="#add_to_cart" class="btn btn-link p-0 text-success me-1 ms-1 addtocart-button"><i class="fa fa-plus fa-sm"></i></button>';
+                    $actionBtn .= '<button data-product-variant-id="' . $row->id . '" data-bs-toggle="modal" data-bs-target="#add_to_cart" class="btn btn-link p-0 text-success me-1 ms-1 addtocart-button ' . ($row->stock < 1 ? 'disabled text-muted' : '') . '"><i class="fa fa-plus fa-sm"></i></button>';
                 }
                 return $actionBtn;
             })
@@ -66,6 +66,9 @@ class InventoryController extends Controller
             })
             ->editColumn('color', function($row) {
                 return '<div class="rounded-circle" style="border:1px solid black;background-color:' . $row->color . ';width:20px;height:20px;">&nbsp;</div>';
+            })
+            ->editColumn('stock', function($row) {
+                return '<span class="' . ($row->stock < 1 ? 'text-danger' : '') . '">' . $row->stock . '</div>';
             })
             ->addColumn('product_name', function($row) {
                 return $row->product->product_name . " (" . $row->product_variant_name . ")";
@@ -113,7 +116,7 @@ class InventoryController extends Controller
                     });
                 }
             })
-            ->rawColumns(['action', 'photo', 'color'])
+            ->rawColumns(['action', 'photo', 'color', 'stock'])
             ->make(true);
     }
 

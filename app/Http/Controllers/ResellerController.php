@@ -7,7 +7,6 @@ use App\Events\VerificationRequestEvent;
 use App\Models\Reseller;
 use App\Traits\Rajaongkir;
 use DataTables;
-use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Storage;
 
@@ -122,10 +121,10 @@ class ResellerController extends Controller
     public function detail($reseller)
     {
         $reseller = Reseller::with(['user', 'approvedBy'])->find($reseller);
-        $reseller->verification_status = $reseller->verificationStatus();
+        $reseller->verification_status = $reseller->verificationStatus() ?? null;
         $reseller->user->photo = Storage::url($reseller->user->photo);
-        $reseller->reseller_registration_proof_of_payment = Storage::url($reseller->reseller_registration_proof_of_payment);
-        $reseller->status_badge = $reseller->statusBadge();
+        $reseller->reseller_registration_proof_of_payment = Storage::url($reseller->reseller_registration_proof_of_payment) ?? null;
+        $reseller->status_badge = $reseller->statusBadge() ?? null;
 
         if($reseller) {
             return response()->json([

@@ -103,7 +103,7 @@ Memesan barang yang telah dimasukkan pada keranjang.
                                             <div class="col-md-6 col-sm-12">
                                                 <div class="form-group">
                                                     <label for="courier-vertical">Kurir</label>
-                                                    <select name="courier" class="form-select @error('courier') is-invalid @enderror" id="courier" required>
+                                                    <select name="courier" class="form-select @error('courier') is-invalid @enderror" id="courier">
                                                         <option value="" disabled selected>Pilih kurir...</option>
                                                         @foreach($courier as $item)
                                                         <option value="{{ $item->code }}">{{ $item->name }}</option>
@@ -120,7 +120,7 @@ Memesan barang yang telah dimasukkan pada keranjang.
                                             <div class="col-md-6 col-sm-12">
                                                 <div class="form-group">
                                                     <label for="service-type-vertical">Jenis Layanan</label>
-                                                    <select name="service" class="form-select" id="service" required>
+                                                    <select name="service" class="form-select" id="service">
                                                         <option value="" disabled selected>Pilih layanan...</option>
                                                     </select>
                                                     <small class="text-primary fw-bold" id="order_shipping_description" style="display: none"><i class="fa fa-exclamation-circle me-1"></i> Varian ini telah ditambahkan pada produk ini.</small>
@@ -402,6 +402,9 @@ $(document).ready(function() {
             shippingPriceRow.hide()
             grandTotalRow.hide()
         }
+        
+        $('#courier').prop('required', $(this).val() == 2)
+        $('#service').prop('required', $(this).val() == 2)
     })
 
     let costs = (origin, destination, weight, courier) => {
@@ -423,7 +426,7 @@ $(document).ready(function() {
 
     $('#courier').on('change', function() {
         let courier = $(this).val()
-        let weight = {{ $weight }}
+        let weight = {{ $totalWeight }}
 
         resetPrice()
         $('#service').prop('disabled', true)

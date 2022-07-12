@@ -18,7 +18,7 @@ class OrderShipping extends Model
      */
     protected $fillable = [
         'order_id',
-        'courier',
+        'courier_id',
         'service',
         'total_weight',
         'total_price',
@@ -42,8 +42,8 @@ class OrderShipping extends Model
         // 
     ];
 
-    public function order()
+    public function courier()
     {
-        return $this->hasOne(Order::class, 'order_id', 'id'); 
+        return $this->belongsTo(Courier::class, 'courier_id', 'id');
     }
 }

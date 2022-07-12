@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Traits\Rajaongkir;
 use Illuminate\Http\Request;
 
 class RajaongkirController extends Controller
 {
+    use Rajaongkir;
+    
     public function provinceAPI()
     {
         return response()->json([

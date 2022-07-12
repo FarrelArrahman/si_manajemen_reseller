@@ -20,7 +20,6 @@ class OrderDetail extends Model
         'quantity',
         'price',
         'discount',
-        'detail_status',
     ];
 
     /**

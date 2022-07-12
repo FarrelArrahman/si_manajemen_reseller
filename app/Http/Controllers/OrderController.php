@@ -6,14 +6,17 @@ use App\Models\Cart;
 use App\Models\Configuration;
 use App\Models\Courier;
 use App\Models\Order;
+use App\Models\OrderDetail;
+use App\Models\OrderShipping;
 use App\Models\OrderType;
-use GuzzleHttp\Client;
-use Illuminate\Http\Request;
 use App\Traits\Rajaongkir;
+use App\Traits\OwnerConfiguration;
+use DataTables;
+use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
-    use Rajaongkir;
+    use Rajaongkir, OwnerConfiguration;
 
     /**
      * Display a listing of the resource.
@@ -22,7 +25,15 @@ class OrderController extends Controller
      */
     public function index()
     {
-        //
+        $orderType = OrderType::all();
+
+        if(auth()->user()->isAdmin()) {
+            $orders = Order::all();
+        } else {
+            $orders = auth()->user()->reseller->orders;
+        }
+        
+        return view('order.index', compact('orders', 'orderType'));
     }
 
     /**
@@ -34,34 +45,60 @@ class OrderController extends Controller
     {
         $data = [];
         
-        if(auth()->user()->isAdmin) {
-            $data = Order::all();
+        if(auth()->user()->isAdmin()) {
+            $data = Order::select('*');
         } else {
-            $data = auth()->user()->reseller->orders;
+            $data = Order::where('ordered_by', auth()->user()->reseller->id)->latest();
         }
 
         return DataTables::of($data)
             ->addIndexColumn()
             ->addColumn('action', function($row) {
-                $actionBtn = '<a href="' . route('user.edit', ['role' => $role, 'user' => $row->id]) . '" data-id="' . $row->id . '" class="btn btn-link p-0 text-warning me-1 ms-1"><i class="fa fa-edit fa-sm"></i></a>';
+                $actionBtn = '<button data-order-id="' . $row->id . '" data-bs-toggle="modal" data-bs-target="#order_detail_modal" class="btn btn-link p-0 text-info me-1 ms-1 showorderdetail-button"><i class="fa fa-search fa-sm"></i></button>';
+                if(auth()->user()->isReseller()) {
+                    $actionBtn .= '<button data-order-id="' . $row->id . '" class="btn btn-link p-0 text-danger me-1 ms-1 deleteorder-button"><i class="fa fa-trash fa-sm"></i></button>';
+                }
                 return $actionBtn;
+            })
+            ->addColumn('order_type', function($row) {
+                return $row->orderType->statusBadge();
+            })
+            ->addColumn('reseller', function($row) {
+                return $row->reseller->shop_name;
             })
             ->editColumn('status', function($row) {
                 return $row->statusBadge();
             })
-            ->filter(function ($instance) use ($request) {
+            ->editColumn('date', function($row) {
+                return $row->date->format('Y-m-d');
+            })
+            ->editColumn('total_price', function($row) {
+                return "Rp. " . number_format($row->total_price, 0, '', '.');
+            })
+            ->filter(function ($instance) use ($request) {                
                 if($request->get('status') != null) {
                     $instance->where('status', $request->get('status'));
                 }
                 
+                if($request->get('order_type_id') != null) {
+                    $instance->where('order_type_id', $request->get('order_type_id'));
+                }
+                
                 if( ! empty($request->get('search'))) {
-                     $instance->where(function($w) use ($request){
-                        $search = $request->get('search');
-                        $w->orWhere('name', 'LIKE', "%$search%");
+                    $search = $request->get('search');
+
+                    $instance->where(function($w) use ($search){
+                        $w->orWhere('code', 'LIKE', "%$search%");
+                        $w->orWhere('total_price', 'LIKE', "%$search%");
+                        $w->orWhere('date', 'LIKE', "%$search%");
+                    });
+
+                    $instance->orWhereHas('reseller', function($q) use ($search){
+                        $q->where('shop_name', 'LIKE', "%$search%");
                     });
                 }
             })
-            ->rawColumns(['action','status'])
+            ->rawColumns(['action','status','order_type'])
             ->make(true);
     }
 
@@ -72,7 +109,7 @@ class OrderController extends Controller
      */
     public function create()
     {
-        $weight = 0;
+        $totalWeight = 0;
         $orderType = OrderType::all();
         $courier = Courier::all();
         $cart = Cart::where([
@@ -83,14 +120,14 @@ class OrderController extends Controller
         ->first();
         
         foreach($cart->cartDetail as $item) {
-            $weight += $item->quantity * $item->productVariant->weight;
+            $totalWeight += $item->quantity * $item->productVariant->weight;
         }
 
-        if($weight < 1000) $weight = 1000;
+        if($totalWeight < 1000) $totalWeight = 1000;
 
         $configuration = Configuration::first();
 
-        return view('order.create', compact('orderType', 'cart', 'configuration', 'courier', 'weight'));
+        return view('order.create', compact('orderType', 'cart', 'configuration', 'courier', 'totalWeight'));
     }
 
     /**
@@ -101,9 +138,11 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
+        // dd($request->all());
         $orderType = OrderType::find($request->order_type);
-        $insufficientStock = false;
-        $weight = 0;
+        $totalWeight = 1000;
+        $totalPrice = 0;
+
         $cart = Cart::where([
             'reseller_id' => auth()->user()->reseller->id,
             'status' => Cart::ACTIVE
@@ -113,33 +152,112 @@ class OrderController extends Controller
         
         foreach($cart->cartDetail as $item) {
             if($item->quantity > $item->productVariant->stock) {
-                $insufficientStock = true;
-                break;
+                return redirect()->back()->withInput()->withErrors(['insufficient_stock' => 'Terdapat stok produk yang tidak mencukupi jumlah pesanan. Silakan cek kembali pada menu Produk.']);
             } 
-            $weight += $item->quantity * $item->productVariant->weight;
         }
 
-        if($insufficientStock) {
-            return redirect()->back()->withInput()->withErrors(['insufficient_stock' => 'Terdapat stok produk yang tidak mencukupi jumlah pesanan. Silakan cek kembali pada menu Produk.']);
-        }
+        $orderCount = Order::whereDate('created_at', today())->count();
 
         $order = Order::create([
-            'code' => $orderType->code . date('Ymdhis'),
+            'code' => $orderType->code . date('Ymd') . sprintf('%04d', $orderCount + 1),
             'ordered_by' => auth()->user()->reseller->id,
             'handled_by' => null,
             'notes' => $request->notes,
             'discount' => 0,
-            'address' => auth()->user()->reseller->address,
+            'total_price' => 0,
+            'address' => auth()->user()->reseller->shop_address,
             'province' => auth()->user()->reseller->province,
             'city' => auth()->user()->reseller->city,
             'postal_code' => auth()->user()->reseller->postal_code,
             'order_type_id' => $orderType->id,
-            'date' => date('Y-m-d'),
-            'status' => Order::PENDING
+            'date' => now(),
+            'status' => Order::PENDING,
+            'rejection_reason' => null,
         ]);
 
-        $message = 'Berhasil melakukan pemesanan. Harap tunggu konfirmasi oleh Admin berupa link shopee dari pemesanan tersebut.';
+        foreach($cart->cartDetail as $item) {
+            $totalWeight += $item->quantity * $item->productVariant->weight;
+            $totalPrice += $item->quantity * $item->productVariant->reseller_price;
+
+            $item->productVariant->update([
+                'stock' => $item->productVariant->stock - $item->quantity
+            ]);
+
+            $orderDetail = OrderDetail::create([
+                'order_id' => $order->id,
+                'product_variant_id' => $item->product_variant_id,
+                'quantity' => $item->quantity,
+                'price' => $item->productVariant->reseller_price,
+                'discount' => 0,
+            ]);
+
+            $item->delete();
+        }
+
+        $order->total_price = $totalPrice;
+        $order->saveQuietly();
+
+        $cart->delete();
+
+        if($orderType->isExpedition()) {
+            $serviceDetail = $this->serviceDetailAPI(
+                $this->configuration()->city, 
+                auth()->user()->reseller->city,
+                $totalWeight,
+                $request->courier,
+                $request->service
+            );
+
+            $courier = Courier::where('code', $request->courier)->first();
+
+            $orderShipping = OrderShipping::create([
+                'courier_id' => $courier->id,
+                'order_id' => $order->id,
+                'service' => $serviceDetail->service,
+                'total_weight' => $totalWeight,
+                'total_price' => $serviceDetail->cost[0]->value
+            ]);
+            
+            $message = 'Berhasil mengajukan pemesanan melalui ekspedisi. Silakan lanjutkan ke pembayaran agar pesanan dapat diproses oleh Admin.';
+        } else {
+            $message = 'Berhasil mengajukan pemesanan melalui link shopee. Harap tunggu konfirmasi oleh Admin berupa link shopee dari pemesanan tersebut.';
+        }
+
         return redirect()->route('order.index')->with(['success' => $message]);
+    }
+
+    /**
+     * Display the detail of the specified resource.
+     *
+     * @param  \App\Models\Order  $order
+     * @return \Illuminate\Http\Response
+     */
+    public function detail($order)
+    {
+        $order = Order::with(['orderDetail.productVariant', 'reseller', 'orderType', 'orderShipping.courier', 'externalOrderLink'])->find($order);
+        $order->status_badge = auth()->user()->isAdmin() 
+            ? $order->verificationStatus()
+            : $order->statusBadge();
+        $order->orderType->status_badge = $order->orderType->statusBadge();
+        $order->date_formatted = $order->date->isoFormat('dddd, DD MMMM Y hh:mm:ss');
+
+        if($order) {
+            return response()->json([
+                'success' => true,
+                'type' => 'detail_order',
+                'message' => 'Data order',
+                'data' => $order,
+                'statusCode' => 200
+            ], 200);
+        }
+        
+        return response()->json([
+            'success' => false,
+            'type' => 'detail_order',
+            'message' => 'Data order tidak ditemukan!',
+            'data' => [],
+            'statusCode' => 404
+        ], 404);
     }
 
     /**
@@ -184,6 +302,34 @@ class OrderController extends Controller
      */
     public function destroy(Order $order)
     {
-        //
+        if($order->orderType->isExpedition()) {
+            $order->orderShipping->delete();
+        }
+
+        foreach($order->orderDetail as $item) {
+            $item->productVariant->update([
+                'stock' => $item->productVariant->stock + $item->quantity
+            ]);
+
+            $item->delete();
+        }
+
+        if($order->delete()) {
+            return response()->json([
+                'success' => true,
+                'type' => 'delete_order',
+                'message' => 'Pesanan berhasil dihapus.',
+                'data' => [],
+                'statusCode' => 200
+            ], 200);
+        }
+
+        return response()->json([
+            'success' => false,
+            'type' => 'delete_order',
+            'message' => 'Gagal menghapus pesanan, silahkan coba lagi.',
+            'data' => [],
+            'statusCode' => 404
+        ], 404);
     }
 }

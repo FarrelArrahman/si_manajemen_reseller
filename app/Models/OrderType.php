@@ -45,4 +45,35 @@ class OrderType extends Model
     {
         return $this->hasMany(Order::class, 'order_type_id');
     }
+
+    // Helpers
+    public function isShopee()
+    {
+        return $this->code == "SHP";
+    }
+    
+    public function isExpedition()
+    {
+        return $this->code == "EXP";
+    }
+
+    public function statusBadge()
+    {
+        $style = '';
+        switch($this->code) {
+            case "SHP":
+                $style = "background: #f60;";
+                $type = "default";
+                break;
+            case "EXP":
+                $type = "primary";
+                break;
+            default:
+                $type = "dark";
+                break;
+        }
+        
+        $badge = "<span style='$style' class='badge bg-" . $type . "'>" . ($this->name ?? '-') . "</span>";
+        return $badge;
+    }
 }

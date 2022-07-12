@@ -5,7 +5,7 @@ namespace App\View\Composers;
 use App\Models\Reseller;
 use Illuminate\View\View;
 
-class VerificationRequestComposer
+class ResellerVerificationRequestComposer
 {
     /**
      * @param View $view

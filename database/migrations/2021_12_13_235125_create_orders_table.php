@@ -18,7 +18,8 @@ class CreateOrdersTable extends Migration
             $table->string('code')->unique();
             $table->foreignId('ordered_by')->constrained('users');
             $table->foreignId('handled_by')->nullable()->constrained('users');
-            $table->text('notes');
+            $table->text('notes')->nullable();
+            $table->bigInteger('total_price');
             $table->integer('discount');
             $table->text('address');
             $table->string('province');
@@ -27,7 +28,7 @@ class CreateOrdersTable extends Migration
             $table->foreignId('order_type_id')->constrained();
             $table->datetime('date');
             $table->string('status');
-            $table->string('rejection_reason');
+            $table->string('admin_notes')->nullable();
             $table->timestamps();
         });
     }

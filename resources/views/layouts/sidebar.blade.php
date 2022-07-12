@@ -73,10 +73,13 @@
                 </li>
                 @endif
 
-                <li class="sidebar-item">
-                    <a href="#" class='sidebar-link'>
+                <li class="sidebar-item {{ request()->is('order*') ? 'active' : '' }}">
+                    <a href="{{ route('order.index') }}" class='sidebar-link'>
                         <i class="bi bi-cart-fill"></i>
                         <span>Pesanan</span>
+                        @if($pending_order_count > 0)
+                        <span id="pending_order_count" class="badge bg-danger">{{ $pending_order_count }}</span>
+                        @endif
                     </a>
                 </li>   
 

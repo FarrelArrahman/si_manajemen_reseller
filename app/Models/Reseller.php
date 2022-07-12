@@ -73,7 +73,7 @@ class Reseller extends Model
 
     public function orders()
     {
-        return $this->hasMany(Order::class, 'reseller_id');
+        return $this->hasMany(Order::class, 'ordered_by');
     }
 
     // Helper
