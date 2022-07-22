@@ -224,14 +224,20 @@ class ProductVariantController extends Controller
             'photo',
             'weight',
             'product_variant_status',
-        ])->with('product')->find($productVariant);
-        
-        $productVariant->base_price_rp = "Rp. " . number_format($productVariant->base_price, 0, '', '.');
-        $productVariant->general_price_rp = "Rp. " . number_format($productVariant->general_price, 0, '', '.');
-        $productVariant->reseller_price_rp = "Rp. " . number_format($productVariant->reseller_price, 0, '', '.');
-        $productVariant->photo = Storage::url($productVariant->photo);
+        ])
+        ->with('product')
+        ->where('product_variant_status', 1)
+        ->whereHas('product', function($product) {
+            $product->where('product_status', 1);
+        })
+        ->find($productVariant);
 
         if($productVariant) {
+            $productVariant->base_price_rp = "Rp. " . number_format($productVariant->base_price, 0, '', '.');
+            $productVariant->general_price_rp = "Rp. " . number_format($productVariant->general_price, 0, '', '.');
+            $productVariant->reseller_price_rp = "Rp. " . number_format($productVariant->reseller_price, 0, '', '.');
+            $productVariant->photo = Storage::url($productVariant->photo);
+            
             return response()->json([
                 'success' => true,
                 'type' => 'detail_product_variant',
@@ -282,7 +288,7 @@ class ProductVariantController extends Controller
         ]);
 
         $photo = $productVariant->photo;
-        if($request->hasFile('photo')) {
+        if($request->hasFile('photo') && $photo != 'public/no-image.png') {
             Storage::delete($photo);
             $photo = $request->file('photo')->store('public/products/' . $productVariant->product->id);
         }

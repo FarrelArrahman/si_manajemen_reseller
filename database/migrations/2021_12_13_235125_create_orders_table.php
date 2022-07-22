@@ -28,7 +28,7 @@ class CreateOrdersTable extends Migration
             $table->foreignId('order_type_id')->constrained();
             $table->datetime('date');
             $table->string('status');
-            $table->string('admin_notes')->nullable();
+            $table->text('admin_notes')->nullable();
             $table->timestamps();
         });
     }

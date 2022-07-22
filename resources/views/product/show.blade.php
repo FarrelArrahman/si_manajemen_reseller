@@ -122,21 +122,23 @@
                                         </div>
                                     </div>
                                     <div class="col-12">
-                                        <table class="table yajra-datatable w-100">
-                                            <thead>
-                                                <tr>
-                                                    <th>#####</th>
-                                                    <th>Foto</th>
-                                                    <th>Varian</th>
-                                                    <th>Warna</th>
-                                                    <th>Stok</th>
-                                                    <th>Harga Reseller (Rp.)</th>
-                                                    <th>Tampilkan varian?</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                            </tbody>
-                                        </table>
+                                        <div class="table-responsive">
+                                            <table class="table yajra-datatable w-100">
+                                                <thead>
+                                                    <tr>
+                                                        <th>#####</th>
+                                                        <th>Foto</th>
+                                                        <th>Varian</th>
+                                                        <th>Warna</th>
+                                                        <th>Stok</th>
+                                                        <th>Harga Reseller (Rp.)</th>
+                                                        <th>Tampilkan varian?</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

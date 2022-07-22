@@ -237,7 +237,7 @@ class ProductController extends Controller
         ]);
     
         $default_photo = $product->default_photo;
-        if($request->hasFile('default_photo')) {
+        if($request->hasFile('default_photo') && $default_photo != 'public/no-image.png') {
             Storage::delete($default_photo);
             $default_photo = $request->file('default_photo')->store('public/products');
         }

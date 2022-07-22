@@ -9,9 +9,11 @@ Daftar inventori produk yang tersedia.
 @endsection
 
 @section('action-button')
+@if((auth()->user()->isReseller() && auth()->user()->reseller && auth()->user()->reseller->isActive()))
 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#show_cart_modal">
 <i class="fa fa-shopping-cart me-2"></i> Lihat Keranjang
 </button>
+@endif
 @endsection
 
 @section('css')
@@ -21,7 +23,7 @@ Daftar inventori produk yang tersedia.
 <link rel="stylesheet" href="{{ asset('css/price_range_style.css') }}">
 @endsection
 
-@if(auth()->user()->isReseller() && auth()->user()->reseller->isActive())
+@if((auth()->user()->isReseller() && auth()->user()->reseller && auth()->user()->reseller->isActive()) || auth()->user()->isAdmin())
 @section('content')
 <!-- Basic Tables start -->
 <section class="section">
@@ -100,12 +102,17 @@ Daftar inventori produk yang tersedia.
                             <span class="visually-hidden">Loading...</span>
                         </div>
                     </div>
+                    <div class="col-md-12 text-center" id="not_available">
+                        <i class="fa fa-exclamation-circle text-muted fa-3x mb-2"></i>
+                        <h4>Produk ini tidak tersedia.</h4>
+                        <p>Silahkan pilih produk atau varian lain.</p>
+                    </div>
                     <div class="col-md-12" id="product_variant_detail">
                         <div class="row">
-                            <div class="col-md-4 col-sm-12">
-                                <img src="#" class="rounded" width="168" id="photo">
+                            <div class="col-md-4 col-sm-4">
+                                <img src="#" class="rounded" id="photo" style="max-width: 100%;">
                             </div>
-                            <div class="col-md-8 col-sm-12">
+                            <div class="col-md-8 col-sm-8">
                                 <h4 class="pb-0 mb-0">
                                     <span id="shop_name"></span>
                                     <small class="fw-light" id="product_variant_name">Nama Produk</small>
@@ -185,7 +192,7 @@ Daftar inventori produk yang tersedia.
                     <i class="bx bx-x d-block d-sm-none"></i>
                     <span class="d-none d-sm-block">Kembali</span>
                 </button>
-                <a href="{{ route('order.create') }}" class="btn btn-success ml-1">
+                <a id="order_now" href="{{ route('order.create') }}" class="btn btn-success ml-1">
                     <i class="bx bx-check d-block d-sm-none"></i>
                     <span class="d-none d-sm-block">Pesan Sekarang</span>
                 </a>
@@ -246,6 +253,7 @@ Daftar inventori produk yang tersedia.
 
     $(document).ready(function() {
         let productVariantDetail = $('#product_variant_detail')
+        let notAvailable = $('#not_available')
         let cartDetail = $('#cart_detail')
         let cartDetailBody = $('#cart_detail_body')
         let spinner = $('.spinner')
@@ -254,6 +262,7 @@ Daftar inventori produk yang tersedia.
         let qtyMax = qtyInput.attr('max')
 
         productVariantDetail.hide()
+        notAvailable.hide()
         cartDetail.hide()
 
         let getCategories = () => {
@@ -320,6 +329,7 @@ Daftar inventori produk yang tersedia.
             table.draw()
         })
 
+        @if(auth()->user()->isReseller() && auth()->user()->reseller && auth()->user()->reseller->isActive())
         var cartDetailTable = $('.cart_detail_table').DataTable({
             processing: true,
             serverSide: true,
@@ -365,27 +375,38 @@ Daftar inventori produk yang tersedia.
                 },
             }).then(response => response.json())
         }
-
+        
         var addToCartModal = document.getElementById('add_to_cart')
         addToCartModal.addEventListener('show.bs.modal', function (event) {
             var button = event.relatedTarget
             productVariantId = button.getAttribute('data-product-variant-id')
 
-            getProductVariantDetail(productVariantId).then(json => {                        
-                $('#product_variant_name').text(`${json.data.product.product_name} (${json.data.product_variant_name})`)
-                $('#stock').text(json.data.stock)
-                $('#photo').attr('src', json.data.photo)
-                $('#qty').attr('max', json.data.stock)
-                $('#product_variant_id').val(json.data.id)
+            getProductVariantDetail(productVariantId).then(json => {
+                if(json.success) {
+                    if(json.data.stock < 1) {
+                        $('#add_to_cart_button').prop('disabled', true)
+                    }
+                    $('#product_variant_name').text(`${json.data.product.product_name} (${json.data.product_variant_name})`)
+                    $('#stock').text(json.data.stock)
+                    $('#photo').attr('src', json.data.photo)
+                    $('#qty').attr('max', json.data.stock)
+                    $('#product_variant_id').val(json.data.id)
+                    productVariantDetail.slideDown()
+                    $('#add_to_cart_button').show()
+                } else {
+                    notAvailable.slideDown()
+                    $('#add_to_cart_button').hide()
+                }
                 
                 spinner.slideUp()
-                productVariantDetail.slideDown()
             }).catch(error => error)
         })
 
         addToCartModal.addEventListener('hidden.bs.modal', function (event) {
             productVariantDetail.hide()
+            notAvailable.hide()
             spinner.show()
+            $('#add_to_cart_button').hide()
             $('#add_to_cart_button').prop('disabled', false)
             $('#add_to_cart_label').text("Tambahkan")
             qtyInput.val(1)
@@ -406,8 +427,12 @@ Daftar inventori produk yang tersedia.
         qtyInput.on('keyup keypress keydown', function() {
             if(parseInt($(this).val()) > parseInt($(this).attr('max'))) {
                 $(this).val($(this).attr('max'))
-            } else if(parseInt($(this).val()) < 1 || $(this).val() == "") {
-                $(this).val(1)
+            }
+
+            if($(this).val() == "" || parseInt($(this).val()) < 1) {
+                $('#add_to_cart_button').prop('disabled', true)
+            } else {
+                $('#add_to_cart_button').prop('disabled', false)
             }
         })
 
@@ -462,6 +487,7 @@ Daftar inventori produk yang tersedia.
 
         showCartModal.addEventListener('hidden.bs.modal', function (event) {
             cartDetail.hide()
+            $('#order_now').removeClass('disabled')
         })
 
         let changeQuantity = (cartDetail, quantity) => {
@@ -480,7 +506,9 @@ Daftar inventori produk yang tersedia.
             }).then(response => response.json())
         }
 
-        $(document).on('change', '.change-quantity', function() {
+        let wto
+        $(document).on('change keyup keypress keydown', '.change-quantity', function() {
+            clearTimeout(wto)
             let cartDetail = $(this).data('cart-detail-id')
             let quantity = $(this).val()
             
@@ -492,10 +520,25 @@ Daftar inventori produk yang tersedia.
 
             $(this).val(quantity)
             
-            changeQuantity(cartDetail, quantity).then(json => {
-                // console.log(json)
-            })
+            wto = setTimeout(function () {
+                changeQuantity(cartDetail, quantity).then(json => {
+                    console.log(json)
+                    $('#order_now').removeClass('disabled')
+                })
+            }, 1000)
         })
+
+        // $(document).on('', '.change-quantity', function() {
+        //     if(parseInt($(this).val()) > parseInt($(this).attr('max'))) {
+        //         $(this).val($(this).attr('max'))
+        //     }
+
+        //     if($(this).val() == "" || parseInt($(this).val()) < 1) {
+        //         $('#order_now').addClass('disabled')
+        //     } else {
+        //         $('#order_now').removeClass('disabled')
+        //     }
+        // })
 
         let removeItemFromCart = (cartDetail) => {
             var url = "{{ route('cart.removeCartItem', 'x') }}".replace('x', cartDetail)
@@ -538,6 +581,7 @@ Daftar inventori produk yang tersedia.
                 cartDetailTable.draw()
             })
         })
+        @endif
     })
 </script>
 @endsection

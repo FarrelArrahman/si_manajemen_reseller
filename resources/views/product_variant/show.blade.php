@@ -277,7 +277,7 @@
                 toast(json.success, json.message)
                 
                 if(json.success) {
-                    $('#changeStockModal').modal('hide')
+                    $('.close').click()
                     $('#qtyBefore').text(json.data.qty_after)
                     $('#productVariantStock').text(json.data.qty_after)
                 }

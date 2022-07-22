@@ -137,6 +137,18 @@
         return fetch(url).then(response => response.json())
     }
 
+    let pendingOrder = () => {
+        var url = "{{ route('order.pending') }}"
+
+        return fetch(url).then(response => response.json())
+    }
+
+    let pendingPayment = () => {
+        var url = "{{ route('order_payment.pending') }}"
+
+        return fetch(url).then(response => response.json())
+    }
+
     const Echo = window.Echo
     const axios = window.axios
     const message = $("#message")
@@ -154,8 +166,8 @@
     //     toast(data.message.success, data.message.message)
     // })
     
-    let verifiedResellerChannel = Echo.private('channel-verified-reseller.{{ auth()->user()->id }}')
-    verifiedResellerChannel.listen('VerifiedResellerEvent', function(data) {
+    let verifiedResellerChannel = Echo.private('channel-reseller.{{ auth()->user()->id }}')
+    verifiedResellerChannel.listen('ResellerEvent', function(data) {
         if(data.data.action == "hide_unverified_reseller") {
             $('#unverified-reseller').slideUp()
         } else {
@@ -163,12 +175,24 @@
         }
         toast(data.data.success, data.data.message, 5000)
         // console.log(data)
+        table.draw()
     })
 
-    let verificationRequestChannel = Echo.private('channel-verification-request')
-    verificationRequestChannel.listen('VerificationRequestEvent', function(data) {
+    let verificationRequestChannel = Echo.private('channel-admin')
+    verificationRequestChannel.listen('AdminEvent', function(data) {
+        if(data.data.action = "update_pending_order_count") {
+            pendingOrder().then(json => {
+                if(json.data.count < 1) {
+                    $('#pending_order_count').hide()
+                } else {
+                    $('#pending_order_count').show()
+                    $('#pending_order_count').text(json.data.count)
+                }
+            })
+        }
         toast(data.data.success, data.data.message, 5000)
-        // console.log(data)
+        console.log(data)
+        table.draw()
     })
 
     // let adminChannel = Echo.private('channel-verification-request')

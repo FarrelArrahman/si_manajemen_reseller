@@ -30,7 +30,7 @@ class CategorySeeder extends Seeder
         ]);
 
         Category::create([
-            'category_name' => 'Lain-lain',
+            'category_name' => 'Aksesoris',
             'description' => '',
         ]);
     }

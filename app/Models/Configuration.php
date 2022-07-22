@@ -26,6 +26,7 @@ class Configuration extends Model
         'bank_name',
         'bank_code',
         'account_holder_name',
+        'auth_background_image',
     ];
 
     /**

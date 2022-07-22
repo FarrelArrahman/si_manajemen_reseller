@@ -73,43 +73,22 @@
                 </li>
                 @endif
 
-                <li class="sidebar-item {{ request()->is('order*') ? 'active' : '' }}">
+                <li class="sidebar-item {{ request()->is('*order') ? 'active' : '' }}">
                     <a href="{{ route('order.index') }}" class='sidebar-link'>
                         <i class="bi bi-cart-fill"></i>
                         <span>Pesanan</span>
-                        @if($pending_order_count > 0)
+                        @if(auth()->user()->isAdmin() && $pending_order_count > 0)
                         <span id="pending_order_count" class="badge bg-danger">{{ $pending_order_count }}</span>
                         @endif
                     </a>
                 </li>   
 
-                @if(auth()->user()->isAdmin())
-                <li class="sidebar-item has-sub">
-                    <a href="#" class='sidebar-link'>
-                        <i class="bi bi-cash-stack"></i>
-                        <span>Pembayaran</span>
-                    </a>
-                    <ul class="submenu ">
-                        <li class="submenu-item ">
-                            <a href="#">
-                                Daftar Pembayaran
-                            </a>
-                        </li>
-                        <li class="submenu-item ">
-                            <a href="#">
-                                Metode Pembayaran
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-                @else
-                <li class="sidebar-item">
-                    <a href="#" class='sidebar-link'>
+                <li class="sidebar-item {{ request()->is('order_payment*') ? 'active' : '' }}">
+                    <a href="{{ route('order_payment.index') }}" class='sidebar-link'>
                         <i class="bi bi-cash-stack"></i>
                         <span>Pembayaran</span>
                     </a>
                 </li>
-                @endif
 
                 @if(auth()->user()->isAdmin())
                 <li class="sidebar-item has-sub">

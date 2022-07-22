@@ -31,8 +31,10 @@ class AnnouncementController extends Controller
             ->addIndexColumn()
             ->addColumn('action', function($row){
                 $actionBtn = '<a href="' . route('announcement.show', $row->id) . '" data-id="' . $row->id . '" class="btn btn-link p-0 text-info me-1 ms-1"><i class="fa fa-search fa-sm"></i></a>';
-                $actionBtn .= '<a href="' . route('announcement.edit', $row->id) . '" data-id="' . $row->id . '" class="btn btn-link p-0 text-warning me-1 ms-1"><i class="fa fa-edit fa-sm"></i></a>';
-                $actionBtn .= '<button data-id="' . $row->id . '" class="btn btn-link p-0 text-danger me-1 ms-1 delete-button"><i class="fa fa-trash-alt fa-sm"></i></button>';
+                if(auth()->user()->isAdmin()) {
+                    $actionBtn = '<a href="' . route('announcement.edit', $row->id) . '" data-id="' . $row->id . '" class="btn btn-link p-0 text-warning me-1 ms-1"><i class="fa fa-edit fa-sm"></i></a>';
+                    $actionBtn .= '<button data-id="' . $row->id . '" class="btn btn-link p-0 text-danger me-1 ms-1 delete-button"><i class="fa fa-trash-alt fa-sm"></i></button>';
+                }
                 return $actionBtn;
             })
             ->addColumn('switch_button', function($row) {

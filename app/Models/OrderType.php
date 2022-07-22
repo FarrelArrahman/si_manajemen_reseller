@@ -59,21 +59,25 @@ class OrderType extends Model
 
     public function statusBadge()
     {
+        $icon = 'times';
         $style = '';
         switch($this->code) {
             case "SHP":
-                $style = "background: #f60;";
+                $icon = "fa fa-shopping-bag";
+                $style = "color: #f60;";
                 $type = "default";
                 break;
             case "EXP":
+                $icon = "fas fa-shipping-fast";
                 $type = "primary";
                 break;
             default:
+                $icon = "times";
                 $type = "dark";
                 break;
         }
         
-        $badge = "<span style='$style' class='badge bg-" . $type . "'>" . ($this->name ?? '-') . "</span>";
+        $badge = "<span style='$style' class='". $icon." text-" . $type . "'></span>";
         return $badge;
     }
 }

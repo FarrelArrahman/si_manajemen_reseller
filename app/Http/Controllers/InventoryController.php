@@ -47,7 +47,11 @@ class InventoryController extends Controller
             'photo',
             'stock',
             'color',
-        ]);
+        ])
+        ->where('product_variant_status', 1)
+        ->whereHas('product', function($product) {
+            $product->where('product_status', 1);
+        });
 
         return DataTables::of($data)
             ->addIndexColumn()

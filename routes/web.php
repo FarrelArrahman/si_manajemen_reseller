@@ -3,15 +3,15 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Events\NotificationEvent;
-use App\Events\VerifiedResellerEvent;
+use App\Events\ResellerEvent;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\ColorController;
 use App\Http\Controllers\ConfigurationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\OrderPaymentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductVariantController;
 use App\Http\Controllers\ProductVariantStockLogController;
@@ -42,12 +42,12 @@ use App\Http\Controllers\UserController;
 
 Route::post('verified', function(Request $request) {
     $message = [
-        'id' => 1,
+        'id' => 3,
         'success' => true,
         'message' => $request->message
     ];
 
-    VerifiedResellerEvent::dispatch($message);
+    ResellerEvent::dispatch($message);
 });
 
 Auth::routes();
@@ -110,6 +110,11 @@ Route::middleware(['auth'])->group(function() {
         Route::get('/order/datatable', [OrderController::class, 'index_dt'])->name('order.index_dt');
         Route::get('/order/pending', [OrderController::class, 'pending'])->name('order.pending');
         Route::get('/order/{order}', [OrderController::class, 'detail'])->name('order.detail');
+
+        // Order Payment API
+        Route::get('/order_payment/datatable', [OrderPaymentController::class, 'index_dt'])->name('order_payment.index_dt');
+        Route::get('/order_payment/pending', [OrderPaymentController::class, 'pending'])->name('order_payment.pending');
+        Route::get('/order_payment/{order_payment}', [OrderPaymentController::class, 'detail'])->name('order_payment.detail');
     });
     
     // Product
@@ -164,6 +169,14 @@ Route::middleware(['auth'])->group(function() {
     Route::post('/order', [OrderController::class, 'store'])->name('order.store');
     Route::patch('/order/{order}/verify', [OrderController::class, 'verify'])->name('order.verify');
     Route::delete('/order/{order}/cancel', [OrderController::class, 'destroy'])->name('order.destroy');
+    
+    // Order Payment
+    Route::get('/order_payment', [OrderPaymentController::class, 'index'])->name('order_payment.index');
+    Route::patch('/order_payment/{order}/verify', [OrderPaymentController::class, 'verify'])->name('order_payment.verify');
+    Route::post('/order_payment/{order}/upload', [OrderPaymentController::class, 'upload'])->name('order_payment.upload');
+    Route::get('/order_payment/{order}', [OrderPaymentController::class, 'show'])->name('order_payment.show');
+    Route::get('/order_payment/{order}/pdf', [OrderPaymentController::class, 'pdf'])->name('order_payment.pdf');
+    Route::post('/order_payment', [OrderPaymentController::class, 'store'])->name('order_payment.store');
 
     // Configuration
     Route::get('/configuration', [ConfigurationController::class, 'index'])->name('configuration.index');

@@ -71,7 +71,7 @@ Mengubah data varian produk.
                                         <div class="form-group">
                                             <label for="photo-vertical">Foto Produk Varian</label>
                                             <br>
-                                            <a class="image-preview-old" href="{{ Storage::url($productVariant->photo) }}"><img src="{{ Storage::url($productVariant->photo) }}" alt="" width="192"></a>
+                                            <a class="image-preview-old image-popup" href="{{ Storage::url($productVariant->photo) }}"><img src="{{ Storage::url($productVariant->photo) }}" alt="" width="192"></a>
                                             <img class="image-preview-new mb-2" src="#" alt="" width="192">
                                             <input type="file" class="form-control @error('unit') is-invalid @enderror mt-2 image-preview-edit" name="photo" id="">
                                             <small class="fw-bold">Kosongkan isian ini jika tidak ingin mengubah foto varian.</small>
@@ -180,7 +180,7 @@ Mengubah data varian produk.
 })
 
 let checkIfVariantExists = (variant) => {
-    var url = "{{ route('product_variant.checkVariant', ['product' => $productVariant->product->id, 'variant' => 'x']) }}/".replace("x", variant)
+    var url = "{{ route('product_variant.checkVariant', ['product' => $productVariant->product->id, 'productVariant' => 'x']) }}/".replace("x", variant)
     return fetch(url, {
         method: 'GET',
         headers: {

@@ -12,8 +12,10 @@ class OrderVerificationRequestComposer
      */
     public function compose(View $view)
     {
-        $pending_order_count = Order::where('status', Order::PENDING)->count();
+        if(auth()->user()->isAdmin()) {
+            $pending_order_count = Order::where('status', Order::PENDING)->count();
+            $view->with('pending_order_count', $pending_order_count);
+        }
 
-        $view->with('pending_order_count', $pending_order_count);
     }
 }

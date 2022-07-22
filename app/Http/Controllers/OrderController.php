@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ResellerEvent;
+use App\Events\AdminEvent;
 use App\Models\Cart;
 use App\Models\Configuration;
 use App\Models\Courier;
+use App\Models\ExternalOrderLink;
 use App\Models\Order;
 use App\Models\OrderDetail;
+use App\Models\OrderPayment;
 use App\Models\OrderShipping;
 use App\Models\OrderType;
 use App\Traits\Rajaongkir;
@@ -26,14 +30,8 @@ class OrderController extends Controller
     public function index()
     {
         $orderType = OrderType::all();
-
-        if(auth()->user()->isAdmin()) {
-            $orders = Order::all();
-        } else {
-            $orders = auth()->user()->reseller->orders;
-        }
         
-        return view('order.index', compact('orders', 'orderType'));
+        return view('order.index', compact('orderType'));
     }
 
     /**
@@ -55,9 +53,7 @@ class OrderController extends Controller
             ->addIndexColumn()
             ->addColumn('action', function($row) {
                 $actionBtn = '<button data-order-id="' . $row->id . '" data-bs-toggle="modal" data-bs-target="#order_detail_modal" class="btn btn-link p-0 text-info me-1 ms-1 showorderdetail-button"><i class="fa fa-search fa-sm"></i></button>';
-                if(auth()->user()->isReseller()) {
-                    $actionBtn .= '<button data-order-id="' . $row->id . '" class="btn btn-link p-0 text-danger me-1 ms-1 deleteorder-button"><i class="fa fa-trash fa-sm"></i></button>';
-                }
+                $actionBtn .= '<button data-order-id="' . $row->id . '" class="btn btn-link p-0 text-danger me-1 ms-1 deleteorder-button"><i class="fa fa-trash fa-sm"></i></button>';
                 return $actionBtn;
             })
             ->addColumn('order_type', function($row) {
@@ -223,6 +219,25 @@ class OrderController extends Controller
             $message = 'Berhasil mengajukan pemesanan melalui link shopee. Harap tunggu konfirmasi oleh Admin berupa link shopee dari pemesanan tersebut.';
         }
 
+        $orderPayment = OrderPayment::create([
+            'order_id' => $order->id,
+            'amount' => $order->total_price,
+            'date' => now(),
+            'payment_status' => OrderPayment::NOT_YET,
+            'proof_of_payment' => null,
+            'approved_by' => null,
+            'admin_notes' => null,
+        ]);
+
+        $data = [
+            'id' => $order->reseller->user->id,
+            'success' => true,
+            'action' => "update_pending_order_count",
+            'message' => 'Pesanan "' . $order->code . '" telah diajukan. Silakan verifikasi pada menu Pesanan.'
+        ];
+    
+        AdminEvent::dispatch($data);
+
         return redirect()->route('order.index')->with(['success' => $message]);
     }
 
@@ -234,7 +249,7 @@ class OrderController extends Controller
      */
     public function detail($order)
     {
-        $order = Order::with(['orderDetail.productVariant', 'reseller', 'orderType', 'orderShipping.courier', 'externalOrderLink'])->find($order);
+        $order = Order::with(['orderDetail.productVariant.product', 'reseller', 'orderType', 'orderShipping.courier', 'externalOrderLink'])->find($order);
         $order->status_badge = auth()->user()->isAdmin() 
             ? $order->verificationStatus()
             : $order->statusBadge();
@@ -295,6 +310,67 @@ class OrderController extends Controller
     }
 
     /**
+     * Verify order.
+     *
+     * @param  \App\Models\Order  $order
+     * @return \Illuminate\Http\Response
+     */
+    public function verify(Request $request, Order $order)
+    {
+        $action = "show_verified_order";
+        $success = true;
+        
+        $order->status = $request->status;
+
+        if($request->status == Order::APPROVED) {
+            $order->handled_by = auth()->user()->id;
+            
+            if($order->orderType->isShopee()) {
+                $externalOrderLink = ExternalOrderLink::create([
+                    'order_id' => $order->id,
+                    'link' => $request->link,
+                    'added_by' => auth()->user()->id,
+                    'valid_until' => today()->addDay(),
+                ]);    
+            }
+
+            $message = "Pesanan #" . $order->code . " telah berhasil terverifikasi oleh Admin.";
+        } else if($request->status == Order::REJECTED) {
+            $success = false;
+            $action = "show_unverified_order";
+            $order->admin_notes = $request->admin_notes;
+            $message = "Pesanan #" . $order->code . " ditolak. Silahkan cek kembali detail pesanan pada menu pesanan";
+        }
+
+        $data = [
+            'id' => $order->reseller->user->id,
+            'success' => $success,
+            'action' => $action,
+            'message' => $message
+        ];
+    
+        ResellerEvent::dispatch($data);
+        
+        if($order->save()) {
+            return response()->json([
+                'success' => true,
+                'type' => 'verify_order_status',
+                'message' => 'Berhasil melakukan verifikasi pesanan.',
+                'data' => $request->all(),
+                'statusCode' => 200
+            ], 200);
+        }
+
+        return response()->json([
+            'success' => false,
+            'type' => 'verify_order_status',
+            'message' => 'Gagal melakukan verifikasi pesanan, silahkan coba lagi.',
+            'data' => [],
+            'statusCode' => 422
+        ], 422);
+    }
+
+    /**
      * Remove the specified resource from storage.
      *
      * @param  \App\Models\Order  $order
@@ -331,5 +407,25 @@ class OrderController extends Controller
             'data' => [],
             'statusCode' => 404
         ], 404);
+    }
+
+    /**
+     * Return the pending order count.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function pending()
+    {
+        $count = Order::where('status', Order::PENDING)->count();
+
+        return response()->json([
+            'success' => true,
+            'type' => 'pending_order_count',
+            'message' => 'Jumlah pesanan pending',
+            'data' => [
+                'count' => $count,
+            ],
+            'statusCode' => 200
+        ], 200);
     }
 }

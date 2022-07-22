@@ -11,6 +11,7 @@ Daftar pesanan produk dari reseller.
 @section('action-button')
 @endsection
 
+@if((auth()->user()->isReseller() && auth()->user()->reseller && auth()->user()->reseller->isActive()) || auth()->user()->isAdmin())
 @section('content')
 <!-- Basic Tables start -->
 <section class="section">
@@ -25,7 +26,7 @@ Daftar pesanan produk dari reseller.
                     <small>Metode Pemesanan</small>
                     <div class="input-group mb-3">
                         <select class="form-select filter select2" id="order_type_id">
-                            <option selected value="">(Semua Status)</option>
+                            <option selected value="">(Semua Metode)</option>
                             @foreach($orderType as $item)
                             <option value="{{ $item->id }}">{{ $item->name }}</option>
                             @endforeach
@@ -48,20 +49,21 @@ Daftar pesanan produk dari reseller.
             </div>
         </div>
         <div class="card-body">
-            <table class="table yajra-datatable">
-                <thead>
-                    <tr>
-                        <th width="10%">#</th>
-                        <th>Kode Pesanan</th>
-                        <th>Tanggal Pesan</th>
-                        <th>Total Harga</th>
-                        <th>Metode Pemesanan</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="table yajra-datatable">
+                    <thead>
+                        <tr>
+                            <th width="10%">#</th>
+                            <th>Kode Pesanan</th>
+                            <th>Tanggal Pesan</th>
+                            <th>Metode Pemesanan</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -148,12 +150,12 @@ Daftar pesanan produk dari reseller.
                                 <p class="col-form-label" id="order_status"></p>
                             </div>
                         </div>
-                        <div class="form-group row align-items-center py-2 my-2" id="shopee">
+                        <div class="form-group row align-items-center" id="shopee">
                             <div class="col-lg-4 col-4">
-                                <label class="col-form-label fw-bold">Link Order (Shopee)</label>
+                                <label class="col-form-label fw-bold">Link Pesanan (Shopee)</label>
                             </div>
                             <div class="col-lg-8 col-8">
-                                <input type="url" id="shopee_link" class="form-control">
+                                <input @if(auth()->user()->isReseller()) readonly @endif type="url" id="link" class="form-control">
                             </div>
                         </div>
                         <div class="form-group row align-items-center py-2 my-2" id="admin_notes">
@@ -190,20 +192,23 @@ Daftar pesanan produk dari reseller.
                     <i class="bx bx-x d-block d-sm-none"></i>
                     <span class="d-none d-sm-block">Kembali</span>
                 </button>
+                @if(auth()->user()->isAdmin())
                 <button id="verify_button" type="button" class="btn btn-primary ml-1">
                     <i class="bx bx-check d-block d-sm-none"></i>
                     <span class="d-none d-sm-block" id="verify_button_label">Simpan</span>
                 </button>
+                @endif
             </div>
         </div>
     </div>
 </div>
 @endsection
+@endif
 
 @section('js')
 <script src="{{ asset('js/rajaongkir-shipping-cost.js') }}"></script>
 <script type="text/javascript">
-    let provinceList, cityList
+    let provinceList, cityList, orderTypeId
     let orderDetail = $('#order_detail')
     let spinner = $('#spinner')
     let shopee = $('#shopee')
@@ -262,7 +267,6 @@ Daftar pesanan produk dari reseller.
             },
             {data: 'code', name: 'code'},
             {data: 'date', name: 'date'},
-            {data: 'total_price', name: 'total_price'},
             {data: 'order_type', name: 'order_type'},
             {data: 'status', name: 'status'},
         ],
@@ -339,7 +343,7 @@ Daftar pesanan produk dari reseller.
             totalPrice = item.product_variant.reseller_price * item.quantity
             el += `<tr>
                 <td class="text-center">${no++}</td>
-                <td>${item.product_variant.product_variant_name}</td>
+                <td>${item.product_variant.product.product_name} (${item.product_variant.product_variant_name})</td>
                 <td class="text-end">${item.product_variant.reseller_price.toLocaleString('id-ID')}</td>
                 <td class="text-center">${item.quantity}</td>
                 <td class="text-end">${totalPrice.toLocaleString('id-ID')}</td>
@@ -373,7 +377,7 @@ Daftar pesanan produk dari reseller.
         var button = event.relatedTarget
         orderId = button.getAttribute('data-order-id')
 
-        getOrderDetail(orderId).then(json => {            
+        getOrderDetail(orderId).then(json => {
             let order = json.data
             let reseller = json.data.reseller
             let orderDetailItems = json.data.order_detail
@@ -392,6 +396,7 @@ Daftar pesanan produk dari reseller.
             $('#date').text(`${order.date_formatted}`)
             $('#order_status').html(order.status_badge)
             $('#verification_status').html(order.verification_status)
+            $('#link').val(order.external_order_link ? order.external_order_link.link : "")
 
             if(order.status == "DITERIMA") {
                 $('#handled_by').show()
@@ -403,11 +408,23 @@ Daftar pesanan produk dari reseller.
                 $('#verify_button').show()
             }
 
-            if(order.order_type_id == 1) {
+            orderTypeId = order.order_type_id
+            if(orderTypeId == 1) {
+                @if(auth()->user()->isReseller())
+                if(order.status == "PENDING") {
+                    shopee.hide()
+                } else {
+                    shopee.show()
+                }
+                @else
+                shopee.show()
+                @endif
+                
                 expedition.hide()
-            } else if(order.order_type_id == 2) {
+            } else if(orderTypeId == 2) {
                 $('#courier').text(order.order_shipping.courier.name)
                 $('#service').text(order.order_shipping.service)
+                shopee.hide()
                 expedition.show()
             }
 
@@ -421,6 +438,8 @@ Daftar pesanan produk dari reseller.
     orderDetailModal.addEventListener('hidden.bs.modal', function (event) {
         orderDetail.hide()
         spinner.show()
+        adminNotes.hide()
+        $('#link').val("")
         $('#verify_button').prop('disabled', false)
         $('#verify_button_label').text("Simpan")
     })
@@ -429,8 +448,12 @@ Daftar pesanan produk dari reseller.
         let status = $(this).val()
         
         if(status == "DITOLAK") {
+            shopee.slideUp()
             adminNotes.slideDown()
         } else {
+            if(orderTypeId == 1) {
+                shopee.slideDown()
+            }
             adminNotes.slideUp()
         }
     })
@@ -455,6 +478,7 @@ Daftar pesanan produk dari reseller.
 
         let verificationStatus = $('#order_verification_status')
         let adminNotesInput = $('#admin_notes_input')
+        let link = $('#link')
 
         let data = {
             status: verificationStatus.val(),
@@ -462,6 +486,10 @@ Daftar pesanan produk dari reseller.
 
         if(verificationStatus.val() == "DITOLAK") {
             data.admin_notes = adminNotesInput.val()
+        }
+
+        if(orderTypeId == 1) {
+            data.link = link.val()
         }
 
         verifyOrder(orderId, data).then(json => {

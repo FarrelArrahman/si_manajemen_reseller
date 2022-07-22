@@ -78,7 +78,7 @@ Menambah varian baru dari master produk.
                                     <div class="col-12">
                                         <div class="form-group">
                                             <label for="weight-vertical">Berat Produk (gr) <span class="text-danger">*</span></label>
-                                            <input type="number" min="1" class="form-control @error('weight') is-invalid @enderror" name="weight" value="1">
+                                            <input type="number" min="1" class="form-control @error('weight') is-invalid @enderror" name="weight" value="{{ $product->productVariants->last()->weight ?? 1 }}">
                                             @error('weight')
                                             <div class="invalid-feedback">
                                                 {{ $message }}
@@ -132,7 +132,7 @@ Menambah varian baru dari master produk.
                                                 <span class="input-group-text" id="rupiah-prefix">Rp.</span>
                                                 <input type="text" class="form-control @error('reseller_price') is-invalid @enderror money" aria-describedby="rupiah-prefix" name="reseller_price" value="{{ $product->productVariants->last()->reseller_price ?? 0 }}">
                                             </div>
-                                            <small class="fw-bold">*Referensi harga pokok, umum dan reseller di atas merujuk pada harga varian lain dari produk yang sama.</small>
+                                            <small class="fw-bold">*Referensi berat produk, harga pokok, umum dan reseller di atas merujuk pada harga varian lain dari produk yang sama.</small>
                                             @error('reseller_price')
                                             <div class="invalid-feedback">
                                                 {{ $message }}

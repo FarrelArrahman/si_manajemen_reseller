@@ -90,6 +90,11 @@ class Order extends Model
         return $this->hasMany(OrderDetail::class, 'order_id');
     }
 
+    public function orderPayment()
+    {
+        return $this->hasOne(OrderPayment::class, 'order_id', 'id');
+    }
+
     // Helpers
     public function isApproved()
     {
@@ -109,6 +114,11 @@ class Order extends Model
     public function isRejected()
     {
         return $this->status == self::REJECTED;
+    }
+    
+    public function isDone()
+    {
+        return $this->status == self::DONE;
     }
 
     public function statusBadge()

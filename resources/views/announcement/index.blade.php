@@ -19,21 +19,23 @@ Daftar pengumuman yang tersedia pada sistem.
 <section class="section">
     <div class="card">
         <div class="card-body">
-            <table class="table yajra-datatable">
-                <thead>
-                    <tr>
-                        <th width="10%">#</th>
-                        <th>Judul</th>
-                        <th>Berlaku dari</th>
-                        <th>Sampai dengan</th>
-                        <th>Dibuat oleh</th>
-                        <th>Status</th>
-                        <th>Tampilkan?</th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="table yajra-datatable">
+                    <thead>
+                        <tr>
+                            <th width="10%">#</th>
+                            <th>Judul</th>
+                            <th>Berlaku dari</th>
+                            <th>Sampai dengan</th>
+                            <th>Dibuat oleh</th>
+                            <th>Status</th>
+                            <th>Tampilkan?</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 

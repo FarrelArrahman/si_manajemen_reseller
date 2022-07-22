@@ -26,7 +26,8 @@ class ConfigurationSeeder extends Seeder
             'account_number' => '1122334455',
             'bank_name' => 'BANK BNI',
             'bank_code' => '009',
-            'account_holder_name' => $faker->name
+            'account_holder_name' => $faker->name,
+            'auth_background_image' => 'public/auth-bg.jpg'
         ]);
     }
 }

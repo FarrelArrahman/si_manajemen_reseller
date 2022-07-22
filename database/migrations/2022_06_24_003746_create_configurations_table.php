@@ -24,6 +24,7 @@ class CreateConfigurationsTable extends Migration
             $table->string('bank_name');
             $table->string('bank_code');
             $table->string('account_holder_name');
+            $table->string('auth_background_image');
         });
     }
 

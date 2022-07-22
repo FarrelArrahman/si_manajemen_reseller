@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\VerifiedResellerEvent;
-use App\Events\VerificationRequestEvent;
+use App\Events\ResellerEvent;
+use App\Events\AdminEvent;
 use App\Models\Reseller;
 use App\Traits\Rajaongkir;
 use DataTables;
@@ -226,7 +226,7 @@ class ResellerController extends Controller
             'message' => 'User "' . $reseller->user->name . '" telah mengajukan data reseller untuk diverifikasi.'
         ];
     
-        VerificationRequestEvent::dispatch($data);
+        AdminEvent::dispatch($data);
 
         return redirect()->route('reseller.edit')->with('success', 'Berhasil mengisi data reseller. Harap tunggu verifikasi oleh admin.');
     }
@@ -262,7 +262,7 @@ class ResellerController extends Controller
             'message' => $message
         ];
     
-        VerifiedResellerEvent::dispatch($data);
+        ResellerEvent::dispatch($data);
         
         if($reseller->save()) {
             return response()->json([
