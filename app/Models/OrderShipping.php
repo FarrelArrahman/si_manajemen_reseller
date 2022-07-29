@@ -18,6 +18,10 @@ class OrderShipping extends Model
      */
     protected $fillable = [
         'order_id',
+        'address',
+        'province',
+        'city',
+        'postal_code',
         'courier_id',
         'service',
         'total_weight',

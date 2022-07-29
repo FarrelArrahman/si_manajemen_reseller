@@ -6,9 +6,7 @@ use App\Events\ResellerEvent;
 use App\Events\AdminEvent;
 use App\Models\Configuration;
 use App\Models\Order;
-use App\Models\OrderType;
 use App\Models\OrderPayment;
-use App\Traits\Rajaongkir;
 use DataTables;
 use Illuminate\Http\Request;
 use Storage;
@@ -22,10 +20,9 @@ class OrderPaymentController extends Controller
      */
     public function index()
     {
-        $orderType = OrderType::all();
         $configuration = Configuration::first();
         
-        return view('order_payment.index', compact('orderType', 'configuration'));
+        return view('order_payment.index', compact('configuration'));
     }
 
     /**
@@ -38,19 +35,16 @@ class OrderPaymentController extends Controller
         $data = [];
         
         if(auth()->user()->isAdmin()) {
-            $data = Order::select('*')->where('status', Order::APPROVED)->latest();
+            $data = Order::select('*')->whereNotIn('status', [Order::REJECTED, Order::CANCELED])->latest();
         } else {
-            $data = Order::select('*')->where('status', Order::APPROVED)->where('ordered_by', auth()->user()->reseller->id)->latest();
+            $data = Order::select('*')->whereNotIn('status', [Order::REJECTED, Order::CANCELED])->where('ordered_by', auth()->user()->reseller->id)->latest();
         }
 
         return DataTables::of($data)
             ->addIndexColumn()
             ->addColumn('action', function($row) {
-                $actionBtn = '<button data-total-price="Rp. ' . number_format($row->orderPayment->amount, 0, '', '.') . '" data-payment-status="' . $row->orderPayment->payment_status . '" data-proof-of-payment="' . ($row->orderPayment->proof_of_payment ? Storage::url($row->orderPayment->proof_of_payment) : "") . '" data-order-code="' . $row->code . '" data-order-id="' . $row->id . '" data-bs-toggle="modal" data-bs-target="#order_payment_modal" class="btn btn-link p-0 text-info me-1 ms-1 showpaymentdetail-button ' . (auth()->user()->isAdmin() && $row->orderPayment->proof_of_payment == null ? 'text-muted disabled' : '') . '"><i class="fa fa-search fa-sm"></i></button>';
+                $actionBtn = '<button data-reseller-account="' . $row->reseller->bank_name . ' ' . $row->reseller->account_number . ' (A.N '. $row->reseller->account_holder_name . ')" data-total-price="Rp. ' . number_format($row->orderPayment->amount, 0, '', '.') . '" data-payment-status="' . $row->orderPayment->payment_status . '" data-proof-of-payment="' . ($row->orderPayment->proof_of_payment ? Storage::url($row->orderPayment->proof_of_payment) : "") . '" data-order-code="' . $row->code . '" data-order-id="' . $row->id . '" data-bs-toggle="modal" data-bs-target="#order_payment_modal" class="btn btn-link p-0 text-info me-1 ms-1 showpaymentdetail-button ' . (auth()->user()->isAdmin() && $row->orderPayment->proof_of_payment == null ? 'text-muted disabled' : '') . '"><i class="fa fa-search fa-sm"></i></button>';
                 return $actionBtn;
-            })
-            ->addColumn('order_type', function($row) {
-                return $row->orderType->statusBadge();
             })
             ->addColumn('proof_of_payment', function($row) {
                 return $row->orderPayment->proofOfPayment();
@@ -71,9 +65,13 @@ class OrderPaymentController extends Controller
                         $orderPayment->where('payment_status', $status);
                     });
                 }
-                
-                if($request->get('order_type_id') != null) {
-                    $instance->where('order_type_id', $request->get('order_type_id'));
+
+                if($request->get('begin_date') != null) {
+                    $instance->whereDate('date', '>=', $request->get('begin_date'));
+                }
+
+                if($request->get('end_date') != null) {
+                    $instance->whereDate('date', '<=', $request->get('end_date'));
                 }
                 
                 if( ! empty($request->get('search'))) {
@@ -186,7 +184,7 @@ class OrderPaymentController extends Controller
                     'id' => $order->reseller->user->id,
                     'success' => true,
                     'action' => "update_pending_payment_count",
-                    'message' => 'Pembayaran pesanan "' . $order->code . '" telah diajukan. Silakan verifikasi pada menu Pembayaran.'
+                    'message' => 'Pembayaran pesanan #"' . $order->code . '" telah diajukan. Silakan verifikasi pada menu Pembayaran.'
                 ];
             
                 AdminEvent::dispatch($data);

@@ -1,17 +1,19 @@
 @extends('layouts.template')
 
 @section('title')
-Master Produk
+Katalog
 @endsection
 
 @section('sub-title')
-Daftar master produk yang tersedia pada sistem.
+Katalog yang berisi daftar produk.
 @endsection
 
 @section('action-button')
+@if(auth()->user()->isAdmin())
 <a href="{{ route('product.create') }}" class="btn btn-primary">
 <i class="fa fa-plus me-2"></i> Tambah Master Produk
 </a>
+@endif
 @endsection
 
 @section('content')
@@ -24,6 +26,7 @@ Daftar master produk yang tersedia pada sistem.
                 <div class="col-md-12">
                     <h6 class="mb-1">Filter Data</h6>
                 </div>
+                @if(auth()->user()->isAdmin())
                 <div class="col-md-4">
                     <small>Tampilan Produk Pada Pencarian</small>
                     <div class="input-group mb-3">
@@ -55,6 +58,19 @@ Daftar master produk yang tersedia pada sistem.
                         </select>
                     </div>
                 </div>
+                @else
+                <div class="col-md-4">
+                    <small>Kategori</small>
+                    <div class="input-group mb-3">
+                        <select class="form-control filter select2" id="category_id">
+                            <option value="">Semua Kategori</option>
+                            @foreach($categories as $item)
+                            <option value="{{ $item->id }}">{{ $item->category_name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                @endif
             </div>
         </div>
         <div class="card-body">
@@ -65,7 +81,9 @@ Daftar master produk yang tersedia pada sistem.
                         <th>Foto Utama</th>
                         <th>Nama Produk</th>
                         <th>Kategori</th>
+                        @if(auth()->user()->isAdmin())
                         <th width="20%">Tampilkan produk?</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody>
@@ -155,12 +173,14 @@ Daftar master produk yang tersedia pada sistem.
             {data: 'default_photo', name: 'default_photo'},
             {data: 'product_name', name: 'product_name'},
             {data: 'category', name: 'category'},
+            @if(auth()->user()->isAdmin())
             {
                 data: 'switch_button', 
                 name: 'switch_button',
                 orderable: false, 
                 searchable: false
             },
+            @endif
         ],
         fnDrawCallback: () => {
             $('.image-popup').magnificPopup({

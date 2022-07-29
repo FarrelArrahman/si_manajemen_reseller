@@ -15,8 +15,12 @@ class CreateOrderShippingsTable extends Migration
     {
         Schema::create('order_shippings', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('courier_id')->constrained();
             $table->foreignId('order_id')->constrained();
+            $table->text('address');
+            $table->string('province');
+            $table->string('city');
+            $table->string('postal_code');
+            $table->foreignId('courier_id')->constrained();
             $table->string('service');
             $table->integer('total_weight');
             $table->bigInteger('total_price');

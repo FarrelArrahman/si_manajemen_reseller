@@ -9,6 +9,9 @@ use Faker\Factory as Faker;
 
 class UserSeeder extends Seeder
 {
+    // User otomatis aktif (true) atau tidak (false)
+    private $status = true;
+
     /**
      * Run the database seeds.
      *
@@ -48,6 +51,15 @@ class UserSeeder extends Seeder
                 'photo' => 'public/user-default.png',
             ]);
 
+            $bank = [
+                ['name' => 'BANK BNI', 'code' => '009'],
+                ['name' => 'BANK BRI', 'code' => '002'],
+                ['name' => 'BANK MANDIRI', 'code' => '008'],
+                ['name' => 'BANK BCA', 'code' => '014'],
+            ];
+
+            $rand = rand(0,3);
+
             $reseller = Reseller::create([
                 'user_id' => $user->id,
                 'shop_name' => $faker->company,
@@ -57,11 +69,22 @@ class UserSeeder extends Seeder
                 'postal_code'  => $faker->postCode,
                 'phone_number'  => $faker->phoneNumber,
                 'social_media'  => null,
-                'shopee_link'  => $faker->url,
+                'account_number' => rand(1000000000,9999999999),
+                'bank_name' => $bank[$rand]['name'],
+                'bank_code' => $bank[$rand]['code'],
+                'account_holder_name' => $user->name,
                 'rejection_reason' => NULL,
-                'reseller_status' => $i == 1 ? 'AKTIF' : 'PENDING',
-                'approval_date' => $i == 1 ? now() : null
+                'reseller_status' => $this->resellerStatus($this->status),
+                'approval_date' => $this->approvalDate($this->status)
             ]);
         }
+    }
+
+    public function resellerStatus($status) {
+        return $status ? 'AKTIF' : 'PENDING';
+    }
+
+    public function approvalDate($status) {
+        return $status ? now() : null;
     }
 }

@@ -23,17 +23,6 @@ Daftar pembayaran dari pesanan reseller.
                     <h6 class="mb-1">Filter Data</h6>
                 </div>
                 <div class="col-md-6">
-                    <small>Metode Pemesanan</small>
-                    <div class="input-group mb-3">
-                        <select class="form-select filter select2" id="order_type_id">
-                            <option selected value="">(Semua Metode)</option>
-                            @foreach($orderType as $item)
-                            <option value="{{ $item->id }}">{{ $item->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-6">
                     <small>Status Pembayaran</small>
                     <div class="input-group mb-3">
                         <select class="form-select filter select2" id="status">
@@ -43,6 +32,14 @@ Daftar pembayaran dari pesanan reseller.
                             <option value="DITOLAK">Ditolak</option>
                             <option value="DITERIMA">Diterima</option>
                         </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <small>Tanggal Bayar</small>
+                    <div class="input-group mb-3">
+                        <input type="date" class="form-control filter" id="begin_date" value="{{ date('Y-m-d') }}">
+                        <span class="input-group-text" id="basic-addon2">s/d</span>
+                        <input type="date" class="form-control filter" id="end_date" value="{{ date('Y-m-d') }}">
                     </div>
                 </div>
             </div>
@@ -56,7 +53,6 @@ Daftar pembayaran dari pesanan reseller.
                             <th>Kode Pesanan</th>
                             <th>Tanggal Pesan</th>
                             <th>Total Harga (Rp.)</th>
-                            <th>Metode Pemesanan</th>
                             <th>Status Bayar</th>
                         </tr>
                     </thead>
@@ -101,14 +97,35 @@ Daftar pembayaran dari pesanan reseller.
                             <div class="col-lg-8 col-8">
                                 <p class="col-form-label" id="total_price_text"></p>
                             </div>
-                            <p class="text-success">Silahkan transfer ke rekening {{ $configuration->bank_name }} {{ $configuration->account_number }} ({{ $configuration->account_holder_name }}) sesuai dengan nominal di atas.</p>
+                            @if(auth()->user()->isReseller())
+                            <p class="text-success">Silakan transfer ke rekening <strong>{{ $configuration->bank_name }} {{ $configuration->account_number }} (A.N {{ $configuration->account_holder_name }})</strong> sesuai dengan nominal di atas.</p>
+                            @endif
                         </div>
+                        @if(auth()->user()->isReseller())
+                        <div class="form-group row align-items-center pb-0 mb-0" id="total_price">
+                            <div class="col-lg-4 col-4">
+                                <label class="col-form-label fw-bold">Rekening Saya</label>
+                            </div>
+                            <div class="col-lg-8 col-8">
+                                <p class="col-form-label text-primary fw-bold">{{ auth()->user()->reseller->bank_name }} {{ auth()->user()->reseller->account_number }} (A.N {{ auth()->user()->reseller->account_holder_name }})</p>
+                            </div>
+                        </div>
+                        @else
+                        <div class="form-group row align-items-center pb-0 mb-0" id="total_price">
+                            <div class="col-lg-4 col-4">
+                                <label class="col-form-label fw-bold">Rekening Reseller</label>
+                            </div>
+                            <div class="col-lg-8 col-8">
+                                <p class="col-form-label text-primary fw-bold" id="reseller_account"></p>
+                            </div>
+                        </div>
+                        @endif
                         <div class="form-group row align-items-center pb-0 mb-0" id="proof_of_payment">
                             <div class="col-lg-4 col-4">
                                 <label class="col-form-label fw-bold">Bukti Pembayaran</label>
                             </div>
                             <div class="col-lg-8 col-8">
-                                <a href="" class="btn btn-sm btn-success" id="download_button">
+                                <a href="" class="btn btn-sm btn-success" id="download_button" target="_blank">
                                     <i class="fa fa-download"></i> Download
                                 </a>
                             </div>
@@ -187,7 +204,8 @@ Daftar pembayaran dari pesanan reseller.
             url: "{{ route('order_payment.index_dt') }}",
             data: function (d) {
                 d.status = $('#status').val(),
-                d.order_type_id = $('#order_type_id').val(),
+                d.begin_date = $('#begin_date').val(),
+                d.end_date = $('#end_date').val(),
                 d.search = $('input[type="search"]').val()
             }
         },
@@ -207,7 +225,6 @@ Daftar pembayaran dari pesanan reseller.
             {data: 'code', name: 'code'},
             {data: 'date', name: 'date'},
             {data: 'total_price', name: 'total_price'},
-            {data: 'order_type', name: 'order_type'},
             {data: 'payment_status', name: 'payment_status'},
         ],
         fnDrawCallback: () => {
@@ -242,9 +259,11 @@ Daftar pembayaran dari pesanan reseller.
         proofOfPayment = button.getAttribute('data-proof-of-payment')
         paymentStatus = button.getAttribute('data-payment-status')
         totalPrice = button.getAttribute('data-total-price')
+        resellerAccount = button.getAttribute('data-reseller-account')
 
         $('#order_code').text(orderCode)
         $('#total_price_text').text(totalPrice)
+        $('#reseller_account').text(resellerAccount)
 
         if(proofOfPayment != "") {
             $('#proof_of_payment').show()
@@ -273,6 +292,7 @@ Daftar pembayaran dari pesanan reseller.
         $('#verify_button_label').text("Simpan")
         $('#upload_payment').prop('disabled', false)
         $('#upload_payment_label').text("Upload")
+        adminNotes.slideDown()
     })
 
     $('#payment_status').on('change', '#payment_verification_status', function() {
@@ -356,6 +376,7 @@ Daftar pembayaran dari pesanan reseller.
             console.log(json)
             toast(json.success, json.message)
             $('.close').click()
+            table.draw()
         })
     })
 </script>

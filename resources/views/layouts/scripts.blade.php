@@ -12,6 +12,8 @@
 <script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/js/bootstrap4-toggle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="{{ asset('js/jquery.magnific-popup.js') }}"></script>
+<script src="{{ asset('js/datatable_indonesian_language.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
 <script type="text/javascript">
     let csrfToken = $('meta[name=csrf-token]').attr('content')
@@ -190,8 +192,19 @@
                 }
             })
         }
+
+        if(data.data.action = "update_pending_payment_count") {
+            pendingOrder().then(json => {
+                if(json.data.count < 1) {
+                    $('#pending_payment_count').hide()
+                } else {
+                    $('#pending_payment_count').show()
+                    $('#pending_payment_count').text(json.data.count)
+                }
+            })
+        }
+
         toast(data.data.success, data.data.message, 5000)
-        console.log(data)
         table.draw()
     })
 

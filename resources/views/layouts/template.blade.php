@@ -3,7 +3,7 @@
 
 @include('layouts.head')
 
-<body>
+<body class="theme-light">
     <!-- App starts here -->
     <div id="app">
         <!-- Sidebar starts here -->

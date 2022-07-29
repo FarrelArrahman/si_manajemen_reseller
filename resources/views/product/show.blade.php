@@ -9,8 +9,10 @@
 @endsection
 
 @section('action-button')
+@if(auth()->user()->isAdmin())
 <a href="{{ route('product.edit', $product->id) }}" class="btn btn-warning"><i class="fas fa-edit fa-sm me-2"></i> Ubah Master Produk</a>
 <a href="{{ route('product_variant.create', ['product' => $product->id]) }}" class="btn btn-primary"><i class="fas fa-plus fa-sm me-2"></i> Tambah Varian Baru</a>
+@endif
 @endsection
 
 @section('content')
@@ -41,14 +43,14 @@
                         <div class="tab-content" id="myTabContent">
                             <div class="tab-pane fade show active" id="information" role="tabpanel" aria-labelledby="information-tab">
                                 <div class="row">
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <div class="form-group">
                                             <a class="image-popup" href="{{ Storage::url($product->default_photo) }}">
                                                 <img src="{{ Storage::url($product->default_photo) }}" alt="" width="100%">
                                             </a>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-8">
                                         <div class="row">
                                             <div class="col-12">
                                                 <div class="form-group">
@@ -80,6 +82,7 @@
                                                     <p class="fs-5 text-dark">{{ $product->productVariants->count() }}</p>
                                                 </div>
                                             </div>
+                                            @if(auth()->user()->isAdmin())
                                             <div class="col-12">
                                                 <div class="form-group">
                                                     <label for="added-by-vertical">Ditambahkan oleh</label>
@@ -92,12 +95,14 @@
                                                     <p class="fs-5 text-dark">{{ $product->lastEditedBy->name }} ({{ $product->updated_at->format('Y-m-d h:i') }})</p>
                                                 </div>
                                             </div>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="tab-pane fade" id="variants" role="tabpanel" aria-labelledby="variants-tab">
                                 <div class="row">
+                                    @if(auth()->user()->isAdmin())
                                     <div class="col-md-12">
                                         <h6 class="mb-1">Filter Data</h6>
                                     </div>
@@ -121,18 +126,21 @@
                                             </select>
                                         </div>
                                     </div>
+                                    @endif
                                     <div class="col-12">
                                         <div class="table-responsive">
                                             <table class="table yajra-datatable w-100">
                                                 <thead>
                                                     <tr>
-                                                        <th>#####</th>
+                                                        <th>#</th>
                                                         <th>Foto</th>
                                                         <th>Varian</th>
                                                         <th>Warna</th>
                                                         <th>Stok</th>
                                                         <th>Harga Reseller (Rp.)</th>
+                                                        @if(auth()->user()->isAdmin())
                                                         <th>Tampilkan varian?</th>
+                                                        @endif
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -266,12 +274,14 @@
             {data: 'color', name: 'color'},
             {data: 'stock', name: 'stock'},
             {data: 'reseller_price', name: 'reseller_price'},
+            @if(auth()->user()->isAdmin())
             {
                 data: 'switch_button', 
                 name: 'switch_button',
                 orderable: false, 
                 searchable: false
             },
+            @endif
         ],
         fnDrawCallback: () => {
             $('.image-popup').magnificPopup({

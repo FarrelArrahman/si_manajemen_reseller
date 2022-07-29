@@ -168,7 +168,7 @@ class ProductSeeder extends Seeder
                     'product_variant_name'      => $variant['name'],
                     'product_id'                => $newProduct->id,
                     'color'                     => $variant['color'],
-                    'stock'                     => rand(0,100),
+                    'stock'                     => rand(1000,9999),
                     'base_price'                => $bp,
                     'reseller_price'            => $rp,
                     'general_price'             => $gp,

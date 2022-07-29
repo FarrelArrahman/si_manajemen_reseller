@@ -9,7 +9,9 @@ Dibuat oleh <strong>{{ $announcement->createdBy->name }}</strong> pada <strong>{
 @endsection
 
 @section('action-button')
+@if(auth()->user()->isAdmin())
 <a href="{{ route('announcement.edit', $announcement->id) }}" class="btn btn-warning"><i class="fas fa-edit fa-sm me-2"></i> Ubah Pengumuman</a>
+@endif
 @endsection
 
 @section('content')
@@ -17,6 +19,7 @@ Dibuat oleh <strong>{{ $announcement->createdBy->name }}</strong> pada <strong>{
 <section id="basic-vertical-layouts">
     <div class="row match-height">
         <div class="col-md-12 col-24">
+            @if($announcement->content != "")
             <div class="card">
                 <div class="card-content">
                     <div class="card-body">
@@ -24,6 +27,19 @@ Dibuat oleh <strong>{{ $announcement->createdBy->name }}</strong> pada <strong>{
                     </div>
                 </div>
             </div>
+            @else
+            <div class="card">
+                <div class="card-content">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12 text-center" id="not_available">
+                                <i class="text-danger">(kosong)</i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
         </div>
     </div>
 </section>

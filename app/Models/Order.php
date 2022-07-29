@@ -27,11 +27,6 @@ class Order extends Model
         'notes',
         'total_price',
         'discount',
-        'address',
-        'province',
-        'city',
-        'postal_code',
-        'order_type_id',
         'date',
         'status',
         'admin_notes',
@@ -78,11 +73,6 @@ class Order extends Model
     public function orderShipping()
     {
         return $this->belongsTo(OrderShipping::class, 'id', 'order_id');
-    }
-    
-    public function externalOrderLink()
-    {
-        return $this->belongsTo(ExternalOrderLink::class, 'id', 'order_id');
     }
 
     public function orderDetail()
@@ -157,7 +147,7 @@ class Order extends Model
     public function verificationStatus()
     {
         if($this->isPending() || $this->isRejected()) {
-            $element = "<select class='form-control' id='order_verification_status'>";
+            $element = "<select class='form-select' id='order_verification_status'>";
             $element .= "<option " . ($this->isApproved() ? "selected " : "") . "value='" . self::APPROVED . "' class='form-control'>TERIMA</option>";
             $element .= "<option " . ($this->isRejected() ? "selected " : "") . "value='" . self::REJECTED . "' class='form-control'>TOLAK</option>";
             $element .= "</select>";

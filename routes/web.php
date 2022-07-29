@@ -71,6 +71,7 @@ Route::middleware(['auth'])->group(function() {
 
         // Inventory API
         Route::get('/inventory/datatable', [InventoryController::class, 'index_dt'])->name('inventory.index_dt');
+        Route::get('/inventory/{productVariant}/check-quantity', [InventoryController::class, 'checkQuantity'])->name('inventory.checkQuantity');
 
         // Product Variant API
         Route::get('/product/{product}/variant', [ProductVariantController::class, 'index_dt'])->name('product_variant.index_dt');

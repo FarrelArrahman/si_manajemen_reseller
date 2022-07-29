@@ -40,38 +40,31 @@
                     </a>
                 </li>
 
-                @if(auth()->user()->isAdmin())
                 <li class="sidebar-item has-sub {{ request()->is('product*') || request()->is('category*') || request()->is('product_variant*') || request()->is('inventory*') ? 'active' : '' }} text-danger">
                     <a href="#" class='sidebar-link'>
                         <i class="bi bi-tags-fill"></i>
                         <span>Produk</span>
                     </a>
                     <ul class="submenu {{ request()->is('product*') || request()->is('category*') || request()->is('product_variant*') || request()->is('inventory*') ? 'active' : '' }}">
+                        @if(auth()->user()->isAdmin())
                         <li class="submenu-item {{ request()->is('category*') ? 'active' : '' }}">
                             <a href="{{ route('category.index') }}">
                                 Kategori
                             </a>
                         </li>
+                        @endif
                         <li class="submenu-item {{ request()->is('product*') || request()->is('product_variant*') ? 'active' : '' }}">
                             <a href="{{ route('product.index') }}">
-                                Master
+                                Katalog
                             </a>
                         </li>
                         <li class="submenu-item {{ request()->is('inventory*') ? 'active' : '' }}">
                             <a href="{{ route('inventory.index') }}">
-                                Inventori
+                                Varian Produk
                             </a>
                         </li>
                     </ul>
                 </li>
-                @else
-                <li class="sidebar-item {{ request()->is('inventory*') ? 'active' : '' }} text-danger">
-                    <a href="{{ route('inventory.index') }}" class='sidebar-link'>
-                        <i class="bi bi-tags-fill"></i>
-                        <span>Produk</span>
-                    </a>
-                </li>
-                @endif
 
                 <li class="sidebar-item {{ request()->is('*order') ? 'active' : '' }}">
                     <a href="{{ route('order.index') }}" class='sidebar-link'>
@@ -138,14 +131,12 @@
                 </li>
                 @endif
 
-                @if(auth()->user()->isAdmin())
                 <li class="sidebar-item {{ request()->is('announcement*') ? 'active' : '' }}">
                     <a href="{{ route('announcement.index') }}" class='sidebar-link'>
                         <i class="bi bi-newspaper"></i>
                         <span>Pengumuman</span>
                     </a>
                 </li>
-                @endif
 
                 @if(auth()->user()->isAdmin())
                 <li class="sidebar-item">

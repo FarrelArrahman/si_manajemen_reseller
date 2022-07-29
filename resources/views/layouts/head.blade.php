@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="{{ asset('vendors/choices.js/choices.min.css') }}">
     <link rel="stylesheet" href="{{ asset('vendors/toastify/toastify.css') }}">
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/app-dark.css') }}">
     
     <link href="https://unpkg.com/filepond/dist/filepond.css" rel="stylesheet">
     <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet">

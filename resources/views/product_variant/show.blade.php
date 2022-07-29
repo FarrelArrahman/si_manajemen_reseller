@@ -9,8 +9,10 @@
 @endsection
 
 @section('action-button')
+@if(auth()->user()->isAdmin())
 <a href="{{ route('product_variant.edit', ['product' => $productVariant->product->id, 'productVariant' => $productVariant->id]) }}" class="btn btn-warning"><i class="fas fa-edit fa-sm me-2"></i> Ubah Varian Produk</a>
 <a href="#" data-bs-toggle="modal" data-bs-target="#changeStockModal" class="btn btn-primary"><i class="fa fa-plus fa-sm me-2"></i> Tambah/Kurangi Stok</a>
+@endif
 @endsection
 
 @section('content')
@@ -60,12 +62,14 @@
                                             </p>
                                         </div>
                                     </div>
+                                    @if(auth()->user()->isAdmin())
                                     <div class="col-6">
                                         <div class="form-group">
                                             <label for="description-vertical">Harga Pokok</label>
                                             <p class="fs-5 text-dark">Rp. {{ number_format($productVariant->base_price, 0, '', '.') }}</p>
                                         </div>
                                     </div>
+                                    @endif
                                     <div class="col-6">
                                         <div class="form-group">
                                             <label for="description-vertical">Harga Umum</label>
@@ -80,14 +84,15 @@
                                     </div>
                                     <div class="col-6">
                                         <div class="form-group">
-                                            <label for="status-vertical">Status Aktif</label>
-                                            <p class="fs-5 text-dark">{!! $productVariant->statusBadge() !!}</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-6">
-                                        <div class="form-group">
                                             <label for="product-variant-vertical">Stok</label>
                                             <p class="fs-5 text-dark" id="productVariantStock">{{ $productVariant->stock }}</p>
+                                        </div>
+                                    </div>
+                                    @if(auth()->user()->isAdmin())
+                                    <div class="col-6">
+                                        <div class="form-group">
+                                            <label for="status-vertical">Status Aktif</label>
+                                            <p class="fs-5 text-dark">{!! $productVariant->statusBadge() !!}</p>
                                         </div>
                                     </div>
                                     <div class="col-6">
@@ -102,6 +107,7 @@
                                             <p class="fs-5 text-dark">{{ $productVariant->lastEditedBy->name }} ({{ $productVariant->updated_at->format('Y-m-d h:i') }})</p>
                                         </div>
                                     </div>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -110,6 +116,7 @@
             </div>
 
             <!-- Stock Log -->
+            @if(auth()->user()->isAdmin())
             <div class="card">
                 <div class="card-content">
                     <div class="card-header pb-3">
@@ -133,6 +140,7 @@
                     </div>
                 </div>
             </div>
+            @endif
         </div>
     </div>
 </section>

@@ -41,12 +41,14 @@ class ProductVariantController extends Controller
         return DataTables::of($data)
             ->addIndexColumn()
             ->addColumn('action', function($row){                
-                if($row->trashed()) {
+                if($row->trashed() && auth()->user()->isAdmin()) {
                     $actionBtn = '<button data-id="' . $row->id . '" class="btn btn-text text-primary me-1 ms-1 restore-button"><i class="fa fa-undo-alt fa-sm"></i></button>';
                 } else {
                     $actionBtn = '<a href="' . route('product_variant.show', ['product' => $row->product->id, 'productVariant' => $row->id]) . '" class="text-info me-1 ms-1"><i class="fa fa-search fa-sm"></i></a>';
-                    $actionBtn .= '<a href="' . route('product_variant.edit', ['product' => $row->product->id, 'productVariant' => $row->id]) . '" data-id="' . $row->id . '" class="btn btn-link p-0 text-warning me-1 ms-1"><i class="fa fa-edit fa-sm"></i></a>';
-                    $actionBtn .= '<button data-product-variant-id="' . $row->id . '" class="btn btn-link p-0 text-danger me-1 ms-1 delete-button"><i class="fa fa-trash-alt fa-sm"></i></button>';
+                    if(auth()->user()->isAdmin()) {
+                        $actionBtn .= '<a href="' . route('product_variant.edit', ['product' => $row->product->id, 'productVariant' => $row->id]) . '" data-id="' . $row->id . '" class="btn btn-link p-0 text-warning me-1 ms-1"><i class="fa fa-edit fa-sm"></i></a>';
+                        $actionBtn .= '<button data-product-variant-id="' . $row->id . '" class="btn btn-link p-0 text-danger me-1 ms-1 delete-button"><i class="fa fa-trash-alt fa-sm"></i></button>';
+                    }
                 }
                 return $actionBtn;
             })

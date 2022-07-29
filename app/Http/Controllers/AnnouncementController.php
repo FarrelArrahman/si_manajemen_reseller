@@ -91,7 +91,7 @@ class AnnouncementController extends Controller
 
         $announcement = Announcement::create([
             'title'                 => $request->title,
-            'content'               => $request->content,
+            'content'               => $request->content ?? "",
             'start_from'            => $request->start_from,
             'valid_until'           => $request->valid_until,
             'created_by'            => auth()->user()->id,

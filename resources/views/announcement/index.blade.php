@@ -9,9 +9,11 @@ Daftar pengumuman yang tersedia pada sistem.
 @endsection
 
 @section('action-button')
+@if(auth()->user()->isAdmin())
 <a href="{{ route('announcement.create') }}" class="btn btn-primary">
 <i class="fa fa-plus me-2"></i> Tambah Pengumuman
 </a>
+@endif
 @endsection
 
 @section('content')
@@ -25,11 +27,13 @@ Daftar pengumuman yang tersedia pada sistem.
                         <tr>
                             <th width="10%">#</th>
                             <th>Judul</th>
+                            @if(auth()->user()->isAdmin())
                             <th>Berlaku dari</th>
                             <th>Sampai dengan</th>
                             <th>Dibuat oleh</th>
                             <th>Status</th>
                             <th>Tampilkan?</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody>
@@ -84,6 +88,7 @@ Daftar pengumuman yang tersedia pada sistem.
         serverSide: true,
         searchDelay: 1000,
         ajax: "{{ route('announcement.index_dt') }}",
+        language: dtIdLang,
         columnDefs: [
             {
                 targets: 0,
@@ -98,11 +103,13 @@ Daftar pengumuman yang tersedia pada sistem.
                 searchable: false
             },
             {data: 'title', name: 'title'},
+            @if(auth()->user()->isAdmin())
             {data: 'start_from', name: 'start_from'},
             {data: 'valid_until', name: 'valid_until'},
             {data: 'created_by', name: 'created_by'},
             {data: 'is_private', name: 'is_private'},
             {data: 'switch_button', name: 'switch_button'},
+            @endif
         ]
     });
 

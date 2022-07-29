@@ -23,20 +23,9 @@ Daftar pesanan produk dari reseller.
                     <h6 class="mb-1">Filter Data</h6>
                 </div>
                 <div class="col-md-6">
-                    <small>Metode Pemesanan</small>
-                    <div class="input-group mb-3">
-                        <select class="form-select filter select2" id="order_type_id">
-                            <option selected value="">(Semua Metode)</option>
-                            @foreach($orderType as $item)
-                            <option value="{{ $item->id }}">{{ $item->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-6">
                     <small>Status Pesanan</small>
                     <div class="input-group mb-3">
-                        <select class="form-select filter select2" id="status">
+                        <select class="form-select filter" id="status">
                             <option value="">(Semua Status)</option>
                             <option selected value="PENDING">Menunggu Persetujuan</option>
                             <option value="DITOLAK">Ditolak</option>
@@ -44,6 +33,14 @@ Daftar pesanan produk dari reseller.
                             <option value="DIBATALKAN">Dibatalkan</option>
                             <option value="SELESAI">Telah Selesai</option>
                         </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <small>Tanggal Pesan</small>
+                    <div class="input-group mb-3">
+                        <input type="date" class="form-control filter" id="begin_date" value="{{ date('Y-m-d') }}">
+                        <span class="input-group-text" id="basic-addon2">s/d</span>
+                        <input type="date" class="form-control filter" id="end_date" value="{{ date('Y-m-d') }}">
                     </div>
                 </div>
             </div>
@@ -56,7 +53,6 @@ Daftar pesanan produk dari reseller.
                             <th width="10%">#</th>
                             <th>Kode Pesanan</th>
                             <th>Tanggal Pesan</th>
-                            <th>Metode Pemesanan</th>
                             <th>Status</th>
                         </tr>
                     </thead>
@@ -117,14 +113,6 @@ Daftar pesanan produk dari reseller.
                         </div>
                         <div class="form-group row align-items-center pb-0 mb-0">
                             <div class="col-lg-4 col-4">
-                                <label class="col-form-label fw-bold">Jenis Pemesanan</label>
-                            </div>
-                            <div class="col-lg-8 col-8">
-                                <p class="col-form-label" id="order_type"></p>
-                            </div>
-                        </div>
-                        <div class="form-group row align-items-center pb-0 mb-0" id="expedition">
-                            <div class="col-lg-4 col-4">
                                 <label class="col-form-label fw-bold">Kurir / Layanan</label>
                             </div>
                             <div class="col-lg-8 col-8">
@@ -150,20 +138,16 @@ Daftar pesanan produk dari reseller.
                                 <p class="col-form-label" id="order_status"></p>
                             </div>
                         </div>
-                        <div class="form-group row align-items-center" id="shopee">
-                            <div class="col-lg-4 col-4">
-                                <label class="col-form-label fw-bold">Link Pesanan (Shopee)</label>
-                            </div>
-                            <div class="col-lg-8 col-8">
-                                <input @if(auth()->user()->isReseller()) readonly @endif type="url" id="link" class="form-control">
-                            </div>
-                        </div>
                         <div class="form-group row align-items-center py-2 my-2" id="admin_notes">
                             <div class="col-lg-4 col-4">
                                 <label class="col-form-label fw-bold">Alasan Penolakan</label>
                             </div>
                             <div class="col-lg-8 col-8">
-                            <textarea class="form-control" id="admin_notes_input" rows="2"></textarea>
+                                @if(auth()->user()->isAdmin())
+                                <textarea class="form-control" id="admin_notes_input" rows="2"></textarea>
+                                @else
+                                <p class="col-form-label" id="admin_notes_text"></p>
+                                @endif
                             </div>
                         </div>
                         <div class="col-md-12 pb-0 mb-0">
@@ -211,12 +195,12 @@ Daftar pesanan produk dari reseller.
     let provinceList, cityList, orderTypeId
     let orderDetail = $('#order_detail')
     let spinner = $('#spinner')
-    let shopee = $('#shopee')
-    let expedition = $('#expedition')
     let adminNotes = $('#admin_notes')
+    let adminNotesInput = $('#admin_notes_input')
+    let adminNotesText = $('#admin_notes_text')
+    let verificationStatus = $('#order_verification_status')
 
     orderDetail.hide()
-    shopee.hide()
     adminNotes.hide()
 
     provinces().then(json => {
@@ -248,7 +232,8 @@ Daftar pesanan produk dari reseller.
             url: "{{ route('order.index_dt') }}",
             data: function (d) {
                 d.status = $('#status').val(),
-                d.order_type_id = $('#order_type_id').val(),
+                d.begin_date = $('#begin_date').val(),
+                d.end_date = $('#end_date').val(),
                 d.search = $('input[type="search"]').val()
             }
         },
@@ -267,7 +252,6 @@ Daftar pesanan produk dari reseller.
             },
             {data: 'code', name: 'code'},
             {data: 'date', name: 'date'},
-            {data: 'order_type', name: 'order_type'},
             {data: 'status', name: 'status'},
         ],
         fnDrawCallback: () => {
@@ -358,16 +342,14 @@ Daftar pesanan produk dari reseller.
             <th id="sub_total_price" class="text-end">${subTotal.toLocaleString('id-ID')}</th>
         </tr>`
 
-        if(shippingCost > 0) {
-            el += `<tr id="shipping_price_row" style="display: none">
-                <th class="text-end" colspan="4">Biaya Pengiriman</th>
-                <th id="shipping_price" class="text-end">${shippingCost.toLocaleString('id-ID')}</th>
-            </tr>
-            <tr id="grand_total_row" style="display: none">
-                <th class="text-end" colspan="4">Grand Total</th>
-                <th id="grand_total" class="text-end">${grandTotal.toLocaleString('id-ID')}</th>
-            </tr>`
-        }
+        el += `<tr id="shipping_price_row">
+            <th class="text-end" colspan="4">Biaya Pengiriman</th>
+            <th id="shipping_price" class="text-end">${shippingCost.toLocaleString('id-ID')}</th>
+        </tr>
+        <tr id="grand_total_row">
+            <th class="text-end" colspan="4">Grand Total</th>
+            <th id="grand_total" class="text-end">${grandTotal.toLocaleString('id-ID')}</th>
+        </tr>`
 
         orderDetailTableBody.append(el)
     }
@@ -381,9 +363,7 @@ Daftar pesanan produk dari reseller.
             let order = json.data
             let reseller = json.data.reseller
             let orderDetailItems = json.data.order_detail
-            let orderType = json.data.order_type
             let orderShipping = json.data.order_shipping
-            let externalOrderLink = json.data.external_order_link
 
             let p = provinceList.find(obj => obj.province_id == reseller.province)
             let c = cityList.find(obj => obj.city_id == reseller.city)
@@ -391,41 +371,24 @@ Daftar pesanan produk dari reseller.
             $('#shop_name').text(reseller.shop_name)
             $('#shop_address').text(`${reseller.shop_address}, ${c.city_name}, ${p.province} ${reseller.postal_code}`)
             $('#order_code').text(`${order.code}`)
-            $('#order_type').html(`${orderType.status_badge}`)
             $('#ordered_by').text(`${reseller.shop_name}`)
             $('#date').text(`${order.date_formatted}`)
             $('#order_status').html(order.status_badge)
             $('#verification_status').html(order.verification_status)
-            $('#link').val(order.external_order_link ? order.external_order_link.link : "")
+            $('#courier').text(order.order_shipping.courier.name)
+            $('#service').text(order.order_shipping.service)
 
             if(order.status == "DITERIMA") {
+                adminNotes.hide()
                 $('#handled_by').show()
                 $('#handled_by_label').text(order.handled_by.name)
                 $('#verify_button').hide()
             } else {
+                adminNotes.show()
+                adminNotesText.text(order.admin_notes)
                 $('#approval_date').hide()
                 $('#handled_by').hide()
                 $('#verify_button').show()
-            }
-
-            orderTypeId = order.order_type_id
-            if(orderTypeId == 1) {
-                @if(auth()->user()->isReseller())
-                if(order.status == "PENDING") {
-                    shopee.hide()
-                } else {
-                    shopee.show()
-                }
-                @else
-                shopee.show()
-                @endif
-                
-                expedition.hide()
-            } else if(orderTypeId == 2) {
-                $('#courier').text(order.order_shipping.courier.name)
-                $('#service').text(order.order_shipping.service)
-                shopee.hide()
-                expedition.show()
             }
 
             setOrderDetailTable(orderDetailItems, orderShipping != null ? orderShipping.total_price : 0)
@@ -439,6 +402,8 @@ Daftar pesanan produk dari reseller.
         orderDetail.hide()
         spinner.show()
         adminNotes.hide()
+        adminNotesText.text("")
+        adminNotesInput.val("")
         $('#link').val("")
         $('#verify_button').prop('disabled', false)
         $('#verify_button_label').text("Simpan")
@@ -448,12 +413,8 @@ Daftar pesanan produk dari reseller.
         let status = $(this).val()
         
         if(status == "DITOLAK") {
-            shopee.slideUp()
             adminNotes.slideDown()
         } else {
-            if(orderTypeId == 1) {
-                shopee.slideDown()
-            }
             adminNotes.slideUp()
         }
     })
@@ -475,21 +436,13 @@ Daftar pesanan produk dari reseller.
     $('#verify_button').on('click', function() {
         $(this).attr('disabled', 'disabled')
         $('#verify_button_label').text("Loading...")
-
-        let verificationStatus = $('#order_verification_status')
-        let adminNotesInput = $('#admin_notes_input')
-        let link = $('#link')
-
+        
         let data = {
             status: verificationStatus.val(),
         }
 
         if(verificationStatus.val() == "DITOLAK") {
             data.admin_notes = adminNotesInput.val()
-        }
-
-        if(orderTypeId == 1) {
-            data.link = link.val()
         }
 
         verifyOrder(orderId, data).then(json => {

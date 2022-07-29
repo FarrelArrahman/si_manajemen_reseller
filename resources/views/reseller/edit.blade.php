@@ -127,21 +127,6 @@ Mengisi data reseller agar dapat dilakukan verifikasi oleh Admin.
                                     </div>
                                     <div class="col-12">
                                         <div class="form-group">
-                                            <label for="shopee-link-vertical">Toko Shopee <small class="text-muted fw-bold">contoh: http://www.shopee.co.id/namatokoanda</small><span class="text-danger">*</span></label>
-                                            <div class="input-group mb-3">
-                                                <span class="input-group-text" id="shopee-link-prefix"><i class="fas fa-shopping-bag fa-fw"></i></span>
-                                                <input type="text" id="shopee-link-vertical" class="form-control @error('shopee_link') is-invalid @enderror"
-                                                    name="shopee_link" value="{{ $reseller->shopee_link ?? old('shopee_link') }}" placeholder="URL atau Link Shopee">
-                                            </div>
-                                            @error('shopee_link')
-                                            <div class="invalid-feedback">
-                                                {{ $message }}
-                                            </div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                    <div class="col-12">
-                                        <div class="form-group">
                                             <label for="social-media-vertical">Media Sosial <small class="text-muted fw-bold">contoh: http://www.instagram.co.id/username</small></label>
                                             <div class="input-group mb-1">
                                                 <span class="input-group-text" id="phone-number-prefix"><i class="fab fa-facebook-f fa-fw"></i></span>
@@ -171,6 +156,66 @@ Mengisi data reseller agar dapat dilakukan verifikasi oleh Admin.
                                             @enderror
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-content">
+                        <div class="card-header">
+                            <h4 class="card-title mb-0 pb-0">Data Rekening</h4>
+                        </div>
+                        <div class="card-body">
+                            <!-- @if($errors->any())
+                            @foreach($errors->all() as $error)
+                                <div>{{ $error }}</div>
+                            @endforeach
+                            @endif -->
+                            @csrf
+                            @method('PUT')
+                            <div class="form-body">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label for="account-holder-name-vertical">Nama Pemilik Rekening <span class="text-danger">*</span></label>
+                                            <input type="text" id="account-holder-name-vertical" class="form-control @error('account_holder_name') is-invalid @enderror"
+                                                name="account_holder_name" value="{{ $reseller->account_holder_name ?? old('account_holder_name') }}" placeholder="Nama pemilik rekening">
+                                            @error('account_holder_name')
+                                            <div class="invalid-feedback">
+                                                {{ $message }}
+                                            </div>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label for="bank-name-vertical">Nama Bank <span class="text-danger">*</span></label>
+                                            <input type="hidden" name="bank_name" value="{{ $reseller->bank_name ?? '' }}" id="bank_name">
+                                            <select data-bank-code="{{ $reseller->bank_code }}" id="bank_code" name="bank_code" class="form-control @error('bank_code') is-invalid @enderror select2">
+                                                <option data-bank-name="" value="" disabled selected>Pilih bank...</option>
+                                            </select>
+                                            @error('bank_code')
+                                            <div class="invalid-feedback">
+                                                {{ $message }}
+                                            </div>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label for="account-number-vertical">Nomor Rekening <span class="text-danger">*</span></label>
+                                            <input type="text" id="account-number-vertical" class="form-control @error('account_number') is-invalid @enderror"
+                                                name="account_number" value="{{ $reseller->account_number ?? old('account_number') }}" placeholder="Nomor rekening">
+                                            @error('account_number')
+                                            <div class="invalid-feedback">
+                                                {{ $message }}
+                                            </div>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">NB: Data Rekening di atas hanya digunakan untuk keperluan validasi pembayaran.</small>
                                 </div>
                             </div>
                         </div>
@@ -223,6 +268,32 @@ Mengisi data reseller agar dapat dilakukan verifikasi oleh Admin.
 <script src="{{ asset('js/rajaongkir-shipping-cost.js') }}"></script>
 <script>
     $(document).ready(function() {
+        let bankName = $('#bank_name')
+        let bankCode = $('#bank_code')
+
+        const getBank = () => {
+            const url = "{{ asset('bank-name.js') }}"
+            return fetch(url)
+                .then(response => response.json())
+        }
+
+        getBank().then(json => {
+            let banks = `<option value="" disabled selected>Pilih bank...</option>`
+            bankCode.empty()
+            for(const element of json) {
+                banks += `<option data-bank-name="" value="${element.code}">${element.name}</option>`
+            }
+            bankCode.append(banks)
+            
+            if(bankCode.val() != "") {
+                bankCode.val(bankCode.data('bank-code'))
+            }
+        })
+
+        bankCode.on('change', function() {
+            bankName.val($(this).find(':selected').text())
+        })
+
         provinces().then(json => {
             let provinces = `<option value="" disabled selected>Pilih provinsi...</option>`
             $('#province').empty()

@@ -213,4 +213,28 @@ class CartController extends Controller
             'statusCode' => 200
         ], 200);
     }
+
+    public function checkQtyOfCartDetail(ProductVariant $productVariant)
+    {
+        $quantity = 0;
+
+        $cart = Cart::where([
+            'reseller_id' => auth()->user()->reseller->id,
+            'status' => Cart::ACTIVE
+        ])->latest()->first();
+
+        if($cart && $cartDetail = $cart->cartDetail->where('product_variant_id', $productVariant->id)->first()) {
+            $quantity = $cartDetail->quantity;
+        }
+
+        return response()->json([
+            'success' => true,
+            'type' => 'check_qty_of_cart_detail',
+            'message' => 'Jumlah varian produk pada keranjang',
+            'data' => [
+                'quantity' => $quantity
+            ],
+            'statusCode' => 200
+        ], 200);
+    }
 }

@@ -23,7 +23,10 @@ class CreateResellersTable extends Migration
             $table->string('postal_code');
             $table->string('phone_number');
             $table->json('social_media')->nullable();
-            $table->string('shopee_link');
+            $table->string('account_number');
+            $table->string('bank_name');
+            $table->string('bank_code');
+            $table->string('account_holder_name');
             $table->string('reseller_status');
             $table->string('reseller_registration_proof_of_payment')->nullable();
             $table->string('approval_date')->nullable();

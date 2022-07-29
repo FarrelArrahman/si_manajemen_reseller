@@ -56,17 +56,16 @@ Memesan barang yang telah dimasukkan pada keranjang.
                                             <th class="text-end" colspan="5">Sub Total</th>
                                             <th id="sub_total_price" data-sub-total-price="{{ $totalPrice }}" class="text-end">{{ number_format($totalPrice, 0, '', '.') }}</th>
                                         </tr>
-                                        <tr id="shipping_price_row" style="display: none">
+                                        <tr id="shipping_price_row">
                                             <th class="text-end" colspan="5">Biaya Pengiriman</th>
                                             <th id="shipping_price" class="text-end">-</th>
                                         </tr>
-                                        <tr id="grand_total_row" style="display: none">
+                                        <tr id="grand_total_row">
                                             <th class="text-end" colspan="5">Grand Total</th>
                                             <th id="grand_total" class="text-end">-</th>
                                         </tr>
                                     </tbody>
                                 </table>
-                                <small id="expedition_only" class="text-primary fw-bold" style="display: none;">Biaya pengiriman hanya muncul jika melakukan pemesanan via ekspedisi.</small>
                             </div>
                         </div>
                     </div>
@@ -81,134 +80,64 @@ Memesan barang yang telah dimasukkan pada keranjang.
                             @csrf
                             <div class="form-body">
                                 <div class="row">
-                                    <div class="col-12">
+                                    <div class="col-md-6 col-sm-12">
                                         <div class="form-group">
-                                            <label for="order-shipping-type-vertical">Pemesanan via</label>
-                                            <select name="order_type" class="form-select @error('order_type') is-invalid @enderror" id="order_type" required>
-                                                <option data-description="" value="" disabled selected>Pilih metode...</option>
-                                                @foreach($orderType as $item)
-                                                <option data-description="{{ $item->description }}" value="{{ $item->id }}">{{ $item->name }}</option>
+                                            <label for="courier-vertical">Kurir</label>
+                                            <select name="courier" class="form-select @error('courier') is-invalid @enderror" id="courier">
+                                                <option value="" disabled selected>Pilih kurir...</option>
+                                                @foreach($courier as $item)
+                                                <option value="{{ $item->code }}">{{ $item->name }}</option>
                                                 @endforeach
                                             </select>
-                                            <small class="text-primary fw-bold" id="order_shipping_description" style="display: none"><i class="fa fa-exclamation-circle me-1"></i> Varian ini telah ditambahkan pada produk ini.</small>
-                                            @error('order_type')
+                                            @error('courier')
                                             <div class="invalid-feedback">
                                                 {{ $message }}
                                             </div>
                                             @enderror
                                         </div>
                                     </div>
-                                    <div class="col-12">
-                                        <div class="row" style="display: none" id="order_via_expedition">
-                                            <div class="col-md-6 col-sm-12">
-                                                <div class="form-group">
-                                                    <label for="courier-vertical">Kurir</label>
-                                                    <select name="courier" class="form-select @error('courier') is-invalid @enderror" id="courier">
-                                                        <option value="" disabled selected>Pilih kurir...</option>
-                                                        @foreach($courier as $item)
-                                                        <option value="{{ $item->code }}">{{ $item->name }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                    <small class="text-primary fw-bold" id="order_shipping_description" style="display: none"><i class="fa fa-exclamation-circle me-1"></i> Varian ini telah ditambahkan pada produk ini.</small>
-                                                    @error('courier')
-                                                    <div class="invalid-feedback">
-                                                        {{ $message }}
-                                                    </div>
-                                                    @enderror
-                                                </div>
+                                    <div class="col-md-3 col-sm-6">
+                                        <div class="form-group">
+                                            <label for="service-type-vertical">Jenis Layanan</label>
+                                            <select disabled name="service" class="form-select" id="service">
+                                                <option value="" disabled selected>Pilih layanan...</option>
+                                            </select>
+                                            @error('service')
+                                            <div class="invalid-feedback">
+                                                {{ $message }}
                                             </div>
-                                            <div class="col-md-6 col-sm-12">
-                                                <div class="form-group">
-                                                    <label for="service-type-vertical">Jenis Layanan</label>
-                                                    <select name="service" class="form-select" id="service">
-                                                        <option value="" disabled selected>Pilih layanan...</option>
-                                                    </select>
-                                                    <small class="text-primary fw-bold" id="order_shipping_description" style="display: none"><i class="fa fa-exclamation-circle me-1"></i> Varian ini telah ditambahkan pada produk ini.</small>
-                                                    @error('service')
-                                                    <div class="invalid-feedback">
-                                                        {{ $message }}
-                                                    </div>
-                                                    @enderror
-                                                </div>
-                                            </div>
+                                            @enderror
                                         </div>
                                     </div>
-                                    <!-- <div class="col-12">
-                                        <div class="form-check form-switch mb-3">
-                                            <div class="checkbox">
-                                                <input {{ old('different_address') == 'on' ? 'checked' : '' }} type="checkbox" id="different_address_checkbox" class="form-check-input">
-                                                <label for="checkbox3">Gunakan alamat yang berbeda</label>
+                                    <div class="col-md-3 col-sm-6">
+                                        <div class="form-group">
+                                            <label for="service-type-vertical">Estimasi Pengiriman</label>
+                                            <p class="text-primary fs-4 fw-bold" id="etd">-</p>
+                                            @error('service')
+                                            <div class="invalid-feedback">
+                                                {{ $message }}
                                             </div>
+                                            @enderror
                                         </div>
-                                    </div> -->
-                                    <div id="transfer_payment_type">
-                                        <div class="row">
-                                            <div class="col-6">
-                                                <div class="form-group">
-                                                    <label for="send-from-vertical">Dikirim dari</label>
-                                                    <p class="text-primary fw-bold">
-                                                        <span id="send-from-address">{{ $configuration->address }}</span><br>
-                                                        <span id="send-from-city">{{ $configuration->city }}</span>, <span id="send-from-province">{{ $configuration->province }}</span><br>
-                                                        <span id="send-from-postal-code">{{ $configuration->postal_code }}</span><br>
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div id="same_address" class="col-6">
-                                                <div class="form-group">
-                                                    <label for="send-to-vertical">Alamat tujuan</label>
-                                                    <p class="text-primary fw-bold" id="send-to-vertical">
-                                                        <span id="send-to-address"></span><br>
-                                                        <span id="send-to-city"></span>, <span id="send-to-province"></span><br>
-                                                        <span id="send-to-postal-code"></span><br>
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div id="different_address_field" class="col-6" style="display: none">
-                                                <div class="form-group">
-                                                    <label for="shop-address-vertical">Alamat tujuan <span class="text-danger">*</span></label>
-                                                    <textarea name="shop_address" class="form-control @error('shop_address') is-invalid @enderror" id="shop_address" rows="3" placeholder="contoh: Jl. Pegangsaan Timur No. 56">{{ auth()->user()->reseller->shop_address ?? old('shop_address') }}</textarea>
-                                                    @error('shop_address')
-                                                    <div class="invalid-feedback">
-                                                        {{ $message }}
-                                                    </div>
-                                                    @enderror
-                                                </div>
-                                            
-                                                <div class="form-group">
-                                                    <label for="province-vertical">Provinsi <span class="text-danger">*</span></label>
-                                                    <select id="province" name="province" class="form-select @error('province') is-invalid @enderror select2" style="width: 100%">
-                                                        <option value="" disabled selected>Pilih provinsi...</option>
-                                                    </select>
-                                                    @error('province')
-                                                    <div class="invalid-feedback">
-                                                        {{ $message }}
-                                                    </div>
-                                                    @enderror
-                                                </div>
-                                            
-                                                <div class="form-group">
-                                                    <label for="city-vertical">Kabupaten/Kota <span class="text-danger">*</span></label>
-                                                    <select data-postal-code="{{ auth()->user()->reseller->postal_code ?? '' }}" id="city" name="city" class="form-select @error('city') is-invalid @enderror select2" style="width: 100%">
-                                                        <option value="" disabled selected>Pilih kabupaten/kota...</option>
-                                                    </select>
-                                                    @error('city')
-                                                    <div class="invalid-feedback">
-                                                        {{ $message }}
-                                                    </div>
-                                                    @enderror
-                                                </div>
-                                            
-                                                <div class="form-group">
-                                                    <label for="postal_code">Kode Pos <small class="text-muted fw-bold">contoh: 80226</small> <span class="text-danger">*</span></label>
-                                                    <input type="text" id="postal_code" class="form-control @error('postal_code') is-invalid @enderror"
-                                                        name="postal_code" value="{{ auth()->user()->reseller->postal_code ?? old('postal_code') }}" placeholder="xxxxx">
-                                                    @error('postal_code')
-                                                    <div class="invalid-feedback">
-                                                        {{ $message }}
-                                                    </div>
-                                                    @enderror
-                                                </div>
-                                            </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="form-group">
+                                            <label for="send-from-vertical">Dikirim dari</label>
+                                            <p class="text-primary fw-bold">
+                                                <span id="send-from-address">{{ $configuration->address }}</span><br>
+                                                <span id="send-from-city">{{ $configuration->city }}</span>, <span id="send-from-province">{{ $configuration->province }}</span><br>
+                                                <span id="send-from-postal-code">{{ $configuration->postal_code }}</span><br>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="form-group">
+                                            <label for="send-to-vertical">Alamat tujuan</label>
+                                            <p class="text-primary fw-bold" id="send-to-vertical">
+                                                <span id="send-to-address"></span><br>
+                                                <span id="send-to-city"></span>, <span id="send-to-province"></span><br>
+                                                <span id="send-to-postal-code"></span><br>
+                                            </p>
                                         </div>
                                     </div>
                                     <div class="col-12 d-flex justify-content-end">
@@ -230,7 +159,14 @@ Memesan barang yang telah dimasukkan pada keranjang.
             <div class="card">
                 <div class="card-content">
                     <div class="card-body">
-                        
+                        <div class="row">
+                            <div class="col-md-12 text-center" id="not_available">
+                                <i class="fa fa-shopping-cart text-muted fa-4x my-3"></i>
+                                <h4>Oops, keranjang Anda kosong!</h4>
+                                <p>Silahkan pilih produk pada menu Inventori agar dapat mengajukan pemesanan.</p>
+                                <a href="{{ route('inventory.index') }}" class="btn btn-primary">Kembali ke Inventori</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -244,17 +180,6 @@ Memesan barang yang telah dimasukkan pada keranjang.
 @section('js')
 <script src="{{ asset('js/rajaongkir-shipping-cost.js') }}"></script>
 <script type="text/javascript">
-let differentAddressField = $('#different_address_field')
-let sameAddress = $('#same_address')
-let orderViaExpedition = $('#order_via_expedition')
-let expeditionOnly = $('#expedition_only')
-let shippingPriceRow = $('#shipping_price_row')
-let grandTotalRow = $('#grand_total_row')
-
-differentAddressField.hide()
-orderViaExpedition.hide()
-expeditionOnly.hide()
-
 $(document).ready(function() {
     let provinceList, 
     cityList, 
@@ -371,41 +296,6 @@ $(document).ready(function() {
         }
         resellerCityId = $(this).val()
     })
-    
-    $('#different_address_checkbox').on('change', function() {
-        if($(this).is(":checked")) {
-            differentAddressField.css('display', 'block')
-            sameAddress.css('display', 'none')
-        } else {
-            differentAddressField.css('display', 'none')
-            sameAddress.css('display', 'block')
-        }
-    })
-
-    $('#order_type').on('change', function() {
-        var description = $(this).find(':selected').data('description')
-        if(description != "") {
-            $('#order_shipping_description').text(description)
-            $('#order_shipping_description').show()
-        } else {
-            $('#order_shipping_description').hide()
-        }
-
-        if($(this).val() == 2) {
-            orderViaExpedition.show()
-            expeditionOnly.css('display', 'none')
-            shippingPriceRow.show()
-            grandTotalRow.show()
-        } else {
-            orderViaExpedition.hide()
-            expeditionOnly.css('display', 'block')
-            shippingPriceRow.hide()
-            grandTotalRow.hide()
-        }
-        
-        $('#courier').prop('required', $(this).val() == 2)
-        $('#service').prop('required', $(this).val() == 2)
-    })
 
     let costs = (origin, destination, weight, courier) => {
         const API_KEY = `e22f1c6f62ab0ff49b35f91cf61a3362`
@@ -430,12 +320,13 @@ $(document).ready(function() {
 
         resetPrice()
         $('#service').prop('disabled', true)
+        $('#etd').text('-')
 
         costs(ownerCityId, resellerCityId, weight, courier).then(json => {
             $('#service').empty()
             let services = `<option value="" disabled selected>Pilih layanan...</option>`
             for(const item of json.data.rajaongkir.results[0].costs) {
-                services += `<option data-price="${item.cost[0].value}" value="${item.service}">${item.service}</option>`
+                services += `<option data-etd="${item.cost[0].etd}" data-price="${item.cost[0].value}" value="${item.service}">${item.service}</option>`
             }
             $('#service').append(services)
             $('#service').prop('disabled', false)
@@ -443,9 +334,13 @@ $(document).ready(function() {
     })
 
     $('#service').on('change', function() {
+        let etd = $(this).find(':selected').data('etd').toString().toLowerCase()
+
         let cost = $(this).find(':selected').data('price')
         let subTotal = $('#sub_total_price').data('sub-total-price')
         let grandTotal = cost + subTotal
+
+        $('#etd').text(etd.includes("hari") ? etd : etd + " hari")
         $('#shipping_price').text(cost.toLocaleString('id'))
         $('#grand_total').text(grandTotal.toLocaleString('id'))
     })

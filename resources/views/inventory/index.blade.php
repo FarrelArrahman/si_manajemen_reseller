@@ -1,11 +1,11 @@
 @extends('layouts.template')
 
 @section('title')
-Inventori
+Varian Produk
 @endsection
 
 @section('sub-title')
-Daftar inventori produk yang tersedia.
+Daftar seluruh varian produk yang tersedia.
 @endsection
 
 @section('action-button')
@@ -37,7 +37,7 @@ Daftar inventori produk yang tersedia.
                 <div class="col-md-4">
                     <small>Kategori</small>
                     <div class="input-group mb-3">
-                        <select class="form-control filter" id="category_id">
+                        <select class="form-select filter" id="category_id">
                         </select>
                     </div>
                 </div>
@@ -123,12 +123,13 @@ Daftar inventori produk yang tersedia.
                                     <div class="form-group row align-items-center pb-0 mb-0">
                                         <div class="col-lg-12 col-12">
                                             <label class="col-form-label fw-bold">Jumlah Pesan</label>
-                                            <div class="input-group mb-3">
+                                            <div class="input-group mb-2">
                                                 <button class="btn btn-outline-secondary input-group-text" id="decrease">-</button>
                                                 <input type="hidden" id="product_variant_id">
-                                                <input type="number" class="form-control" id="qty" value="1" min="1">
+                                                <input type="number" class="form-control" id="qty" value="0" min="0">
                                                 <button class="btn btn-outline-secondary input-group-text" id="increase">+</button>
                                             </div>
+                                            <p class="text-success" id="in-cart-qty-label">Qty Keranjang: <span id="in-cart-qty"></span></p>
                                         </div>
                                     </div>
                                 </div>
@@ -169,7 +170,7 @@ Daftar inventori produk yang tersedia.
             <div class="modal-body">
                 <div class="row">
                     <div class="col-md-12" id="cart_detail">
-                        <table class="table cart_detail_table" width="100%">
+                        <table class="table table-responsive cart_detail_table" width="100%">
                             <thead>
                                 <tr>
                                     <th>#</th>
@@ -208,6 +209,9 @@ Daftar inventori produk yang tersedia.
 <script src="{{ asset('js/price_range_script.js') }}"></script>
 
 <script>
+    let inCartQtyLabel = $('#in-cart-qty-label');
+    inCartQtyLabel.hide();
+    
     // Jquery Datatable
     var table = $('.yajra-datatable').DataTable({
         processing: true,
@@ -375,6 +379,18 @@ Daftar inventori produk yang tersedia.
                 },
             }).then(response => response.json())
         }
+
+        let checkQuantity = (productVariantId) => {
+            var url = "{{ route('inventory.checkQuantity', 'x') }}/".replace("x", productVariantId)
+            return fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json; charset=UTF-8',
+                    'X-CSRF-Token': csrfToken
+                },
+            }).then(response => response.json())
+        }
         
         var addToCartModal = document.getElementById('add_to_cart')
         addToCartModal.addEventListener('show.bs.modal', function (event) {
@@ -383,14 +399,27 @@ Daftar inventori produk yang tersedia.
 
             getProductVariantDetail(productVariantId).then(json => {
                 if(json.success) {
-                    if(json.data.stock < 1) {
+                    let stock = json.data.stock
+                    if(stock < 1) {
                         $('#add_to_cart_button').prop('disabled', true)
                     }
                     $('#product_variant_name').text(`${json.data.product.product_name} (${json.data.product_variant_name})`)
-                    $('#stock').text(json.data.stock)
+                    $('#stock').text(stock)
                     $('#photo').attr('src', json.data.photo)
-                    $('#qty').attr('max', json.data.stock)
+                    $('#qty').attr('max', stock)
                     $('#product_variant_id').val(json.data.id)
+                    
+                    checkQuantity(productVariantId).then(res => {
+                        let inCartQty = res.data.quantity
+                        if(inCartQty > 0) {
+                            $('#qty').attr('max', stock - inCartQty)
+                            $('#in-cart-qty').text(inCartQty)
+                            inCartQtyLabel.show()
+                        } else {
+                            inCartQtyLabel.hide()
+                        }
+                    }).catch(error => error)
+                    
                     productVariantDetail.slideDown()
                     $('#add_to_cart_button').show()
                 } else {
@@ -403,6 +432,7 @@ Daftar inventori produk yang tersedia.
         })
 
         addToCartModal.addEventListener('hidden.bs.modal', function (event) {
+            inCartQtyLabel.hide()
             productVariantDetail.hide()
             notAvailable.hide()
             spinner.show()
@@ -450,13 +480,18 @@ Daftar inventori produk yang tersedia.
             }).then(response => response.json())
         }
 
-        $('#add_to_cart_button').on('click', function() {
+        $('#add_to_cart_button').on('click', function() {            
             $(this).attr('disabled', 'disabled')
             $('#add_to_cart_label').text("Loading...")
 
             let data = {
                 product_variant_id: $('#product_variant_id').val(),
                 quantity: $('#qty').val(),
+            }
+
+            if(data.quantity < 1) {
+                $('.close').click()
+                return;
             }
 
             addToCart(data).then(json => {
