@@ -46,12 +46,12 @@ class ProductController extends Controller
             ->addIndexColumn()
             ->addColumn('action', function($row){
                 if($row->trashed() && auth()->user()->isAdmin()) {
-                    $actionBtn = '<button data-id="' . $row->id . '" class="btn btn-text text-primary me-1 ms-1 restore-button"><i class="fa fa-undo-alt fa-sm"></i></button>';
+                    $actionBtn = '<button data-id="' . $row->sku . '" class="btn btn-text text-primary me-1 ms-1 restore-button"><i class="fa fa-undo-alt fa-sm"></i></button>';
                 } else {
-                    $actionBtn = '<a href="' . route('product.show', $row->id) . '" class="text-info me-1 ms-1"><i class="fa fa-search fa-sm"></i></a>';
+                    $actionBtn = '<a href="' . route('product.show', $row->sku) . '" class="text-info me-1 ms-1"><i class="fa fa-search fa-sm"></i></a>';
                     if(auth()->user()->isAdmin()) {
-                        $actionBtn .= '<a href="' . route('product.edit', $row->id) . '" data-id="' . $row->id . '" class="btn btn-link p-0 text-warning me-1 ms-1"><i class="fa fa-edit fa-sm"></i></a>';
-                        $actionBtn .= '<button data-id="' . $row->id . '" class="btn btn-link p-0 text-danger me-1 ms-1 delete-button"><i class="fa fa-trash-alt fa-sm"></i></button>';
+                        $actionBtn .= '<a href="' . route('product.edit', $row->sku) . '" data-id="' . $row->id . '" class="btn btn-link p-0 text-warning me-1 ms-1"><i class="fa fa-edit fa-sm"></i></a>';
+                        $actionBtn .= '<button data-id="' . $row->sku . '" class="btn btn-link p-0 text-danger me-1 ms-1 delete-button"><i class="fa fa-trash-alt fa-sm"></i></button>';
                     }
                 }
                 return $actionBtn;
@@ -166,12 +166,12 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  int  $product
+     * @param  string  $product
      * @return \Illuminate\Http\Response
      */
     public function show($product)
     {
-        $product = Product::withTrashed()->findOrFail($product);
+        $product = Product::withTrashed()->where('sku', $product)->firstOrFail();
 
         return view('product.show', compact('product'));
     }
@@ -179,12 +179,12 @@ class ProductController extends Controller
     /**
      * Return the specified resource as json.
      *
-     * @param  int  $product
+     * @param  string  $product
      * @return \Illuminate\Http\Response
      */
     public function detail($product)
     {
-        $product = Product::withTrashed()->find($product);
+        $product = Product::withTrashed()->where('sku', $product)->firstOrFail();
 
         if($product) {
             return response()->json([
@@ -213,7 +213,7 @@ class ProductController extends Controller
      */
     public function edit($product)
     {
-        $product = Product::withTrashed()->findOrFail($product);
+        $product = Product::withTrashed()->where('sku', $product)->firstOrFail();
         $units = Unit::all();
         $categories = Category::all();
 
@@ -229,18 +229,20 @@ class ProductController extends Controller
      */
     public function update(Request $request, $product)
     {
-        $product = Product::withTrashed()->findOrFail($product);
-
+        $product = Product::withTrashed()->where('sku', $product)->firstOrFail();
+        
         $validator = Validator::make($request->all(), [
             'product_name'      => 'required|string',
             'description'       => 'nullable|string',
             'category_id'       => 'required|exists:App\Models\Category,id',
             'unit_id'           => 'required|exists:App\Models\Unit,id',
         ]);
-    
+        
         $default_photo = $product->default_photo;
-        if($request->hasFile('default_photo') && $default_photo != 'public/no-image.png') {
-            Storage::delete($default_photo);
+        if($request->hasFile('default_photo')) {
+            if($default_photo != 'public/no-image.png') {
+                Storage::delete($default_photo);
+            }
             $default_photo = $request->file('default_photo')->store('public/products');
         }
 
@@ -254,17 +256,19 @@ class ProductController extends Controller
             'product_status'    => $request->product_status == 'on' ? 1 : 0,
         ]);
 
-        return redirect()->route('product.index')->with('success', 'Berhasil mengubah master produk.');
+        return redirect()->route('product.show', $product->sku)->with('success', 'Berhasil mengubah master produk.');
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Product  $product
+     * @param  string  $product
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Product $product)
+    public function destroy($product)
     {
+        $product = Product::withTrashed()->where('sku', $product)->firstOrFail();
+        
         if($product->delete()) {
             return response()->json([
                 'success' => true,
@@ -287,12 +291,12 @@ class ProductController extends Controller
     /**
      * Restore the specified resource in storage.
      *
-     * @param  int  $product
+     * @param  string  $product
      * @return \Illuminate\Http\Response
      */
     public function restore(Request $request, $product)
     {
-        $product = Product::withTrashed()->find($product);
+        $product = Product::withTrashed()->where('sku', $product)->firstOrFail();
         
         if($product->restore()) {
             return response()->json([
@@ -316,7 +320,7 @@ class ProductController extends Controller
     /**
      * Change product status.
      *
-     * @param  int  $product
+     * @param  string  $product
      * @return \Illuminate\Http\Response
      */
     public function changeStatus(Request $request, $product)

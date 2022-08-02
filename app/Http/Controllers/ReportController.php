@@ -2,84 +2,96 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Report;
 use Illuminate\Http\Request;
+use App\Traits\GeneralSellingReport;
+use App\Traits\SellingRecapReport;
+use App\Traits\ProductSellingReport;
 
 class ReportController extends Controller
 {
+    use GeneralSellingReport, SellingRecapReport, ProductSellingReport;
+
     /**
-     * Display a listing of the resource.
+     * Display general report.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function general()
     {
-        //
+        return view('report.generalreport');
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
+     * API for general selling report.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function generalSellingReport(Request $request)
     {
-        //
+        return response()->json([
+            'success' => true,
+            'type' => 'general_selling_report',
+            'message' => 'Laporan total penjualan',
+            'data' => $this->sellingReportInit($request->interval, $request->start, $request->end)->generateSellingReport(),
+            // 'data' => $request->all(),
+            'statusCode' => 200
+        ], 200);
     }
 
     /**
-     * Display the specified resource.
+     * Display selling recap report.
      *
-     * @param  \App\Models\Report  $report
      * @return \Illuminate\Http\Response
      */
-    public function show(Report $report)
+    public function sellingRecap()
     {
-        //
+        return view('report.sellingRecap');
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Report  $report
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Report $report)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
+     * API for selling recap report.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Report  $report
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Report $report)
+    public function sellingRecapReport(Request $request)
     {
-        //
+        return response()->json([
+            'success' => true,
+            'type' => 'selling_recap_report',
+            'message' => 'Laporan rekap penjualan',
+            'data' => $this->sellingRecapReportInit($request->start, $request->end)->generateSellingRecapReport(),
+            // 'data' => $request->all(),
+            'statusCode' => 200
+        ], 200);
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Display product selling report.
      *
-     * @param  \App\Models\Report  $report
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Report $report)
+    public function productSelling()
     {
-        //
+        return view('report.productSelling');
+    }
+
+    /**
+     * API for product selling report.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function productSellingReport(Request $request)
+    {
+        return response()->json([
+            'success' => true,
+            'type' => 'product_selling_report',
+            'message' => 'Laporan penjualan produk',
+            'data' => $this->productSellingReportInit($request->product, $request->start, $request->end)->generateProductSellingReport(),
+            // 'data' => $request->all(),
+            'statusCode' => 200
+        ], 200);
     }
 }

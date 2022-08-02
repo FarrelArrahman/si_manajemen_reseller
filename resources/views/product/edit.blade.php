@@ -15,10 +15,10 @@ Mengubah data master produk.
         <div class="col-md-12 col-24">
             @if($product->trashed())
             <div class="alert alert-danger">
-                Produk ini telah dihapus sementara. Untuk memulihkan dan menampilkan produk ini, <a href="{{ route('product.restore', ['product' => $product->id, 'ref' => 'edit']) }}">klik di sini</a>.
+                Produk ini telah dihapus sementara. Untuk memulihkan dan menampilkan produk ini, <a href="{{ route('product.restore', ['product' => $product->sku, 'ref' => 'edit']) }}">klik di sini</a>.
             </div>
             @endif
-            <form class="form form-horizontal" method="POST" action="{{ route('product.update', $product->id) }}" enctype="multipart/form-data">
+            <form class="form form-horizontal" method="POST" action="{{ route('product.update', $product->sku) }}" enctype="multipart/form-data">
                 <div class="card">
                     <div class="card-content">
                         <div class="card-body">

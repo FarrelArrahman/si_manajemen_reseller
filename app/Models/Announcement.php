@@ -51,12 +51,17 @@ class Announcement extends Model
     }
 
     // Helper
+    public function isPrivate()
+    {
+        return $this->is_private == 1;
+    }
+
     public function statusBadge()
     {
         $type = "success";
         $message = "Publik";
         
-        if($this->is_private == 1) {
+        if($this->isPrivate()) {
             $type = 'secondary';
             $message = "Privasi";
         }
@@ -69,7 +74,7 @@ class Announcement extends Model
     {
         $checked = 'checked';
         
-        if($this->is_private == 1) {
+        if($this->isPrivate()) {
             $checked = '';
         }
 

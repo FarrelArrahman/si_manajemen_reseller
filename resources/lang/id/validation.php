@@ -30,7 +30,6 @@ return [
         'social_media' => 'Media Sosial',
         'shop_name' => 'Nama Toko',
         'shop_address' => 'Alamat Toko',
-        'shopee_link' => 'Link Shopee',
         'reseller_registration_proof_of_payment' => 'Bukti Pembayaran Pembelian Pertama',
         'stock' => 'Stok',
         'title' => 'Judul',

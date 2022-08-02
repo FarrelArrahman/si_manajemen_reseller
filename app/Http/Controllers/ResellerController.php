@@ -167,6 +167,7 @@ class ResellerController extends Controller
     public function update(Request $request, Reseller $reseller)
     {
         // dd($request->all());
+        $message = "";
         $validator = $request->validate([
             'shop_name' => 'required|string',
             'shop_address' => 'required|string',
@@ -183,7 +184,6 @@ class ResellerController extends Controller
             'social_media.twitter'  => 'nullable|url',
             'social_media.instagram'  => 'nullable|url',
             'social_media.tiktok'  => 'nullable|url',
-            'shopee_link'  => 'required|url',
             'reseller_registration_proof_of_payment' => 'nullable|file|mimes:jpg,jpeg,png,gif|max:4096',
         ]);
 
@@ -215,24 +215,29 @@ class ResellerController extends Controller
             ]);
         }
 
-        if( ! $reseller->isActive() && $request->hasFile('reseller_registration_proof_of_payment')) {
-            $reseller->update([
-                'reseller_registration_proof_of_payment' => $request->file('reseller_registration_proof_of_payment')->store('public/reseller_registration_proof_of_payment'),
-                'rejection_reason' => NULL,
-            ]);
+        if( ! $reseller->isActive()) {
+            if($request->hasFile('reseller_registration_proof_of_payment')) {
+                $reseller->update([
+                    'reseller_registration_proof_of_payment' => $request->file('reseller_registration_proof_of_payment')->store('public/reseller_registration_proof_of_payment'),
+                    'rejection_reason' => NULL,
+                ]);
+            }
 
-        }
+            $data = [
+                'id' => $reseller->user->id,
+                'success' => true,
+                'action' => "update_pending_reseller_count",
+                'message' => 'User "' . $reseller->user->name . '" telah mengajukan data reseller untuk diverifikasi.'
+            ];
         
-        $data = [
-            'id' => $reseller->user->id,
-            'success' => true,
-            'action' => "update_pending_reseller_count",
-            'message' => 'User "' . $reseller->user->name . '" telah mengajukan data reseller untuk diverifikasi.'
-        ];
-    
-        AdminEvent::dispatch($data);
+            AdminEvent::dispatch($data);
 
-        return redirect()->route('reseller.edit')->with('success', 'Berhasil mengisi data reseller. Harap tunggu verifikasi oleh admin.');
+            $message = "Berhasil mengisi data reseller. Harap tunggu verifikasi oleh admin.";
+        } else {
+            $message = "Berhasil memperbarui data reseller.";
+        }
+
+        return redirect()->route('reseller.edit')->with('success', $message);
     }
 
     /**

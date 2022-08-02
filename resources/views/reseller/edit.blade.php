@@ -41,11 +41,11 @@ Mengisi data reseller agar dapat dilakukan verifikasi oleh Admin.
                             <h4 class="card-title mb-0 pb-0">Informasi Dasar</h4>
                         </div>
                         <div class="card-body">
-                            <!-- @if($errors->any())
+                            @if($errors->any())
                             @foreach($errors->all() as $error)
                                 <div>{{ $error }}</div>
                             @endforeach
-                            @endif -->
+                            @endif
                             @csrf
                             @method('PUT')
                             <div class="form-body">

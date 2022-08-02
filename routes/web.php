@@ -1,9 +1,6 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Events\NotificationEvent;
-use App\Events\ResellerEvent;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
@@ -17,7 +14,9 @@ use App\Http\Controllers\ProductVariantController;
 use App\Http\Controllers\ProductVariantStockLogController;
 use App\Http\Controllers\RajaongkirController;
 use App\Http\Controllers\ResellerController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserController;
+use Carbon\Carbon;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,34 +30,29 @@ use App\Http\Controllers\UserController;
 */
 
 // Route for testing and debugging
-// Route::get('/test', function() {
-//     $product = App\Models\ProductVariant::where('product_id', 1)->withTrashed()->get();
-//     return response()->json(['data' => $product]);
-// });
+Route::get('/test', function() {
+    return Carbon::createFromDate('2022', '07', 1)->endOfMonth();
+});
 
 // Route::get('/test', function(Request $request) {
 //     dd(App\Models\Order::find(1)->orderShipping);
 // });
 
-Route::post('verified', function(Request $request) {
-    $message = [
-        'id' => 3,
-        'success' => true,
-        'message' => $request->message
-    ];
+// Route::post('verified', function(Request $request) {
+//     $message = [
+//         'id' => 3,
+//         'success' => true,
+//         'message' => $request->message
+//     ];
 
-    ResellerEvent::dispatch($message);
-});
+//     ResellerEvent::dispatch($message);
+// });
 
+// Route autentikasi
 Auth::routes();
 
+// Route khusus yang sudah login
 Route::middleware(['auth'])->group(function() {
-    Route::get('/', function() {
-        return redirect()->route('dashboard');        
-    });
-
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
     // APIs
     Route::prefix('/api/v1')->group(function() {
         // Category API
@@ -76,6 +70,7 @@ Route::middleware(['auth'])->group(function() {
         // Product Variant API
         Route::get('/product/{product}/variant', [ProductVariantController::class, 'index_dt'])->name('product_variant.index_dt');
         Route::get('/product/{product}/variant/{productVariant}', [ProductVariantController::class, 'checkVariant'])->name('product_variant.checkVariant');
+        Route::get('/variant/search', [ProductVariantController::class, 'search'])->name('product_variant.search');
         Route::get('/variant/{productVariant}', [ProductVariantController::class, 'detail'])->name('product_variant.detail');
         Route::get('/variant/{productVariant}/color', [ProductVariantController::class, 'color'])->name('product_variant.color');
 
@@ -116,70 +111,113 @@ Route::middleware(['auth'])->group(function() {
         Route::get('/order_payment/datatable', [OrderPaymentController::class, 'index_dt'])->name('order_payment.index_dt');
         Route::get('/order_payment/pending', [OrderPaymentController::class, 'pending'])->name('order_payment.pending');
         Route::get('/order_payment/{order_payment}', [OrderPaymentController::class, 'detail'])->name('order_payment.detail');
+
+        // Report API (General)
+        Route::post('/report/general/selling', [ReportController::class, 'generalSellingReport'])->name('report.generalSellingReport');
+        
+        // Report API (Selling Recap)
+        Route::post('/report/selling-recap', [ReportController::class, 'sellingRecapReport'])->name('report.sellingRecapReport');
+        
+        // Report API (Product Selling)
+        Route::post('/report/product-selling', [ReportController::class, 'productSellingReport'])->name('report.productSellingReport');
     });
     
+    // Base URL (Redirect to Dashboard)
+    Route::get('/', function() {
+        return redirect()->route('dashboard');        
+    });
+
+    // Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Route Group khusus Admin dan Staff
+    Route::middleware('role:Admin,Staff')->group(function() {
+        // Product
+        Route::get('/product/{product}/restore', [ProductController::class, 'restore'])->name('product.restore');
+        Route::patch('/product/{product}/change-status', [ProductController::class, 'changeStatus'])->name('product.changeStatus');
+        Route::resource('product', ProductController::class)->only(['create', 'store', 'edit', 'update', 'destroy']);
+
+        // Product Variant
+        Route::get('/product/{product}/variant/', [ProductVariantController::class, 'create'])->name('product_variant.create');
+        Route::post('/product/{product}/variant/', [ProductVariantController::class, 'store'])->name('product_variant.store');
+        Route::get('/product/{product}/variant/{productVariant}/edit', [ProductVariantController::class, 'edit'])->name('product_variant.edit');
+        Route::put('/product/{product}/variant/{productVariant}', [ProductVariantController::class, 'update'])->name('product_variant.update');
+        Route::delete('/product/{product}/variant/{productVariant}', [ProductVariantController::class, 'destroy'])->name('product_variant.destroy');
+        Route::get('/product/{product}/variant/{productVariant}/restore', [ProductVariantController::class, 'restore'])->name('product_variant.restore');
+        Route::patch('/product/{product}/variant/{productVariant}/change-status', [ProductVariantController::class, 'changeStatus'])->name('product_variant.changeStatus');
+        Route::patch('/product/{product}/variant/{productVariant}/change-stock', [ProductVariantController::class, 'changeStock'])->name('product_variant.changeStock');
+
+        // Category
+        Route::patch('/category/{category}/change-status', [CategoryController::class, 'changeStatus'])->name('category.changeStatus');
+        Route::resource('category', CategoryController::class);
+
+        // User
+        Route::get('/user/{role}', [UserController::class, 'index'])->name('user.index'); 
+        Route::get('/user/{role}/create', [UserController::class, 'create'])->name('user.create');
+        Route::post('/user/{role}/', [UserController::class, 'store'])->name('user.store');
+        Route::get('/user/{role}/{user}', [UserController::class, 'show'])->name('user.show');
+        Route::delete('/user/{role}/{user}', [UserController::class, 'destroy'])->name('user.destroy');
+        Route::get('/user/{role}/{user}/restore', [UserController::class, 'restore'])->name('user.restore');
+
+        // Reseller
+        Route::get('/reseller', [ResellerController::class, 'index'])->name('reseller.index');
+        Route::patch('/reseller/{reseller}/verify', [ResellerController::class, 'verify'])->name('reseller.verify');
+        Route::patch('/reseller/{reseller}/change-status', [ResellerController::class, 'changeStatus'])->name('reseller.changeStatus');
+
+        // Announcement
+        Route::patch('/announcement/{announcement}/change-status', [AnnouncementController::class, 'changeStatus'])->name('announcement.changeStatus');
+        Route::resource('announcement', AnnouncementController::class)->only(['create', 'store', 'edit', 'update', 'destroy']);
+
+        // Order
+        Route::patch('/order/{order}/verify', [OrderController::class, 'verify'])->name('order.verify');
+
+        // Order Payment
+        Route::patch('/order_payment/{order}/verify', [OrderPaymentController::class, 'verify'])->name('order_payment.verify');
+
+        // Report
+        Route::get('/report/general', [ReportController::class, 'general'])->name('report.general');
+        Route::get('/report/selling-recap', [ReportController::class, 'sellingRecap'])->name('report.sellingRecap');
+        Route::get('/report/product-selling', [ReportController::class, 'productSelling'])->name('report.productSelling');
+
+        // Configuration
+        Route::get('/configuration', [ConfigurationController::class, 'index'])->name('configuration.index');
+        Route::put('/configuration', [ConfigurationController::class, 'update'])->name('configuration.update');
+    });
+    
+    // Route Group khusus Reseller
+    Route::middleware('role:Reseller')->group(function() {
+        // 
+    });
+
     // Product
-    // Route::get('/product/{product}/detail', [ProductController::class, 'detail'])->name('product.detail');
-    Route::get('/product/{product}/restore', [ProductController::class, 'restore'])->name('product.restore');
-    Route::patch('/product/{product}/change-status', [ProductController::class, 'changeStatus'])->name('product.changeStatus');
-    Route::resource('product', ProductController::class);
+    Route::resource('product', ProductController::class)->only(['index','show']);
 
     // Product Variant
-    Route::get('/product/{product}/variant/', [ProductVariantController::class, 'create'])->name('product_variant.create');
-    Route::post('/product/{product}/variant/', [ProductVariantController::class, 'store'])->name('product_variant.store');
     Route::get('/product/{product}/variant/{productVariant}', [ProductVariantController::class, 'show'])->name('product_variant.show');
-    Route::get('/product/{product}/variant/{productVariant}/edit', [ProductVariantController::class, 'edit'])->name('product_variant.edit');
-    Route::put('/product/{product}/variant/{productVariant}', [ProductVariantController::class, 'update'])->name('product_variant.update');
-    Route::delete('/product/{product}/variant/{productVariant}', [ProductVariantController::class, 'destroy'])->name('product_variant.destroy');
-    Route::get('/product/{product}/variant/{productVariant}/restore', [ProductVariantController::class, 'restore'])->name('product_variant.restore');
-    Route::patch('/product/{product}/variant/{productVariant}/change-status', [ProductVariantController::class, 'changeStatus'])->name('product_variant.changeStatus');
-    Route::patch('/product/{product}/variant/{productVariant}/change-stock', [ProductVariantController::class, 'changeStock'])->name('product_variant.changeStock');
 
     // Inventory
     Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
 
-    // Category
-    Route::patch('/category/{category}/change-status', [CategoryController::class, 'changeStatus'])->name('category.changeStatus');
-    Route::resource('category', CategoryController::class);
-
     // User
     Route::get('/profile', [UserController::class, 'profile'])->name('user.profile');
-    Route::get('/user/{role}', [UserController::class, 'index'])->name('user.index'); 
-    Route::get('/user/{role}/create', [UserController::class, 'create'])->name('user.create');
-    Route::post('/user/{role}/', [UserController::class, 'store'])->name('user.store');
-    Route::get('/user/{role}/{user}', [UserController::class, 'show'])->name('user.show');
     Route::get('/user/{role}/{user}/edit', [UserController::class, 'edit'])->name('user.edit');
     Route::put('/user/{role}/{user}', [UserController::class, 'update'])->name('user.update');
-    Route::delete('/user/{role}/{user}', [UserController::class, 'destroy'])->name('user.destroy');
-    Route::get('/user/{role}/{user}/restore', [UserController::class, 'restore'])->name('user.restore');
 
     // Reseller
-    Route::get('/reseller', [ResellerController::class, 'index'])->name('reseller.index');
     Route::get('/reseller/edit', [ResellerController::class, 'edit'])->name('reseller.edit');
     Route::put('/reseller/update', [ResellerController::class, 'update'])->name('reseller.update');
-    Route::patch('/reseller/{reseller}/verify', [ResellerController::class, 'verify'])->name('reseller.verify');
-    Route::patch('/reseller/{reseller}/change-status', [ResellerController::class, 'changeStatus'])->name('reseller.changeStatus');
 
     // Announcement
-    Route::patch('/announcement/{announcement}/change-status', [AnnouncementController::class, 'changeStatus'])->name('announcement.changeStatus');
-    Route::resource('announcement', AnnouncementController::class);
+    Route::resource('announcement', AnnouncementController::class)->only(['index','show']);
 
     // Order
     Route::get('/order', [OrderController::class, 'index'])->name('order.index');
     Route::get('/order/create', [OrderController::class, 'create'])->name('order.create');
     Route::post('/order', [OrderController::class, 'store'])->name('order.store');
-    Route::patch('/order/{order}/verify', [OrderController::class, 'verify'])->name('order.verify');
     Route::delete('/order/{order}/cancel', [OrderController::class, 'destroy'])->name('order.destroy');
     
     // Order Payment
     Route::get('/order_payment', [OrderPaymentController::class, 'index'])->name('order_payment.index');
-    Route::patch('/order_payment/{order}/verify', [OrderPaymentController::class, 'verify'])->name('order_payment.verify');
     Route::post('/order_payment/{order}/upload', [OrderPaymentController::class, 'upload'])->name('order_payment.upload');
-    Route::get('/order_payment/{order}', [OrderPaymentController::class, 'show'])->name('order_payment.show');
     Route::get('/order_payment/{order}/pdf', [OrderPaymentController::class, 'pdf'])->name('order_payment.pdf');
-    Route::post('/order_payment', [OrderPaymentController::class, 'store'])->name('order_payment.store');
-
-    // Configuration
-    Route::get('/configuration', [ConfigurationController::class, 'index'])->name('configuration.index');
-    Route::put('/configuration', [ConfigurationController::class, 'update'])->name('configuration.update');
 });

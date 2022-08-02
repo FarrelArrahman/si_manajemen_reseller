@@ -222,6 +222,19 @@ class OrderPaymentController extends Controller
         $order->orderPayment->payment_status = $request->status;
 
         if($request->status == OrderPayment::APPROVED) {
+            // Catat perubahan stok pada varian produk jika diterima
+            foreach($order->orderDetail as $item) {
+                ProductVariantStockLog::create([
+                    'product_variant_id' => $item->productVariant->id,
+                    'qty_change' => 0 - $item->quantity,
+                    'qty_before' => $item->productVariant->stock + $item->quantity,
+                    'qty_after' => $item->productVariant->stock - $item->quantity,
+                    'date' => now(),
+                    'note' => "Penjualan produk kepada Reseller",
+                    'handled_by' => auth()->user()->id,
+                ]);
+            }
+
             $order->orderPayment->approved_by = auth()->user()->id;
             $order->status = Order::DONE;
             $message = "Pembayaran pesanan #" . $order->code . " telah berhasil terverifikasi oleh Admin.";

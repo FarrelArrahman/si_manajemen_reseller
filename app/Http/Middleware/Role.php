@@ -5,7 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 
-class CheckRole
+class Role
 {
     /**
      * Handle an incoming request.
@@ -14,8 +14,12 @@ class CheckRole
      * @param  \Closure  $next
      * @return mixed
      */
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next, ... $roles)
     {
+        if( ! in_array(auth()->user()->role, $roles)) {
+            abort(404);
+        }
+        
         return $next($request);
     }
 }

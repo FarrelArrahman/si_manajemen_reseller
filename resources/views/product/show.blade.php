@@ -10,8 +10,8 @@
 
 @section('action-button')
 @if(auth()->user()->isAdmin())
-<a href="{{ route('product.edit', $product->id) }}" class="btn btn-warning"><i class="fas fa-edit fa-sm me-2"></i> Ubah Master Produk</a>
-<a href="{{ route('product_variant.create', ['product' => $product->id]) }}" class="btn btn-primary"><i class="fas fa-plus fa-sm me-2"></i> Tambah Varian Baru</a>
+<a href="{{ route('product.edit', $product->sku) }}" class="btn btn-warning"><i class="fas fa-edit fa-sm me-2"></i> Ubah Master Produk</a>
+<a href="{{ route('product_variant.create', ['product' => $product->sku]) }}" class="btn btn-primary"><i class="fas fa-plus fa-sm me-2"></i> Tambah Varian Baru</a>
 @endif
 @endsection
 
@@ -22,7 +22,7 @@
         <div class="col-md-12 col-24">
             @if($product->trashed())
             <div class="alert alert-danger">
-                Produk ini telah dihapus sementara. Untuk memulihkan dan menampilkan produk ini, <a href="{{ route('product.restore', ['product' => $product->id, 'ref' => 'show']) }}">klik di sini</a>.
+                Produk ini telah dihapus sementara. Untuk memulihkan dan menampilkan produk ini, <a href="{{ route('product.restore', ['product' => $product->sku, 'ref' => 'show']) }}">klik di sini</a>.
             </div>
             @endif
             <div class="card">
@@ -203,7 +203,7 @@
 @section('js')
 <script type="text/javascript">
     function deleteProductVariant(id) {
-        var url = "{{ route('product_variant.destroy', ['product' => $product->id, 'productVariant' => 'x']) }}/".replace("x", id)
+        var url = "{{ route('product_variant.destroy', ['product' => $product->sku, 'productVariant' => 'x']) }}/".replace("x", id)
         return fetch(url, {
             method: 'DELETE',
             headers: {
@@ -215,7 +215,7 @@
     }
 
     function restoreProductVariant(id) {
-        var url = "{{ route('product_variant.restore', ['product' => $product->id, 'productVariant' => 'x']) }}/".replace("x", id)
+        var url = "{{ route('product_variant.restore', ['product' => $product->sku, 'productVariant' => 'x']) }}/".replace("x", id)
         return fetch(url, {
             method: 'GET',
             headers: {
@@ -227,7 +227,7 @@
     }
 
     function changeProductVariantStatus(id, status) {
-        var url = "{{ route('product_variant.changeStatus', ['product' => $product->id, 'productVariant' => 'x']) }}/".replace("x", id)
+        var url = "{{ route('product_variant.changeStatus', ['product' => $product->sku, 'productVariant' => 'x']) }}/".replace("x", id)
         var data = {
             product_variant_status: status
         }
@@ -249,7 +249,7 @@
         serverSide: true,
         searchDelay: 1000,
         ajax: {
-            url: "{{ route('product_variant.index_dt', $product->id) }}",
+            url: "{{ route('product_variant.index_dt', $product->sku) }}",
             data: function (d) {
                 d.product_variant_status = $('#product_variant_status').val(),
                 d.show = $('#show').val(),

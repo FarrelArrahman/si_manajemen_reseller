@@ -84,19 +84,24 @@
                 </li>
 
                 @if(auth()->user()->isAdmin())
-                <li class="sidebar-item has-sub">
+                <li class="sidebar-item has-sub {{ request()->is('report*') ? 'active' : '' }}">
                     <a href="#" class='sidebar-link'>
                         <i class="bi bi-files"></i>
                         <span>Laporan</span>
                     </a>
-                    <ul class="submenu ">
-                        <li class="submenu-item ">
-                            <a href="#">
+                    <ul class="submenu {{ request()->is('report*') ? 'active' : '' }}">
+                        <li class="submenu-item {{ request()->is('report/general*') ? 'active' : '' }}">
+                            <a href="{{ route('report.general') }}">
+                                Laporan Umum
+                            </a>
+                        </li>
+                        <li class="submenu-item {{ request()->is('report/selling-recap*') ? 'active' : '' }}">
+                            <a href="{{ route('report.sellingRecap') }}">
                                 Laporan Rekap Penjualan
                             </a>
                         </li>
-                        <li class="submenu-item ">
-                            <a href="#">
+                        <li class="submenu-item {{ request()->is('report/product-selling*') ? 'active' : '' }}">
+                            <a href="{{ route('report.productSelling') }}">
                                 Laporan Penjualan Produk
                             </a>
                         </li>

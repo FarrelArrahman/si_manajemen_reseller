@@ -59,8 +59,8 @@ class InventoryController extends Controller
             ->addColumn('action', function($row){
                 $actionBtn = "";
                 if(auth()->user()->isAdmin()) {
-                    $actionBtn .= '<a href="' . route('product.show', $row->id) . '" class="text-info me-1 ms-1"><i class="fa fa-search fa-sm"></i></a>';
-                    $actionBtn .= '<a href="' . route('product.edit', $row->id) . '" data-id="' . $row->id . '" class="btn btn-link p-0 text-warning me-1 ms-1"><i class="fa fa-edit fa-sm"></i></a>';
+                    $actionBtn = '<a href="' . route('product_variant.show', ['product' => $row->product->sku, 'productVariant' => str_replace('#', '', $row->color)]) . '" class="text-info me-1 ms-1"><i class="fa fa-search fa-sm"></i></a>';
+                    $actionBtn .= '<a href="' . route('product_variant.edit', ['product' => $row->product->sku, 'productVariant' => str_replace('#', '', $row->color)]) . '" data-id="' . str_replace('#', '', $row->color) . '" class="btn btn-link p-0 text-warning me-1 ms-1"><i class="fa fa-edit fa-sm"></i></a>';
                 } else {
                     $actionBtn .= '<button data-product-variant-id="' . $row->id . '" data-bs-toggle="modal" data-bs-target="#add_to_cart" class="btn btn-link p-0 text-success me-1 ms-1 addtocart-button ' . ($row->stock < 1 ? 'disabled text-muted' : '') . '"><i class="fa fa-plus fa-sm"></i></button>';
                 }

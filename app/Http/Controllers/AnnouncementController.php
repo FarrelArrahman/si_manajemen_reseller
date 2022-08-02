@@ -25,14 +25,21 @@ class AnnouncementController extends Controller
      */
     public function index_dt(Request $request)
     {
-        $data = Announcement::all();
+        if(auth()->user()->isAdmin()) {
+            $data = Announcement::select('*');
+        } else {
+            $data = Announcement::select('*')
+                ->where('is_private', 0)
+                ->whereDate('start_from', '<=', today())
+                ->whereDate('valid_until', '>=', today());
+        }
 
         return DataTables::of($data)
             ->addIndexColumn()
             ->addColumn('action', function($row){
                 $actionBtn = '<a href="' . route('announcement.show', $row->id) . '" data-id="' . $row->id . '" class="btn btn-link p-0 text-info me-1 ms-1"><i class="fa fa-search fa-sm"></i></a>';
                 if(auth()->user()->isAdmin()) {
-                    $actionBtn = '<a href="' . route('announcement.edit', $row->id) . '" data-id="' . $row->id . '" class="btn btn-link p-0 text-warning me-1 ms-1"><i class="fa fa-edit fa-sm"></i></a>';
+                    $actionBtn .= '<a href="' . route('announcement.edit', $row->id) . '" data-id="' . $row->id . '" class="btn btn-link p-0 text-warning me-1 ms-1"><i class="fa fa-edit fa-sm"></i></a>';
                     $actionBtn .= '<button data-id="' . $row->id . '" class="btn btn-link p-0 text-danger me-1 ms-1 delete-button"><i class="fa fa-trash-alt fa-sm"></i></button>';
                 }
                 return $actionBtn;
@@ -109,6 +116,10 @@ class AnnouncementController extends Controller
      */
     public function show(Announcement $announcement)
     {
+        if(auth()->user()->isReseller() && $announcement->isPrivate()) {
+            abort(404);
+        }
+
         return view('announcement.show', compact('announcement'));
     }
 
@@ -142,7 +153,7 @@ class AnnouncementController extends Controller
 
         $announcement->update([
             'title'                 => $request->title,
-            'content'               => $request->content,
+            'content'               => $request->content ?? "",
             'start_from'            => $request->start_from,
             'valid_until'           => $request->valid_until,
             'is_private'            => $request->is_private == 'on' ? 0 : 1,

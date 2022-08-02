@@ -7,6 +7,7 @@ use App\Models\ProductVariant;
 use App\Models\ProductVariantStockLog;
 use DataTables;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Storage;
 
 class ProductVariantController extends Controller
@@ -26,9 +27,11 @@ class ProductVariantController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index_dt(Request $request, Product $product)
+    public function index_dt(Request $request, $product)
     {        
-        $data = ProductVariant::select('*')->where('product_id', $product->id);
+        $data = ProductVariant::select('*')->whereHas('product', function($q) use ($product) {
+            return $q->where('sku', $product);
+        });
 
         if($request->get('show') != null) {
             if($request->get('show') == 0) {
@@ -42,12 +45,12 @@ class ProductVariantController extends Controller
             ->addIndexColumn()
             ->addColumn('action', function($row){                
                 if($row->trashed() && auth()->user()->isAdmin()) {
-                    $actionBtn = '<button data-id="' . $row->id . '" class="btn btn-text text-primary me-1 ms-1 restore-button"><i class="fa fa-undo-alt fa-sm"></i></button>';
+                    $actionBtn = '<button data-color="' . str_replace('#', '', $row->color) . '" class="btn btn-text text-primary me-1 ms-1 restore-button"><i class="fa fa-undo-alt fa-sm"></i></button>';
                 } else {
-                    $actionBtn = '<a href="' . route('product_variant.show', ['product' => $row->product->id, 'productVariant' => $row->id]) . '" class="text-info me-1 ms-1"><i class="fa fa-search fa-sm"></i></a>';
+                    $actionBtn = '<a href="' . route('product_variant.show', ['product' => $row->product->sku, 'productVariant' => str_replace('#', '', $row->color)]) . '" class="text-info me-1 ms-1"><i class="fa fa-search fa-sm"></i></a>';
                     if(auth()->user()->isAdmin()) {
-                        $actionBtn .= '<a href="' . route('product_variant.edit', ['product' => $row->product->id, 'productVariant' => $row->id]) . '" data-id="' . $row->id . '" class="btn btn-link p-0 text-warning me-1 ms-1"><i class="fa fa-edit fa-sm"></i></a>';
-                        $actionBtn .= '<button data-product-variant-id="' . $row->id . '" class="btn btn-link p-0 text-danger me-1 ms-1 delete-button"><i class="fa fa-trash-alt fa-sm"></i></button>';
+                        $actionBtn .= '<a href="' . route('product_variant.edit', ['product' => $row->product->sku, 'productVariant' => str_replace('#', '', $row->color)]) . '" data-id="' . str_replace('#', '', $row->color) . '" class="btn btn-link p-0 text-warning me-1 ms-1"><i class="fa fa-edit fa-sm"></i></a>';
+                        $actionBtn .= '<button data-product-variant-id="' . str_replace('#', '', $row->color) . '" class="btn btn-link p-0 text-danger me-1 ms-1 delete-button"><i class="fa fa-trash-alt fa-sm"></i></button>';
                     }
                 }
                 return $actionBtn;
@@ -134,8 +137,9 @@ class ProductVariantController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create(Request $request, Product $product)
+    public function create(Request $request, $product)
     {
+        $product = Product::withTrashed()->where('sku', $product)->firstOrFail();
         $productVariant = ProductVariant::select('product_variant_name', 'color')->distinct('product_variant_name')->get()->unique('product_variant_name');
         return view('product_variant.create', compact('product', 'productVariant'));
     }
@@ -159,9 +163,9 @@ class ProductVariantController extends Controller
             'product_variant_name'  => 'required|string',
             'color'                 => 'nullable|string',
             'stock'                 => 'required',
-            'base_price'            => 'required',
-            'reseller_price'        => 'required',
-            'general_price'         => 'required',
+            'base_price'            => 'required|lt:reseller_price,general_price',
+            'reseller_price'        => 'required|lte:general_price|gt:base_price',
+            'general_price'         => 'required|gte:base_price,general_price',
             'weight'                => 'required|numeric',
         ]);
 
@@ -196,12 +200,17 @@ class ProductVariantController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\ProductVariant  $productVariant
+     * @param  string  $productVariant
      * @return \Illuminate\Http\Response
      */
-    public function show(Product $product, $productVariant)
+    public function show($product, $productVariant)
     {
-        $productVariant = ProductVariant::withTrashed()->findOrFail($productVariant);
+        $productVariant = ProductVariant::withTrashed()
+            ->whereHas('product', function($q) use ($product) {
+                $q->where('sku', $product);
+            })
+            ->where('color', '#' . $productVariant)
+            ->firstOrFail();
 
         return view('product_variant.show', compact('productVariant'));
     }
@@ -259,13 +268,56 @@ class ProductVariantController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Display search result of the resource.
      *
-     * @param  \App\Models\ProductVariant  $productVariant
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function edit(Product $product, ProductVariant $productVariant)
+    public function search(Request $request)
     {
+        $productVariant = DB::table('product_variants')->select([
+            'product_variants.id as id',
+            DB::raw("CONCAT(products.product_name, ' (', product_variant_name, ')') as text"),
+        ])
+        ->join('products', 'product_variants.product_id', 'products.id')
+        ->where('product_variants.deleted_at', null)
+        ->where('products.deleted_at', null)
+        ->orderBy('product_name', 'ASC')
+        ->orderBy('product_variant_name', 'ASC');
+
+        if( ! empty($request->q)) {
+            $search = $request->q;
+            $productVariant = $productVariant
+                ->where('product_variant_name', 'LIKE', "%" . $search . "%")
+                ->orWhere('products.product_name', 'LIKE', "%" . $search . "%");
+        }
+
+        $productVariant = $productVariant->get();
+        
+        return response()->json([
+            'success' => true,
+            'type' => 'search_product_variant',
+            'message' => 'Daftar varian produk berdasarkan pencarian',
+            'data' => $productVariant,
+            'statusCode' => 200
+        ], 200);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  string  $productVariant
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($product, $productVariant)
+    {
+        $productVariant = ProductVariant::withTrashed()
+            ->whereHas('product', function($q) use ($product) {
+                $q->where('sku', $product);
+            })
+            ->where('color', '#' . $productVariant)
+            ->firstOrFail();
+            
         $productVariantColor = ProductVariant::select('product_variant_name', 'color')->distinct('product_variant_name')->get()->unique('product_variant_name');
         return view('product_variant.edit', compact('productVariant', 'productVariantColor'));
     }
@@ -277,21 +329,30 @@ class ProductVariantController extends Controller
      * @param  \App\Models\ProductVariant  $productVariant
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Product $product, ProductVariant $productVariant)
+    public function update(Request $request, $product, $productVariant)
     {
+        $productVariant = ProductVariant::withTrashed()
+            ->whereHas('product', function($q) use ($product) {
+                $q->where('sku', $product);
+            })
+            ->where('color', '#' . $productVariant)
+            ->firstOrFail();
+
         $validator = $request->validate([
             'product_variant_name'  => 'required|string',
             'color'                 => 'nullable|string',
             'stock'                 => 'required',
-            'base_price'            => 'required',
-            'reseller_price'        => 'required',
-            'general_price'         => 'required',
+            'base_price'            => 'required|lt:reseller_price,general_price',
+            'reseller_price'        => 'required|lte:general_price|gt:base_price',
+            'general_price'         => 'required|gte:base_price,general_price',
             'weight'                => 'required|numeric',
         ]);
 
         $photo = $productVariant->photo;
-        if($request->hasFile('photo') && $photo != 'public/no-image.png') {
-            Storage::delete($photo);
+        if($request->hasFile('photo')) {
+            if($photo != 'public/no-image.png') {
+                Storage::delete($photo);
+            }
             $photo = $request->file('photo')->store('public/products/' . $productVariant->product->id);
         }
 
@@ -309,7 +370,7 @@ class ProductVariantController extends Controller
             'product_variant_status'    => $request->product_variant_status == 'on' ? 1 : 0,
         ]);
 
-        return redirect()->route('product.show', $productVariant->product->id)->with('success', 'Berhasil mengubah varian produk.');
+        return redirect()->route('product.show', $productVariant->product->sku)->with('success', 'Berhasil mengubah varian produk.');
     }
 
     /**
@@ -374,7 +435,7 @@ class ProductVariantController extends Controller
      * @param  int  $product
      * @return \Illuminate\Http\Response
      */
-    public function changeStatus(Request $request, Product $product, $productVariant)
+    public function changeStatus(Request $request, $product, $productVariant)
     {
         $productVariant = ProductVariant::withTrashed()->find($productVariant);
 
@@ -416,7 +477,7 @@ class ProductVariantController extends Controller
      * @param  int  $product
      * @return \Illuminate\Http\Response
      */
-    public function changeStock(Request $request, Product $product, $productVariant)
+    public function changeStock(Request $request, $product, $productVariant)
     {
         $productVariant = ProductVariant::withTrashed()->find($productVariant);
         

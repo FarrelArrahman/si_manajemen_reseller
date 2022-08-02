@@ -10,7 +10,7 @@
 
 @section('action-button')
 @if(auth()->user()->isAdmin())
-<a href="{{ route('product_variant.edit', ['product' => $productVariant->product->id, 'productVariant' => $productVariant->id]) }}" class="btn btn-warning"><i class="fas fa-edit fa-sm me-2"></i> Ubah Varian Produk</a>
+<a href="{{ route('product_variant.edit', ['product' => $productVariant->product->sku, 'productVariant' => str_replace('#', '', $productVariant->color)]) }}" class="btn btn-warning"><i class="fas fa-edit fa-sm me-2"></i> Ubah Varian Produk</a>
 <a href="#" data-bs-toggle="modal" data-bs-target="#changeStockModal" class="btn btn-primary"><i class="fa fa-plus fa-sm me-2"></i> Tambah/Kurangi Stok</a>
 @endif
 @endsection
@@ -22,7 +22,7 @@
         <div class="col-md-12 col-24">
             @if($productVariant->trashed())
             <div class="alert alert-danger">
-                Varian ini telah dihapus sementara. Untuk memulihkan dan menampilkan varian ini, <a href="{{ route('product_variant.restore', ['product' => $productVariant->product->id, 'productVariant' => $productVariant->id, 'ref' => 'show']) }}">klik di sini</a>.
+                Varian ini telah dihapus sementara. Untuk memulihkan dan menampilkan varian ini, <a href="{{ route('product_variant.restore', ['product' => $productVariant->product->sku, 'productVariant' => $productVariant->color, 'ref' => 'show']) }}">klik di sini</a>.
             </div>
             @endif
             <div class="card">
@@ -44,7 +44,7 @@
                                     <div class="col-6">
                                         <div class="form-group">
                                             <label for="product-name-vertical">Nama Produk</label>
-                                            <p class="fs-5 text-dark"><a href="{{ route('product.show', $productVariant->product->id) }}">{{ $productVariant->product->product_name }}</a></p>
+                                            <p class="fs-5 text-dark"><a href="{{ route('product.show', $productVariant->product->sku) }}">{{ $productVariant->product->product_name }}</a></p>
                                         </div>
                                     </div>
                                     <div class="col-6">
@@ -274,6 +274,7 @@
 
     $('#saveStock').on('click', function() {
         let id = '{{ $productVariant->id }}'
+        console.log(id)
         let stock = $('#qtyChange').val()
         let note = $('#note').val()
 

@@ -27,10 +27,10 @@ Daftar pengumuman yang tersedia pada sistem.
                         <tr>
                             <th width="10%">#</th>
                             <th>Judul</th>
-                            @if(auth()->user()->isAdmin())
                             <th>Berlaku dari</th>
                             <th>Sampai dengan</th>
                             <th>Dibuat oleh</th>
+                            @if(auth()->user()->isAdmin())
                             <th>Status</th>
                             <th>Tampilkan?</th>
                             @endif
@@ -103,10 +103,10 @@ Daftar pengumuman yang tersedia pada sistem.
                 searchable: false
             },
             {data: 'title', name: 'title'},
-            @if(auth()->user()->isAdmin())
             {data: 'start_from', name: 'start_from'},
             {data: 'valid_until', name: 'valid_until'},
             {data: 'created_by', name: 'created_by'},
+            @if(auth()->user()->isAdmin())
             {data: 'is_private', name: 'is_private'},
             {data: 'switch_button', name: 'switch_button'},
             @endif
