@@ -198,7 +198,6 @@ Daftar pesanan produk dari reseller.
     let adminNotes = $('#admin_notes')
     let adminNotesInput = $('#admin_notes_input')
     let adminNotesText = $('#admin_notes_text')
-    let verificationStatus = $('#order_verification_status')
 
     orderDetail.hide()
     adminNotes.hide()
@@ -383,9 +382,13 @@ Daftar pesanan produk dari reseller.
                 $('#handled_by').show()
                 $('#handled_by_label').text(order.handled_by.name)
                 $('#verify_button').hide()
-            } else {
+            } else if(order.status == "DITOLAK") {
                 adminNotes.show()
+                @if(auth()->user()->isAdmin())
+                adminNotesInput.val(order.admin_notes)
+                @else
                 adminNotesText.text(order.admin_notes)
+                @endif
                 $('#approval_date').hide()
                 $('#handled_by').hide()
                 $('#verify_button').show()
@@ -438,10 +441,10 @@ Daftar pesanan produk dari reseller.
         $('#verify_button_label').text("Loading...")
         
         let data = {
-            status: verificationStatus.val(),
+            status: $('#order_verification_status').val(),
         }
 
-        if(verificationStatus.val() == "DITOLAK") {
+        if($('#order_verification_status').val() == "DITOLAK") {
             data.admin_notes = adminNotesInput.val()
         }
 

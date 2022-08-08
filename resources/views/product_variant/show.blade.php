@@ -62,14 +62,14 @@
                                             </p>
                                         </div>
                                     </div>
-                                    @if(auth()->user()->isAdmin())
+                                    <!-- @if(auth()->user()->isAdmin())
                                     <div class="col-6">
                                         <div class="form-group">
                                             <label for="description-vertical">Harga Pokok</label>
                                             <p class="fs-5 text-dark">Rp. {{ number_format($productVariant->base_price, 0, '', '.') }}</p>
                                         </div>
                                     </div>
-                                    @endif
+                                    @endif -->
                                     <div class="col-6">
                                         <div class="form-group">
                                             <label for="description-vertical">Harga Umum</label>

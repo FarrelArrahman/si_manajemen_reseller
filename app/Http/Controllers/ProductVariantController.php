@@ -150,7 +150,7 @@ class ProductVariantController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request, Product $product)
+    public function store(Request $request, $product)
     {
         // dd($request->all());
         $product = Product::find($request->product_id);
@@ -163,9 +163,9 @@ class ProductVariantController extends Controller
             'product_variant_name'  => 'required|string',
             'color'                 => 'nullable|string',
             'stock'                 => 'required',
-            'base_price'            => 'required|lt:reseller_price,general_price',
-            'reseller_price'        => 'required|lte:general_price|gt:base_price',
-            'general_price'         => 'required|gte:base_price,general_price',
+            // 'base_price'            => 'required|lt:reseller_price,general_price',
+            'reseller_price'        => 'required|lte:general_price',
+            'general_price'         => 'required|gte:general_price',
             'weight'                => 'required|numeric',
         ]);
 
@@ -174,7 +174,8 @@ class ProductVariantController extends Controller
             'product_id'                => $product->id,
             'color'                     => $request->color,
             'stock'                     => $request->stock,
-            'base_price'                => str_replace('.', '', $request->base_price),
+            // 'base_price'                => str_replace('.', '', $request->base_price),
+            'base_price'                => 0,
             'reseller_price'            => str_replace('.', '', $request->reseller_price),
             'general_price'             => str_replace('.', '', $request->general_price),
             'photo'                     => $request->hasFile('photo') ? $request->file('photo')->store('public/products/' . $product->id) : 'public/no-image.png',
@@ -194,7 +195,7 @@ class ProductVariantController extends Controller
             'handled_by' => auth()->user()->id,
         ]);
 
-        return redirect()->route('product.show', $product->id)->with('success', 'Berhasil menambahkan varian produk baru.');
+        return redirect()->route('product.show', $product->sku)->with('success', 'Berhasil menambahkan varian produk baru.');
     }
 
     /**
@@ -342,9 +343,9 @@ class ProductVariantController extends Controller
             'product_variant_name'  => 'required|string',
             'color'                 => 'nullable|string',
             'stock'                 => 'required',
-            'base_price'            => 'required|lt:reseller_price,general_price',
-            'reseller_price'        => 'required|lte:general_price|gt:base_price',
-            'general_price'         => 'required|gte:base_price,general_price',
+            // 'base_price'            => 'required|lt:reseller_price,general_price',
+            'reseller_price'        => 'required|lte:general_price',
+            'general_price'         => 'required|gte:general_price',
             'weight'                => 'required|numeric',
         ]);
 
@@ -360,7 +361,8 @@ class ProductVariantController extends Controller
             'product_variant_name'      => $request->product_variant_name,
             'color'                     => $request->color,
             'stock'                     => $request->stock,
-            'base_price'                => str_replace('.', '', $request->base_price),
+            // 'base_price'                => str_replace('.', '', $request->base_price),
+            'base_price'                => 0,
             'reseller_price'            => str_replace('.', '', $request->reseller_price),
             'general_price'             => str_replace('.', '', $request->general_price),
             'photo'                     => $photo,

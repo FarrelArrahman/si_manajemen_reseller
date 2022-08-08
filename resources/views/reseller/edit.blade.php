@@ -41,11 +41,11 @@ Mengisi data reseller agar dapat dilakukan verifikasi oleh Admin.
                             <h4 class="card-title mb-0 pb-0">Informasi Dasar</h4>
                         </div>
                         <div class="card-body">
-                            @if($errors->any())
+                            <!-- @if($errors->any())
                             @foreach($errors->all() as $error)
                                 <div>{{ $error }}</div>
                             @endforeach
-                            @endif
+                            @endif -->
                             @csrf
                             @method('PUT')
                             <div class="form-body">
@@ -193,7 +193,7 @@ Mengisi data reseller agar dapat dilakukan verifikasi oleh Admin.
                                         <div class="form-group">
                                             <label for="bank-name-vertical">Nama Bank <span class="text-danger">*</span></label>
                                             <input type="hidden" name="bank_name" value="{{ $reseller->bank_name ?? '' }}" id="bank_name">
-                                            <select data-bank-code="{{ $reseller->bank_code }}" id="bank_code" name="bank_code" class="form-control @error('bank_code') is-invalid @enderror select2">
+                                            <select data-bank-code="{{ $reseller->bank_code ?? 0 }}" id="bank_code" name="bank_code" class="form-control @error('bank_code') is-invalid @enderror select2">
                                                 <option data-bank-name="" value="" disabled selected>Pilih bank...</option>
                                             </select>
                                             @error('bank_code')

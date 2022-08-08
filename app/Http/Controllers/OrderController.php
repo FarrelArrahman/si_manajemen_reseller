@@ -49,7 +49,9 @@ class OrderController extends Controller
             ->addIndexColumn()
             ->addColumn('action', function($row) {
                 $actionBtn = '<button data-order-id="' . $row->id . '" data-bs-toggle="modal" data-bs-target="#order_detail_modal" class="btn btn-link p-0 text-info me-1 ms-1 showorderdetail-button"><i class="fa fa-search fa-sm"></i></button>';
-                $actionBtn .= '<button data-order-id="' . $row->id . '" class="btn btn-link p-0 text-danger me-1 ms-1 deleteorder-button"><i class="fa fa-trash fa-sm"></i></button>';
+                if( ! $row->isDone()) {
+                    $actionBtn .= '<button data-order-id="' . $row->id . '" class="btn btn-link p-0 text-danger me-1 ms-1 deleteorder-button"><i class="fa fa-trash fa-sm"></i></button>';
+                }
                 return $actionBtn;
             })
             ->addColumn('reseller', function($row) {
@@ -305,6 +307,7 @@ class OrderController extends Controller
      */
     public function verify(Request $request, Order $order)
     {
+        $message = "";
         $action = "show_verified_order";
         $success = true;
         

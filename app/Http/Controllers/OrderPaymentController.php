@@ -7,6 +7,7 @@ use App\Events\AdminEvent;
 use App\Models\Configuration;
 use App\Models\Order;
 use App\Models\OrderPayment;
+use App\Models\ProductVariantStockLog;
 use DataTables;
 use Illuminate\Http\Request;
 use Storage;

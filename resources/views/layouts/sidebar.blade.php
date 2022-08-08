@@ -3,7 +3,9 @@
         <div class="sidebar-header pb-0">
             <div class="d-flex justify-content-between">
                 <div class="logo">
-                    <a href="{{ route('dashboard') }}"><span class="fs-5">Laudable.me Reseller</span></a>
+                    <a href="{{ route('dashboard') }}">
+                        <img src="{{ asset('images/logo/logo.png') }}" alt="Logo" srcset=""/>
+                    </a>
                 </div>
                 <div class="toggler">
                     <a href="#" class="sidebar-hide d-xl-none d-block"><i class="bi bi-x bi-middle"></i></a>
@@ -143,14 +145,14 @@
                     </a>
                 </li>
 
-                @if(auth()->user()->isAdmin())
+                <!-- @if(auth()->user()->isAdmin())
                 <li class="sidebar-item">
                     <a href="{{ route('configuration.index') }}" class='sidebar-link'>
                         <i class="bi bi-gear-fill"></i>
                         <span>Pengaturan</span>
                     </a>
                 </li>
-                @endif
+                @endif -->
 
                 <li class="sidebar-item">
                     <a onclick="event.preventDefault(); document.getElementById('logout-form').submit();" href="#" class='sidebar-link text-danger'>

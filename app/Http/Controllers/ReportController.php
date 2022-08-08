@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\SellingRecapExport;
 use Illuminate\Http\Request;
 use App\Traits\GeneralSellingReport;
 use App\Traits\SellingRecapReport;
 use App\Traits\ProductSellingReport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ReportController extends Controller
 {
@@ -65,6 +67,22 @@ class ReportController extends Controller
             // 'data' => $request->all(),
             'statusCode' => 200
         ], 200);
+    }
+
+    /**
+     * Export selling recap report as spreadsheet.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function sellingRecapExcel(Request $request)
+    {
+        if($request->start == "" || $request->end == "") {
+            return abort(404);
+        }
+
+        $title = "SellingRecap_" . $request->start . "_" . $request->end;
+        $data = $this->sellingRecapReportInit($request->start, $request->end)->getSellingRecap();
+        return Excel::download(new SellingRecapExport($data), $title);
     }
 
     /**

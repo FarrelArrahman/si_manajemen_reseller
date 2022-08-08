@@ -177,6 +177,7 @@ Route::middleware(['auth'])->group(function() {
         // Report
         Route::get('/report/general', [ReportController::class, 'general'])->name('report.general');
         Route::get('/report/selling-recap', [ReportController::class, 'sellingRecap'])->name('report.sellingRecap');
+        Route::get('/report/selling-recap/excel', [ReportController::class, 'sellingRecapExcel'])->name('report.sellingRecapExcel');
         Route::get('/report/product-selling', [ReportController::class, 'productSelling'])->name('report.productSelling');
 
         // Configuration
