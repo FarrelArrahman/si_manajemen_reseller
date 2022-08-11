@@ -84,7 +84,7 @@ Laporan Umum
                             <div id="selling_quantity"></div>
                         </div>
                         <div class="col-6 col-md-6 col-sm-12 mt-3">
-                            <h5 class="mt-2">Produk Terjual (Harga)</h5>
+                            <h5 class="mt-2">Produk Terjual Terbanyak (Harga)</h5>
                             <table class="table table-bordered table-striped" id="top_selling_price">
                                 <thead>
                                     <tr>
@@ -97,7 +97,7 @@ Laporan Umum
                             </table>
                         </div>
                         <div class="col-6 col-md-6 col-sm-12 mt-3">
-                            <h5 class="mt-2">Produk Terjual (Qty)</h5>
+                            <h5 class="mt-2">Produk Terjual Terbanyak (Qty)</h5>
                             <table class="table table-bordered table-striped" id="top_selling_quantity">
                                 <thead>
                                     <tr>

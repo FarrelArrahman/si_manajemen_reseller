@@ -9,7 +9,7 @@ Katalog yang berisi daftar produk.
 @endsection
 
 @section('action-button')
-@if(auth()->user()->isAdmin())
+@if(auth()->user()->isAdmin() || auth()->user()->isStaff())
 <a href="{{ route('product.create') }}" class="btn btn-primary">
 <i class="fa fa-plus me-2"></i> Tambah Master Produk
 </a>
@@ -26,7 +26,7 @@ Katalog yang berisi daftar produk.
                 <div class="col-md-12">
                     <h6 class="mb-1">Filter Data</h6>
                 </div>
-                @if(auth()->user()->isAdmin())
+                @if(auth()->user()->isAdmin() || auth()->user()->isStaff())
                 <div class="col-md-4">
                     <small>Tampilan Produk Pada Pencarian</small>
                     <div class="input-group mb-3">
@@ -81,7 +81,7 @@ Katalog yang berisi daftar produk.
                         <th>Foto Utama</th>
                         <th>Nama Produk</th>
                         <th>Kategori</th>
-                        @if(auth()->user()->isAdmin())
+                        @if(auth()->user()->isAdmin() || auth()->user()->isStaff())
                         <th width="20%">Tampilkan produk?</th>
                         @endif
                     </tr>
@@ -173,7 +173,7 @@ Katalog yang berisi daftar produk.
             {data: 'default_photo', name: 'default_photo'},
             {data: 'product_name', name: 'product_name'},
             {data: 'category', name: 'category'},
-            @if(auth()->user()->isAdmin())
+            @if(auth()->user()->isAdmin() || auth()->user()->isStaff())
             {
                 data: 'switch_button', 
                 name: 'switch_button',

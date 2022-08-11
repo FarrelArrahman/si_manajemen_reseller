@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\ResellerEvent;
 use App\Events\AdminEvent;
+use App\Jobs\SendEmailJob;
 use App\Models\Cart;
 use App\Models\Configuration;
 use App\Models\Courier;
@@ -39,7 +40,7 @@ class OrderController extends Controller
     {
         $data = [];
         
-        if(auth()->user()->isAdmin()) {
+        if(auth()->user()->isAdmin() || auth()->user()->isStaff()) {
             $data = Order::select('*');
         } else {
             $data = Order::where('ordered_by', auth()->user()->reseller->id)->latest();
@@ -49,7 +50,7 @@ class OrderController extends Controller
             ->addIndexColumn()
             ->addColumn('action', function($row) {
                 $actionBtn = '<button data-order-id="' . $row->id . '" data-bs-toggle="modal" data-bs-target="#order_detail_modal" class="btn btn-link p-0 text-info me-1 ms-1 showorderdetail-button"><i class="fa fa-search fa-sm"></i></button>';
-                if( ! $row->isDone()) {
+                if($row->isPending()) {
                     $actionBtn .= '<button data-order-id="' . $row->id . '" class="btn btn-link p-0 text-danger me-1 ms-1 deleteorder-button"><i class="fa fa-trash fa-sm"></i></button>';
                 }
                 return $actionBtn;
@@ -134,6 +135,12 @@ class OrderController extends Controller
     public function store(Request $request)
     {
         // dd($request->all());
+        $request->validate([
+            'courier' => 'required|string',
+            'service' => 'required|string',
+        ]);
+
+        // dd($request->all());
         $totalWeight = 1000;
         $totalPrice = 0;
 
@@ -143,11 +150,9 @@ class OrderController extends Controller
         ])
         ->latest()
         ->first();
-        
-        foreach($cart->cartDetail as $item) {
-            if($item->quantity > $item->productVariant->stock) {
-                return redirect()->back()->withInput()->withErrors(['insufficient_stock' => 'Terdapat stok produk yang tidak mencukupi jumlah pesanan. Silakan cek kembali pada menu Produk.']);
-            } 
+
+        if($cart->cartDetail->where('quantity_less_or_equal_than_stock', false)->count() > 0) {
+            return redirect()->back()->withInput()->withErrors(['insufficient_stock' => 'Terdapat stok produk yang tidak mencukupi jumlah pesanan. Silakan cek kembali pada menu Produk.']);
         }
 
         $orderCount = Order::whereDate('created_at', today())->count();
@@ -220,14 +225,26 @@ class OrderController extends Controller
             'admin_notes' => null,
         ]);
 
+        $message = 'Pesanan #' . $order->code . ' telah diajukan. Silakan verifikasi pada menu Pesanan.';
+
         $data = [
             'id' => $order->reseller->user->id,
             'success' => true,
             'action' => "update_pending_order_count",
-            'message' => 'Pesanan #' . $order->code . ' telah diajukan. Silakan verifikasi pada menu Pesanan.'
+            'message' => $message
         ];
-    
+
+        // Notify Admin via Website Notification
         AdminEvent::dispatch($data);
+
+        // Notify Admin via Email
+        dispatch(new SendEmailJob([
+            'email' => "admin@laudable-me.com",
+            'subject' => "Pengajuan Pesanan Baru",
+            'message' => $message,
+            'button' => 'Ke Menu Pesanan',
+            'url' => route('order.index')
+        ]));
 
         return redirect()->route('order.index')->with(['success' => "Berhasil mengajukan pesanan. Harap tunggu konfirmasi dari Admin."]);
     }
@@ -241,7 +258,7 @@ class OrderController extends Controller
     public function detail($order)
     {
         $order = Order::with(['orderDetail.productVariant.product', 'reseller', 'orderShipping.courier'])->find($order);
-        $order->status_badge = auth()->user()->isAdmin() 
+        $order->status_badge = auth()->user()->isAdmin() || auth()->user()->isStaff() 
             ? $order->verificationStatus()
             : $order->statusBadge();
         $order->date_formatted = $order->date->isoFormat('dddd, DD MMMM Y hh:mm:ss');
@@ -315,7 +332,7 @@ class OrderController extends Controller
         $order->handled_by = auth()->user()->id;
 
         if($request->status == Order::APPROVED) {
-            $message = "Pesanan Anda: #" . $order->code . " telah berhasil terverifikasi oleh Admin.";
+            $message = "Pesanan Anda: #" . $order->code . " telah berhasil terverifikasi oleh Admin. Segera lanjutkan ke proses pembayaran pada menu Pembayaran.";
         } else if($request->status == Order::REJECTED) {
             foreach($order->orderDetail as $item) {
                 $item->productVariant->update([
@@ -326,7 +343,7 @@ class OrderController extends Controller
             $success = false;
             $action = "show_unverified_order";
             $order->admin_notes = $request->admin_notes;
-            $message = "Pesanan Anda: #" . $order->code . " ditolak. Silahkan cek kembali detail pesanan pada menu pesanan.";
+            $message = "Pesanan Anda: #" . $order->code . " ditolak. Silakan cek kembali detail pesanan pada menu pesanan.";
         }
 
         $data = [
@@ -335,10 +352,20 @@ class OrderController extends Controller
             'action' => $action,
             'message' => $message
         ];
-    
-        ResellerEvent::dispatch($data);
-        
+            
         if($order->save()) {
+            // Notify Reseller via Website Notification
+            ResellerEvent::dispatch($data);
+
+            // Notify Reseller via Email
+            dispatch(new SendEmailJob([
+                'email' => $order->reseller->user->email,
+                'subject' => $request->status == Order::APPROVED ? "Pesanan Diterima" : "Pesanan Ditolak",
+                'message' => $message,
+                'button' => $request->status == Order::APPROVED ? "Ke Halaman Pembayaran" : "Ke Halaman Pesanan",
+                'url' => $request->status == Order::APPROVED ? route('order_payment.index') : route('order.index')
+            ]));
+
             return response()->json([
                 'success' => true,
                 'type' => 'verify_order_status',
@@ -365,8 +392,8 @@ class OrderController extends Controller
      */
     public function destroy(Order $order)
     {
-        $order->orderShipping->delete();
-        $order->orderPayment->delete();
+        if($order->orderShipping) $order->orderShipping->delete();
+        if($order->orderPayment) $order->orderPayment->delete();
 
         foreach($order->orderDetail as $item) {
             $item->productVariant->update([

@@ -152,22 +152,8 @@
     }
 
     const Echo = window.Echo
-    const axios = window.axios
-    const message = $("#message")
     
-    $('#send-notification').on('click', function() {
-        window.axios.post("{{ url('verified') }}", {
-            'message': message.val()
-        }).then(() => {
-            message.val("")
-        })
-    })
-
-    // let channel = Echo.channel('channel-notification')
-    // channel.listen('NotificationEvent', function(data) {
-    //     toast(data.message.success, data.message.message)
-    // })
-    
+    @if(auth()->user()->isReseller())
     let verifiedResellerChannel = Echo.private('channel-reseller.{{ auth()->user()->id }}')
     verifiedResellerChannel.listen('ResellerEvent', function(data) {
         if(data.data.action == "hide_unverified_reseller") {
@@ -179,27 +165,40 @@
         // console.log(data)
         table.draw()
     })
+    @endif
 
+    @if(auth()->user()->isAdmin() || auth()->user()->isStaff())
     let verificationRequestChannel = Echo.private('channel-admin')
     verificationRequestChannel.listen('AdminEvent', function(data) {
         if(data.data.action = "update_pending_order_count") {
             pendingOrder().then(json => {
                 if(json.data.count < 1) {
-                    $('#pending_order_count').hide()
+                    $('#pending_order_count').css('display', 'none')
                 } else {
-                    $('#pending_order_count').show()
                     $('#pending_order_count').text(json.data.count)
+                    $('#pending_order_count').css('display', 'block')
                 }
             })
         }
 
-        if(data.data.action = "update_pending_payment_count") {
-            pendingOrder().then(json => {
+        if(data.data.action = "update_pending_reseller_count") {
+            pendingReseller().then(json => {
                 if(json.data.count < 1) {
-                    $('#pending_payment_count').hide()
+                    $('#pending_reseller_count').css('display', 'none')
                 } else {
-                    $('#pending_payment_count').show()
-                    $('#pending_payment_count').text(json.data.count)
+                    $('#pending_reseller_count').text(json.data.count)
+                    $('#pending_reseller_count').css('display', 'block')
+                }
+            })
+        }
+
+        if(data.data.action = "update_pending_order_payment_count") {
+            pendingPayment().then(json => {
+                if(json.data.count < 1) {
+                    $('#pending_order_payment_count').css('display', 'none')
+                } else {
+                    $('#pending_order_payment_count').text(json.data.count)
+                    $('#pending_order_payment_count').css('display', 'block')
                 }
             })
         }
@@ -207,56 +206,6 @@
         toast(data.data.success, data.data.message, 5000)
         table.draw()
     })
-
-    // let adminChannel = Echo.private('channel-verification-request')
-    // adminChannel.listen('VerificationRequestEvent', function(res) {
-    //     pendingReseller().then(json => {
-    //         if(json.data.count < 1) {
-    //             $('#pending_reseller_count').hide()
-    //             $('#pending_reseller_dots').hide()
-    //         } else {
-    //             $('#pending_reseller_count').text(json.data.count)
-    //             $('#pending_reseller_dots').show()
-    //         }
-    //     })
-
-    //     toast(res.data.success, res.data.message)
-    // })
-
-    var pusher = new Pusher('941eb537e5915d9f7913', {
-        cluster: 'ap1',
-        forceTLS: true,
-        encrypted: true
-    })
-
-    var channel = pusher.subscribe('notification')
-
-    channel.bind('notification', function(data) {
-        toast(data.data.success, data.data.message)
-    })
-
-    // let echo = new Echo({
-    //     broadcaster: "pusher",
-    //     cluster: 'ap1',
-    //     encrypted: true,
-    //     forceTLS: true,
-    //     key: '941eb537e5915d9f7913',
-    //     authorizer: (channel) => {
-    //         return {
-    //             authorize: (socketId, callback) => {
-    //                 window.axios.post("{{ url('broadcasting/auth') }}", {
-    //                     socket_id: sockedId,
-    //                     channel_name: channel.name
-    //                 })
-    //                 .then(response => {
-    //                     callback(false, response.data)
-    //                 })
-    //                 .catch(error => {
-    //                     callback(true, error)
-    //                 })
-    //             }
-    //         }
-    //     }
-    // })
+    @endif
 </script>
 @yield('js')

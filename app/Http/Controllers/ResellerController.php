@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Events\ResellerEvent;
 use App\Events\AdminEvent;
+use App\Jobs\SendEmailJob;
+use App\Models\Order;
 use App\Models\Reseller;
 use App\Traits\Rajaongkir;
 use DataTables;
@@ -45,6 +47,12 @@ class ResellerController extends Controller
             })
             ->addColumn('switch_button', function($row) {
                 return $row->statusSwitchButton();
+            })
+            ->addColumn('last_order_date', function($row) {
+                if($row->orders->count() > 0) {
+                    return Order::where('ordered_by', $row->id)->orderBy('date', 'DESC')->first()->date->format('Y-m-d');
+                }
+                return "-";
             })
             ->editColumn('photo', function($row){
                 return '<a class="image-popup" href="' . Storage::url($row->user->photo) . '"><img class="avatar" style="object-fit: cover; width: 36px; height: 36px;" src="' . Storage::url($row->user->photo) . '"></a>';
@@ -197,7 +205,10 @@ class ResellerController extends Controller
                 'postal_code'  => $request->postal_code,
                 'phone_number'  => $request->phone_number,
                 'social_media'  => array_filter($request->social_media),
-                'shopee_link'  => $request->shopee_link,
+                'account_number' => $request->account_number,
+                'bank_name' => $request->bank_name,
+                'bank_code' => $request->bank_code,
+                'account_holder_name' => $request->account_holder_name,
             ]);
         } else {
             $reseller = Reseller::create([
@@ -209,7 +220,10 @@ class ResellerController extends Controller
                 'postal_code'  => $request->postal_code,
                 'phone_number'  => $request->phone_number,
                 'social_media'  => array_filter($request->social_media),
-                'shopee_link'  => $request->shopee_link,
+                'account_number' => $request->account_number,
+                'bank_name' => $request->bank_name,
+                'bank_code' => $request->bank_code,
+                'account_holder_name' => $request->account_holder_name,
                 'rejection_reason' => NULL,
                 'reseller_status' => 'PENDING'
             ]);
@@ -220,6 +234,7 @@ class ResellerController extends Controller
                 $reseller->update([
                     'reseller_registration_proof_of_payment' => $request->file('reseller_registration_proof_of_payment')->store('public/reseller_registration_proof_of_payment'),
                     'rejection_reason' => NULL,
+                    'reseller_status' => Reseller::PENDING
                 ]);
             }
 
@@ -227,10 +242,20 @@ class ResellerController extends Controller
                 'id' => $reseller->user->id,
                 'success' => true,
                 'action' => "update_pending_reseller_count",
-                'message' => 'User "' . $reseller->user->name . '" telah mengajukan data reseller untuk diverifikasi.'
+                'message' => 'User "' . $reseller->user->name . '" telah mengajukan data reseller untuk diverifikasi.',
             ];
-        
+
+            // Notify Admin via Web Notification
             AdminEvent::dispatch($data);
+
+            // Notify Admin via Email
+            dispatch(new SendEmailJob([
+                'email' => "admin@laudable-me.com",
+                'subject' => "Verifikasi Data Reseller Baru",
+                'message' => 'User **' . $reseller->user->name . '** telah mengajukan data reseller untuk diverifikasi. Silakan kunjungi halaman **Reseller** pada menu **User > Reseller** atau klik tombol di bawah ini.',
+                'button' => 'Lihat Daftar Reseller',
+                'url' => route('user.index', 'reseller')
+            ]));
 
             $message = "Berhasil mengisi data reseller. Harap tunggu verifikasi oleh admin.";
         } else {
@@ -270,10 +295,20 @@ class ResellerController extends Controller
             'action' => $action,
             'message' => $message
         ];
-    
-        ResellerEvent::dispatch($data);
         
         if($reseller->save()) {
+            // Notify Reseller via Web Notification
+            ResellerEvent::dispatch($data);
+
+            // Notify Reseller via Email
+            dispatch(new SendEmailJob([
+                'email' => $reseller->user->email,
+                'subject' => "Status Verifikasi Data Reseller",
+                'message' => $message,
+                'button' => 'Ke Halaman Dashboard',
+                'url' => route('dashboard',)
+            ]));
+
             return response()->json([
                 'success' => true,
                 'type' => 'change_reseller_status',

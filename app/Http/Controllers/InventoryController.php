@@ -49,6 +49,7 @@ class InventoryController extends Controller
             'stock',
             'color',
         ])
+        ->where('stock', '>=', 0)
         ->where('product_variant_status', 1)
         ->whereHas('product', function($product) {
             $product->where('product_status', 1);
@@ -58,7 +59,7 @@ class InventoryController extends Controller
             ->addIndexColumn()
             ->addColumn('action', function($row){
                 $actionBtn = "";
-                if(auth()->user()->isAdmin()) {
+                if(auth()->user()->isAdmin() || auth()->user()->isStaff()) {
                     $actionBtn = '<a href="' . route('product_variant.show', ['product' => $row->product->sku, 'productVariant' => str_replace('#', '', $row->color)]) . '" class="text-info me-1 ms-1"><i class="fa fa-search fa-sm"></i></a>';
                     $actionBtn .= '<a href="' . route('product_variant.edit', ['product' => $row->product->sku, 'productVariant' => str_replace('#', '', $row->color)]) . '" data-id="' . str_replace('#', '', $row->color) . '" class="btn btn-link p-0 text-warning me-1 ms-1"><i class="fa fa-edit fa-sm"></i></a>';
                 } else {

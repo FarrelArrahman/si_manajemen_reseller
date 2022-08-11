@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\ResellerEvent;
 use App\Events\AdminEvent;
+use App\Jobs\SendEmailJob;
 use App\Models\Configuration;
 use App\Models\Order;
 use App\Models\OrderPayment;
@@ -35,16 +36,16 @@ class OrderPaymentController extends Controller
     {
         $data = [];
         
-        if(auth()->user()->isAdmin()) {
-            $data = Order::select('*')->whereNotIn('status', [Order::REJECTED, Order::CANCELED])->latest();
+        if(auth()->user()->isAdmin() || auth()->user()->isStaff()) {
+            $data = Order::select('*')->with('orderPayment')->whereIn('status', [Order::APPROVED, Order::DONE])->latest();
         } else {
-            $data = Order::select('*')->whereNotIn('status', [Order::REJECTED, Order::CANCELED])->where('ordered_by', auth()->user()->reseller->id)->latest();
+            $data = Order::select('*')->with('orderPayment')->whereIn('status', [Order::APPROVED, Order::DONE])->where('ordered_by', auth()->user()->reseller->id)->latest();
         }
 
         return DataTables::of($data)
             ->addIndexColumn()
             ->addColumn('action', function($row) {
-                $actionBtn = '<button data-reseller-account="' . $row->reseller->bank_name . ' ' . $row->reseller->account_number . ' (A.N '. $row->reseller->account_holder_name . ')" data-total-price="Rp. ' . number_format($row->orderPayment->amount, 0, '', '.') . '" data-payment-status="' . $row->orderPayment->payment_status . '" data-proof-of-payment="' . ($row->orderPayment->proof_of_payment ? Storage::url($row->orderPayment->proof_of_payment) : "") . '" data-order-code="' . $row->code . '" data-order-id="' . $row->id . '" data-bs-toggle="modal" data-bs-target="#order_payment_modal" class="btn btn-link p-0 text-info me-1 ms-1 showpaymentdetail-button ' . (auth()->user()->isAdmin() && $row->orderPayment->proof_of_payment == null ? 'text-muted disabled' : '') . '"><i class="fa fa-search fa-sm"></i></button>';
+                $actionBtn = '<button data-admin-notes="' . ($row->orderPayment ? $row->orderPayment->admin_notes : '') . '" data-reseller-account="' . $row->reseller->bank_name . ' ' . $row->reseller->account_number . ' (A.N '. $row->reseller->account_holder_name . ')" data-total-price="Rp. ' . number_format($row->orderPayment->amount, 0, '', '.') . '" data-payment-status="' . $row->orderPayment->payment_status . '" data-proof-of-payment="' . ($row->orderPayment->proof_of_payment ? Storage::url($row->orderPayment->proof_of_payment) : "") . '" data-order-code="' . $row->code . '" data-order-id="' . $row->id . '" data-bs-toggle="modal" data-bs-target="#order_payment_modal" class="btn btn-link p-0 text-info me-1 ms-1 showpaymentdetail-button ' . ((auth()->user()->isAdmin() || auth()->user()->isStaff()) && $row->orderPayment->proof_of_payment == null ? 'text-muted disabled' : '') . '"><i class="fa fa-search fa-sm"></i></button>';
                 return $actionBtn;
             })
             ->addColumn('proof_of_payment', function($row) {
@@ -173,6 +174,26 @@ class OrderPaymentController extends Controller
             ]);
 
             if($upload) {
+                $message = 'Pembayaran pesanan #' . $order->code . ' telah diajukan. Silakan verifikasi pada menu Pembayaran.';
+                $data = [
+                    'id' => $order->reseller->user->id,
+                    'success' => true,
+                    'action' => "update_pending_order_payment_count",
+                    'message' => $message
+                ];
+
+                // Notify Admin via Website Notification
+                AdminEvent::dispatch($data);
+
+                // Notify Admin via Email
+                dispatch(new SendEmailJob([
+                    'email' => "admin@laudable-me.com",
+                    'subject' => "Pembayaran Diterima",
+                    'message' => $message,
+                    'button' => 'Ke Menu Pembayaran',
+                    'url' => route('order_payment.index')
+                ]));
+
                 return response()->json([
                     'success' => true,
                     'type' => 'upload_payment',
@@ -180,15 +201,6 @@ class OrderPaymentController extends Controller
                     'data' => $order,
                     'statusCode' => 200
                 ], 200);
-
-                $data = [
-                    'id' => $order->reseller->user->id,
-                    'success' => true,
-                    'action' => "update_pending_payment_count",
-                    'message' => 'Pembayaran pesanan #"' . $order->code . '" telah diajukan. Silakan verifikasi pada menu Pembayaran.'
-                ];
-            
-                AdminEvent::dispatch($data);
             }
 
             return response()->json([
@@ -240,8 +252,9 @@ class OrderPaymentController extends Controller
             $order->status = Order::DONE;
             $message = "Pembayaran pesanan #" . $order->code . " telah berhasil terverifikasi oleh Admin.";
         } else if($request->status == Order::REJECTED) {
+            $order->orderPayment->admin_notes = $request->admin_notes;
             $success = false;
-            $message = "Pembayaran pesanan #" . $order->code . " ditolak. Silahkan cek kembali pembayaran Anda.";
+            $message = "Pembayaran pesanan #" . $order->code . " ditolak. Silakan cek kembali pembayaran Anda.";
         }
 
         $data = [
@@ -250,8 +263,18 @@ class OrderPaymentController extends Controller
             'action' => $action,
             'message' => $message
         ];
-    
+
+        // Notify Reseller via Website Notification
         ResellerEvent::dispatch($data);
+
+        // Notify Reseller via Email
+        dispatch(new SendEmailJob([
+            'email' => $order->reseller->user->email,
+            'subject' => $request->status == OrderPayment::APPROVED ? "Pembayaran Diterima" : "Pembayaran Ditolak",
+            'message' => $message,
+            'button' => $request->status == OrderPayment::APPROVED ? "Ke Halaman Pesanan" : "Ke Halaman Pembayaran",
+            'url' => $request->status == OrderPayment::APPROVED ? route('order.index') : route('order_payment.index')
+        ]));
         
         if($order->orderPayment->save() && $order->save()) {
             return response()->json([

@@ -59,8 +59,8 @@ Daftar reseller yang ada pada sistem.
                             <th width="10%">#</th>
                             <th>Foto</th>
                             <th>Nama User</th>
-                            <th>Nama Toko</th>
                             <th>Nomor Telepon</th>
+                            <th>Pemesanan Terakhir</th>
                             <th>Status</th>
                             <th width="20%">Ubah Status</th>
                         </tr>
@@ -255,8 +255,8 @@ Daftar reseller yang ada pada sistem.
                 },
                 {data: 'photo', name: 'photo'},
                 {data: 'name', name: 'name'},
-                {data: 'shop_name', name: 'shop_name'},
                 {data: 'phone_number', name: 'phone_number'},
+                {data: 'last_order_date', name: 'last_order_date'},
                 {data: 'reseller_status', name: 'reseller_status'},
                 {
                     data: 'switch_button', 
@@ -385,7 +385,6 @@ Daftar reseller yang ada pada sistem.
                 
                 $('#shop_name').text(reseller.shop_name)
                 $('#shop_address').text(reseller.shop_address)
-                $('#shoppee').attr('href', reseller.shoppee)
                 $('#reseller_name').text(`(${reseller.user.name})`)
                 $('#email').text(reseller.user.email)
                 $('#reseller_province').text(p.province)

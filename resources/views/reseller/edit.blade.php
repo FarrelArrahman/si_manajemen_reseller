@@ -22,13 +22,13 @@ Mengisi data reseller agar dapat dilakukan verifikasi oleh Admin.
                 <div class="alert alert-info">
                     <i class="fa fa-info-circle me-1"></i> Data reseller telah dikirimkan. Harap tunggu verifikasi oleh Admin.
                 </div>
-                @elseif(! $reseller || ! $reseller->isActive())
-                <div class="alert alert-warning">
-                    <i class="fa fa-exclamation-circle me-1"></i> Data reseller belum terverifikasi oleh Admin.
-                </div>
                 @elseif($reseller && $reseller->isRejected())
                 <div class="alert alert-danger">
-                    <i class="fa fa-exclamation-triangle me-1"></i> Data reseller tidak valid. Silakan perbaiki data yang diperlukan. Alasan: {{ $reseller->rejection_reason }}.
+                    <i class="fa fa-exclamation-triangle me-1"></i> Data reseller tidak valid. Silakan perbaiki data yang diperlukan. <br> Alasan: {{ $reseller->rejection_reason }}.
+                </div>
+                @elseif(! $reseller)
+                <div class="alert alert-warning">
+                    <i class="fa fa-exclamation-circle me-1"></i> Data reseller belum terverifikasi oleh Admin.
                 </div>
                 @else
                 <div class="alert alert-success">
@@ -231,7 +231,7 @@ Mengisi data reseller agar dapat dilakukan verifikasi oleh Admin.
                             <div class="form-body">
                                 <div class="row">
                                     <div class="col-12">
-                                        @if(! $reseller || $reseller->isPending() && $reseller->isRejected())
+                                        @if(! $reseller || $reseller->isRejected())
                                         <div class="form-group">
                                             <label for="reseller-registration-proof-of-payment-vertical">Upload File <small class="text-muted fw-bold">(.jpg / .png / .pdf)</small> <span class="text-danger">*</span></label>
                                             <input type="file" id="reseller-registration-proof-of-payment-vertical" class="form-control @error('reseller_registration_proof_of_payment') is-invalid @enderror"

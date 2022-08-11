@@ -47,7 +47,7 @@ class UserController extends Controller
         return DataTables::of($data)
             ->addIndexColumn()
             ->addColumn('action', function($row) use ($role) {
-                $actionBtn = '<a href="' . route('user.edit', ['role' => $role, 'user' => $row->id]) . '" data-id="' . $row->id . '" class="btn btn-link p-0 text-warning me-1 ms-1"><i class="fa fa-edit fa-sm"></i></a>';
+                $actionBtn = '<a href="' . route('user.edit', ['role' => $role, 'user' => $row->id]) . '" data-id="' . $row->id . '" class="btn btn-link p-0 text-warning me-1 ms-1 ' . (auth()->user()->isStaff() ? "disabled text-muted" : "") . '"><i class="fa fa-edit fa-sm"></i></a>';
                 return $actionBtn;
             })
             ->editColumn('photo', function($row){
@@ -57,7 +57,11 @@ class UserController extends Controller
                 return $row->statusBadge();
             })
             ->addColumn('switch_button', function($row) {
-                return $row->statusSwitchButton();
+                if(auth()->user()->isAdmin()) {
+                    return $row->statusSwitchButton();
+                } else {
+                    return "-";
+                }
             })
             ->filter(function ($instance) use ($request) {
                 if($request->get('status') != null) {
@@ -185,8 +189,10 @@ class UserController extends Controller
 
         $photo = $user->photo;
         if($request->hasFile('photo')) {
-            Storage::delete($photo);
-            $photo = $request->file('photo')->store('public/products');
+            if($photo != 'public/user-default.png') {
+                Storage::delete($photo);
+            }
+            $photo = $request->file('photo')->store('public/users');
         }
 
         $password = $request->has('password') && $request->password != null

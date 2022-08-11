@@ -14,9 +14,11 @@ Daftar {{ $role }} yang terdaftar pada sistem.
 <i class="fa fa-check-circle me-2"></i> Request Verifikasi Reseller @if($pending_reseller_count > 0)<span class="badge bg-danger">{{ $pending_reseller_count }}</span>@endif
 </a>
 @endif
+@if(auth()->user()->isAdmin())
 <a href="{{ route('user.create', $role) }}" class="btn btn-primary">
 <i class="fa fa-plus me-2"></i> Tambah {{ $role }}
 </a>
+@endif
 @endsection
 
 @section('content')

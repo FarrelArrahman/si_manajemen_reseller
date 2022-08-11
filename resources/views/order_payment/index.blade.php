@@ -11,7 +11,7 @@ Daftar pembayaran dari pesanan reseller.
 @section('action-button')
 @endsection
 
-@if((auth()->user()->isReseller() && auth()->user()->reseller && auth()->user()->reseller->isActive()) || auth()->user()->isAdmin())
+@if((auth()->user()->isReseller() && auth()->user()->reseller && auth()->user()->reseller->isActive()) || auth()->user()->isAdmin() || auth()->user()->isStaff())
 @section('content')
 <!-- Basic Tables start -->
 <section class="section">
@@ -35,7 +35,7 @@ Daftar pembayaran dari pesanan reseller.
                     </div>
                 </div>
                 <div class="col-md-6">
-                    <small>Tanggal Bayar</small>
+                    <small>Tanggal Pesan</small>
                     <div class="input-group mb-3">
                         <input type="date" class="form-control filter" id="begin_date" value="{{ date('Y-m-d') }}">
                         <span class="input-group-text" id="basic-addon2">s/d</span>
@@ -130,7 +130,7 @@ Daftar pembayaran dari pesanan reseller.
                                 </a>
                             </div>
                         </div>
-                        @if(auth()->user()->isAdmin())
+                        @if(auth()->user()->isAdmin() || auth()->user()->isStaff())
                         <div class="form-group row align-items-center pb-0 mb-0" id="verification_status">
                             <div class="col-lg-4 col-4">
                                 <label class="col-form-label fw-bold">Status</label>
@@ -142,15 +142,20 @@ Daftar pembayaran dari pesanan reseller.
                                 </select>
                             </div>
                         </div>
+                        @endif
                         <div class="form-group row align-items-center py-2 my-2" id="admin_notes">
                             <div class="col-lg-4 col-4">
                                 <label class="col-form-label fw-bold">Alasan Penolakan</label>
                             </div>
                             <div class="col-lg-8 col-8">
+                                @if(auth()->user()->isAdmin() || auth()->user()->isStaff())
                                 <textarea class="form-control" id="admin_notes_input" rows="2"></textarea>
+                                @else
+                                <p class="col-form-label" id="admin_notes_text"></p>
+                                @endif
                             </div>
                         </div>
-                        @else
+                        @if(auth()->user()->isReseller())
                         <div class="form-group row align-items-center pb-0 mb-0" id="upload_proof_of_payment">
                             <div class="col-lg-4 col-4">
                                 <label class="col-form-label fw-bold">Upload Bukti Pembayaran</label>
@@ -169,7 +174,7 @@ Daftar pembayaran dari pesanan reseller.
                     <i class="bx bx-x d-block d-sm-none"></i>
                     <span class="d-none d-sm-block">Kembali</span>
                 </button>
-                @if(auth()->user()->isAdmin())
+                @if(auth()->user()->isAdmin() || auth()->user()->isStaff())
                 <button id="verify_button" type="button" class="btn btn-primary ml-1">
                     <i class="bx bx-check d-block d-sm-none"></i>
                     <span class="d-none d-sm-block" id="verify_button_label">Simpan</span>
@@ -192,6 +197,8 @@ Daftar pembayaran dari pesanan reseller.
 <script type="text/javascript">
     let orderId = 0
     let adminNotes = $('#admin_notes')
+    let adminNotesInput = $('#admin_notes_input')
+    let adminNotesText = $('#admin_notes_text')
 
     adminNotes.hide()
 
@@ -260,6 +267,7 @@ Daftar pembayaran dari pesanan reseller.
         paymentStatus = button.getAttribute('data-payment-status')
         totalPrice = button.getAttribute('data-total-price')
         resellerAccount = button.getAttribute('data-reseller-account')
+        adminNotesInfo = button.getAttribute('data-admin-notes')
 
         $('#order_code').text(orderCode)
         $('#total_price_text').text(totalPrice)
@@ -274,11 +282,21 @@ Daftar pembayaran dari pesanan reseller.
         }
 
         if(paymentStatus == "DITERIMA") {
+            adminNotes.hide()
             $("#verification_status").hide()
             $("#upload_proof_of_payment").hide()
             $("#verify_button").hide()
             $("#upload_payment").hide()
         } else {
+            if(paymentStatus == "DITOLAK") {
+                adminNotes.show()
+                @if(auth()->user()->isAdmin() || auth()->user()->isStaff())
+                adminNotesInput.val(adminNotesInfo)
+                @else
+                adminNotesText.text(adminNotesInfo)
+                @endif
+            }
+
             $("#verification_status").show()
             $("#upload_proof_of_payment").show()
             $("#verify_button").show()
@@ -324,8 +342,7 @@ Daftar pembayaran dari pesanan reseller.
         $('#verify_button_label').text("Loading...")
 
         let verificationStatus = $('#payment_verification_status')
-        let adminNotesInput = $('#admin_notes_input')
-
+        
         let data = {
             status: verificationStatus.val(),
         }
@@ -335,6 +352,7 @@ Daftar pembayaran dari pesanan reseller.
         }
 
         verifyPayment(orderId, data).then(json => {
+            // console.log(data)
             toast(json.success, json.message)
             adminNotesInput.val("")
             table.draw()
@@ -370,10 +388,10 @@ Daftar pembayaran dari pesanan reseller.
         $('#upload_payment_label').text("Loading...")
 
         let file = $('#proof_of_payment_input').prop('files')[0]
-        console.log(file)
+        // console.log(file)
 
         uploadPayment(orderId, file).then(json => {
-            console.log(json)
+            // console.log(json)
             toast(json.success, json.message)
             $('.close').click()
             table.draw()

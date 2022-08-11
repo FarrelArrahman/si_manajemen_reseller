@@ -40,6 +40,17 @@ class CartDetail extends Model
         // 
     ];
 
+    protected $appends = [
+        'quantity_less_or_equal_than_stock'
+    ];
+
+    // Appends
+    public function getQuantityLessOrEqualThanStockAttribute()
+    {
+        return $this->quantity <= $this->productVariant->stock;
+    }
+
+    // Relationships
     public function cart()
     {
         return $this->belongsTo(Cart::class, 'cart_id', 'id');

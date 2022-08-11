@@ -34,6 +34,19 @@ Route::get('/test', function() {
     return Carbon::createFromDate('2022', '07', 1)->endOfMonth();
 });
 
+Route::get('/test-email', function() {
+    $details = [
+        'email' => "testkirim@laudable-me.com",
+        'subject' => "Verifikasi Data Reseller Baru",
+        'message' => 'User **Heheboi** telah mengajukan data reseller untuk diverifikasi. Silakan kunjungi halaman **Reseller** pada menu **User > Reseller** atau klik tombol di bawah ini.',
+        'button' => 'Lihat Daftar Reseller',
+        'url' => route('user.index', 'reseller')
+    ];
+
+    dispatch(new App\Jobs\SendEmailJob($details));
+    dd("Email sent!");
+});
+
 // Route::get('/test', function(Request $request) {
 //     dd(App\Models\Order::find(1)->orderShipping);
 // });

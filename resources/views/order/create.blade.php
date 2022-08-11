@@ -14,6 +14,11 @@ Memesan barang yang telah dimasukkan pada keranjang.
 <section id="basic-vertical-layouts">
     <div class="row match-height">
         <div class="col-md-12 col-24">
+            @if($errors->any())
+            @foreach($errors->all() as $error)
+                <div class="alert alert-danger">{{ $error }}</div>
+            @endforeach
+            @endif
             <form class="form form-horizontal" method="POST" action="{{ route('order.store') }}">
                 <div class="card">
                     <div class="card-header mb-0 pb-0">
@@ -21,11 +26,6 @@ Memesan barang yang telah dimasukkan pada keranjang.
                     </div>
                     <div class="card-content">
                         <div class="card-body">
-                            <!-- @if($errors->any())
-                            @foreach($errors->all() as $error)
-                                <div>{{ $error }}</div>
-                            @endforeach
-                            @endif -->
                             @csrf
                             <div class="table-responsive">
                                 <table class="table table-bordered mt-0">
@@ -45,7 +45,13 @@ Memesan barang yang telah dimasukkan pada keranjang.
                                         <tr>
                                             <td class="text-center">{{ $loop->iteration }}</td>
                                             <td class="text-center"><img src="{{ Storage::url($item->productVariant->photo) }}" alt="" style="object-fit: cover; width: 32px; height: 32px;"></td>
-                                            <td>{{ $item->productVariant->product->product_name . ' (' . $item->productVariant->product_variant_name . ')' }}</td>
+                                            <td>
+                                                {{ $item->productVariant->product->product_name . ' (' . $item->productVariant->product_variant_name . ')' }}
+                                                <br>
+                                                @if($item->quantity_less_or_equal_than_stock === false)
+                                                <small class="text-danger fw-bold">Stok tidak mencukupi. Stok Tersedia: {{ $item->productVariant->stock }}</small>
+                                                @endif
+                                            </td>
                                             <td class="text-end">{{ number_format($item->productVariant->reseller_price, 0, '', '.') }}</td>
                                             <td class="text-center">{{ $item->quantity }}</td>
                                             <td class="text-end">{{ number_format($item->quantity * $item->productVariant->reseller_price, 0, '', '.') }}</td>
@@ -74,7 +80,7 @@ Memesan barang yang telah dimasukkan pada keranjang.
                 <div class="card">
                     <div class="card-content">
                         <div class="card-header pb-2">
-                            <h4 class="card-title">Pemesanan dan Pengiriman</h4>
+                            <h4 class="card-title">Pengiriman</h4>
                         </div>
                         <div class="card-body">
                             @csrf
@@ -83,7 +89,7 @@ Memesan barang yang telah dimasukkan pada keranjang.
                                     <div class="col-md-6 col-sm-12">
                                         <div class="form-group">
                                             <label for="courier-vertical">Kurir</label>
-                                            <select name="courier" class="form-select @error('courier') is-invalid @enderror" id="courier">
+                                            <select name="courier" class="form-select @error('courier') is-invalid @enderror" id="courier" required>
                                                 <option value="" disabled selected>Pilih kurir...</option>
                                                 @foreach($courier as $item)
                                                 <option value="{{ $item->code }}">{{ $item->name }}</option>
@@ -99,7 +105,7 @@ Memesan barang yang telah dimasukkan pada keranjang.
                                     <div class="col-md-3 col-sm-6">
                                         <div class="form-group">
                                             <label for="service-type-vertical">Jenis Layanan</label>
-                                            <select disabled name="service" class="form-select" id="service">
+                                            <select disabled name="service" class="form-select" id="service" required>
                                                 <option value="" disabled selected>Pilih layanan...</option>
                                             </select>
                                             @error('service')

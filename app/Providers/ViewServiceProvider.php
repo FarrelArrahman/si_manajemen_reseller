@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\View\Composers\OrderVerificationRequestComposer;
+use App\View\Composers\OrderPaymentVerificationRequestComposer;
 use App\View\Composers\ResellerVerificationRequestComposer;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
@@ -20,6 +21,8 @@ class ViewServiceProvider extends ServiceProvider
         View::composer(['layouts.sidebar', 'users.index'], ResellerVerificationRequestComposer::class);
         // Order Verification Request Composer
         View::composer(['layouts.sidebar', 'users.index'], OrderVerificationRequestComposer::class);
+        // Order Payment Verification Request Composer
+        View::composer(['layouts.sidebar', 'users.index'], OrderPaymentVerificationRequestComposer::class);
     }
 
     /**

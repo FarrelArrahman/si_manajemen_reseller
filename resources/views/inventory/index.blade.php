@@ -23,7 +23,7 @@ Daftar seluruh varian produk yang tersedia.
 <link rel="stylesheet" href="{{ asset('css/price_range_style.css') }}">
 @endsection
 
-@if((auth()->user()->isReseller() && auth()->user()->reseller && auth()->user()->reseller->isActive()) || auth()->user()->isAdmin())
+@if((auth()->user()->isReseller() && auth()->user()->reseller && auth()->user()->reseller->isActive()) || (auth()->user()->isAdmin() || auth()->user()->isStaff()))
 @section('content')
 <!-- Basic Tables start -->
 <section class="section">
@@ -173,11 +173,11 @@ Daftar seluruh varian produk yang tersedia.
                         <table class="table table-responsive cart_detail_table" width="100%">
                             <thead>
                                 <tr>
-                                    <th>#</th>
-                                    <th>Foto</th>
+                                    <th width="5%">#</th>
+                                    <th class="text-center">Foto</th>
                                     <th>Varian</th>
-                                    <th>Harga (pcs)</th>
-                                    <th>Jumlah</th>
+                                    <th class="text-end">Harga (pcs)</th>
+                                    <th width="15%" class="text-center">Jumlah</th>
                                 </tr>
                             </thead>
                             <tbody id="cart_detail_body">
@@ -334,39 +334,55 @@ Daftar seluruh varian produk yang tersedia.
         })
 
         @if(auth()->user()->isReseller() && auth()->user()->reseller && auth()->user()->reseller->isActive())
-        var cartDetailTable = $('.cart_detail_table').DataTable({
-            processing: true,
-            serverSide: true,
-            searchDelay: 1000,
-            searching: false,
-            ordering: false,
-            paging: false,
-            ajax: "{{ route('cart.index_dt') }}",
-            columnDefs: [
-                {
-                    targets: 0,
-                    className: 'dt-center',
-                },
-            ],
-            columns: [
-                {
-                    data: 'action', 
-                    name: 'action', 
-                    orderable: false, 
-                    searchable: false
-                },
-                {data: 'photo', name: 'photo'},
-                {data: 'product_name', name: 'product_name'},
-                {data: 'reseller_price', name: 'reseller_price'},
-                {data: 'quantity', name: 'quantity'},
-            ],
-            fnDrawCallback: () => {
-                $('.image-popup').magnificPopup({
-                    type: 'image'
-                    // other options
-                })
+        let setCartDetailTable = (cartDetail) => {
+            let el = ""
+            let qtyError = false
+
+            let cartDetailTableBody = $('#cart_detail_body')
+            cartDetailTableBody.empty()
+
+            if(cartDetail != null && cartDetail?.cart_detail.length > 0) {
+                for(let item of cartDetail.cart_detail) {
+                    if(item.quantity_less_or_equal_than_stock == false) {
+                        qtyError = true
+                    }
+
+                    totalPrice = item.product_variant.reseller_price * item.quantity
+                    el += `<tr>
+                        <td class="text-center">
+                            <button data-cart-detail-id="${item.id}" class="btn btn-link p-0 text-danger me-1 ms-1 removefromcart-button"><i class="fa fa-trash fa-sm"></i></button>
+                        </td>
+                        <td class="text-center">
+                            <img style="object-fit: cover; width: 64px; height: 64px;" src="${item.product_variant.photo_storage_path}">
+                        </td>
+                        <td>
+                            ${item.product_variant.product.product_name} (${item.product_variant.product_variant_name})
+                            <br>
+                            ${item.quantity_less_or_equal_than_stock == false ? '<small class="text-danger fw-bold">Stok tidak mencukupi. Stok Tersedia: ' + item.product_variant.stock + '</small>' : ''} 
+                        </td>
+                        <td class="text-end">
+                            ${item.product_variant.reseller_price.toLocaleString('id-ID')}
+                        </td>
+                        <td class="text-center">
+                            <input data-cart-detail-id="${item.id}" type="number" class="form-control change-quantity" value="${item.quantity}" min="1" max="${item.product_variant.stock}">
+                        </td>
+                    </tr>`
+                }
+            } else {
+                el += `<tr>
+                    <td class="text-center" colspan="5">Tidak ada produk dalam keranjang.</td>
+                </tr>`
             }
-        });
+
+            if(qtyError) {
+                table.draw()
+                $('#order_now').addClass('disabled')
+            } else {
+                $('#order_now').removeClass('disabled')
+            }
+
+            cartDetailTableBody.append(el)
+        }
 
         let getProductVariantDetail = (productVariantId) => {
             var url = "{{ route('product_variant.detail', 'x') }}/".replace("x", productVariantId)
@@ -498,7 +514,6 @@ Daftar seluruh varian produk yang tersedia.
                 toast(json.success, json.message)
 
                 $('.close').click()
-                cartDetailTable.draw()
             })
         })
 
@@ -516,7 +531,12 @@ Daftar seluruh varian produk yang tersedia.
 
         var showCartModal = document.getElementById('show_cart_modal')
         showCartModal.addEventListener('show.bs.modal', function (event) {
-            cartDetailTable.draw()
+            
+            getCartDetail().then(json => {
+                let cartDetail = json.data
+                setCartDetailTable(cartDetail)
+            })
+
             cartDetail.show()
         })
 
@@ -557,7 +577,11 @@ Daftar seluruh varian produk yang tersedia.
             
             wto = setTimeout(function () {
                 changeQuantity(cartDetail, quantity).then(json => {
-                    console.log(json)
+                    // console.log(json)
+                    getCartDetail().then(json => {
+                        let cartDetail = json.data
+                        setCartDetailTable(cartDetail)
+                    })
                     $('#order_now').removeClass('disabled')
                 })
             }, 1000)
@@ -593,7 +617,10 @@ Daftar seluruh varian produk yang tersedia.
 
             removeItemFromCart(cartDetail).then(json => {
                 toast(json.success, json.message)
-                cartDetailTable.draw()
+                getCartDetail().then(json => {
+                    let cartDetail = json.data
+                    setCartDetailTable(cartDetail)
+                })
             })
         })
 
@@ -613,7 +640,10 @@ Daftar seluruh varian produk yang tersedia.
         $(document).on('click', '#remove_all_item', function() {
             removeAll().then(json => {
                 toast(json.success, json.message)
-                cartDetailTable.draw()
+                getCartDetail().then(json => {
+                    let cartDetail = json.data
+                    setCartDetailTable(cartDetail)
+                })
             })
         })
         @endif

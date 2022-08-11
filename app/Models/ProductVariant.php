@@ -48,6 +48,16 @@ class ProductVariant extends Model
         // 
     ];
 
+    protected $appends = [
+        'photo_storage_path'
+    ];
+
+    // Appends
+    public function getPhotoStoragePathAttribute()
+    {
+        return \Storage::url($this->photo);
+    }
+
     // Relationship
     public function product()
     {

@@ -11,7 +11,7 @@ Daftar pesanan produk dari reseller.
 @section('action-button')
 @endsection
 
-@if((auth()->user()->isReseller() && auth()->user()->reseller && auth()->user()->reseller->isActive()) || auth()->user()->isAdmin())
+@if((auth()->user()->isReseller() && auth()->user()->reseller && auth()->user()->reseller->isActive()) || auth()->user()->isAdmin() || auth()->user()->isStaff())
 @section('content')
 <!-- Basic Tables start -->
 <section class="section">
@@ -26,8 +26,8 @@ Daftar pesanan produk dari reseller.
                     <small>Status Pesanan</small>
                     <div class="input-group mb-3">
                         <select class="form-select filter" id="status">
-                            <option value="">(Semua Status)</option>
-                            <option selected value="PENDING">Menunggu Persetujuan</option>
+                            <option selected value="">(Semua Status)</option>
+                            <option value="PENDING">Menunggu Persetujuan</option>
                             <option value="DITOLAK">Ditolak</option>
                             <option value="DITERIMA">Diterima</option>
                             <option value="DIBATALKAN">Dibatalkan</option>
@@ -143,7 +143,7 @@ Daftar pesanan produk dari reseller.
                                 <label class="col-form-label fw-bold">Alasan Penolakan</label>
                             </div>
                             <div class="col-lg-8 col-8">
-                                @if(auth()->user()->isAdmin())
+                                @if(auth()->user()->isAdmin() || auth()->user()->isStaff())
                                 <textarea class="form-control" id="admin_notes_input" rows="2"></textarea>
                                 @else
                                 <p class="col-form-label" id="admin_notes_text"></p>
@@ -176,7 +176,7 @@ Daftar pesanan produk dari reseller.
                     <i class="bx bx-x d-block d-sm-none"></i>
                     <span class="d-none d-sm-block">Kembali</span>
                 </button>
-                @if(auth()->user()->isAdmin())
+                @if(auth()->user()->isAdmin() || auth()->user()->isStaff())
                 <button id="verify_button" type="button" class="btn btn-primary ml-1">
                     <i class="bx bx-check d-block d-sm-none"></i>
                     <span class="d-none d-sm-block" id="verify_button_label">Simpan</span>
@@ -384,7 +384,7 @@ Daftar pesanan produk dari reseller.
                 $('#verify_button').hide()
             } else if(order.status == "DITOLAK") {
                 adminNotes.show()
-                @if(auth()->user()->isAdmin())
+                @if(auth()->user()->isAdmin() || auth()->user()->isStaff())
                 adminNotesInput.val(order.admin_notes)
                 @else
                 adminNotesText.text(order.admin_notes)

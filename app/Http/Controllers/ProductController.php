@@ -45,11 +45,11 @@ class ProductController extends Controller
         return DataTables::of($data)
             ->addIndexColumn()
             ->addColumn('action', function($row){
-                if($row->trashed() && auth()->user()->isAdmin()) {
+                if($row->trashed() && (auth()->user()->isAdmin() || auth()->user()->isStaff())) {
                     $actionBtn = '<button data-id="' . $row->sku . '" class="btn btn-text text-primary me-1 ms-1 restore-button"><i class="fa fa-undo-alt fa-sm"></i></button>';
                 } else {
                     $actionBtn = '<a href="' . route('product.show', $row->sku) . '" class="text-info me-1 ms-1"><i class="fa fa-search fa-sm"></i></a>';
-                    if(auth()->user()->isAdmin()) {
+                    if(auth()->user()->isAdmin() || auth()->user()->isStaff()) {
                         $actionBtn .= '<a href="' . route('product.edit', $row->sku) . '" data-id="' . $row->id . '" class="btn btn-link p-0 text-warning me-1 ms-1"><i class="fa fa-edit fa-sm"></i></a>';
                         $actionBtn .= '<button data-id="' . $row->sku . '" class="btn btn-link p-0 text-danger me-1 ms-1 delete-button"><i class="fa fa-trash-alt fa-sm"></i></button>';
                     }

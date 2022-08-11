@@ -12,8 +12,8 @@ class OrderPaymentVerificationRequestComposer
      */
     public function compose(View $view)
     {
-        if(auth()->user()->isAdmin()) {
-            $pending_order_payment_count = OrderPayment::where('status', OrderPayment::PENDING)->count();
+        if(auth()->user()->isAdmin() || auth()->user()->isStaff()) {
+            $pending_order_payment_count = OrderPayment::where('payment_status', OrderPayment::PENDING)->count();
             $view->with('pending_order_payment_count', $pending_order_payment_count);
         }
 

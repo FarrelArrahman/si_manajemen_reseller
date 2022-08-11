@@ -82,7 +82,7 @@ class Reseller extends Model
     // Helper
     public function isActive()
     {
-        return $this->approval_date != NULL && $this->reseller_status == self::ACTIVE;
+        return $this->reseller_status == self::ACTIVE;
     }
 
     public function isInactive()
@@ -92,7 +92,7 @@ class Reseller extends Model
 
     public function isPending()
     {
-        return $this->reseller_registration_proof_of_payment != NULL || $this->reseller_status == self::PENDING;
+        return $this->reseller_status == self::PENDING;
     }
 
     public function isRejected()

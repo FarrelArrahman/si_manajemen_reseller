@@ -48,7 +48,7 @@
                         <span>Produk</span>
                     </a>
                     <ul class="submenu {{ request()->is('product*') || request()->is('category*') || request()->is('product_variant*') || request()->is('inventory*') ? 'active' : '' }}">
-                        @if(auth()->user()->isAdmin())
+                        @if(auth()->user()->isAdmin() || auth()->user()->isStaff())
                         <li class="submenu-item {{ request()->is('category*') ? 'active' : '' }}">
                             <a href="{{ route('category.index') }}">
                                 Kategori
@@ -72,9 +72,7 @@
                     <a href="{{ route('order.index') }}" class='sidebar-link'>
                         <i class="bi bi-cart-fill"></i>
                         <span>Pesanan</span>
-                        @if(auth()->user()->isAdmin() && $pending_order_count > 0)
-                        <span id="pending_order_count" class="badge bg-danger">{{ $pending_order_count }}</span>
-                        @endif
+                        <span id="pending_order_count" class="badge bg-danger">{{ (auth()->user()->isAdmin() || auth()->user()->isStaff()) && $pending_order_count > 0 ? $pending_order_count : '' }}</span>
                     </a>
                 </li>   
 
@@ -82,6 +80,7 @@
                     <a href="{{ route('order_payment.index') }}" class='sidebar-link'>
                         <i class="bi bi-cash-stack"></i>
                         <span>Pembayaran</span>
+                        <span id="pending_order_payment_count" class="badge bg-danger">{{ (auth()->user()->isAdmin() || auth()->user()->isStaff()) && $pending_order_payment_count > 0 ? $pending_order_payment_count : '' }}</span>
                     </a>
                 </li>
 
@@ -111,13 +110,13 @@
                 </li>
                 @endif
                 
-                @if(auth()->user()->isAdmin())
+                @if(auth()->user()->isAdmin() || auth()->user()->isStaff())
                 <li class="sidebar-item has-sub {{ request()->is('user*') ? 'active' : '' }}">
                     <a href="#" class='sidebar-link'>
                         <i class="bi bi-people-fill"></i>
                         <span>User</span>
                         @if($pending_reseller_count > 0)
-                        <span id="pending_reseller_count" class="badge bg-danger">{{ $pending_reseller_count }}</span>
+                        <span id="pending_reseller_count" class="badge bg-danger">{{ (auth()->user()->isAdmin() || auth()->user()->isStaff()) && $pending_reseller_count > 0 ? $pending_reseller_count : '' }}</span>
                         @endif
                     </a>
                     <ul class="submenu {{ request()->is('user*') ? 'active' : '' }}">
@@ -129,9 +128,7 @@
                         <li class="submenu-item {{ request()->is('*reseller*') ? 'active' : '' }}">
                             <a href="{{ route('user.index', 'reseller') }}">
                                 Reseller 
-                                @if($pending_reseller_count > 0)
-                                <span class="text-danger" id="pending_reseller_dots">•</span>
-                                @endif
+                                <span id="pending_reseller_dots" class="text-danger">{{ (auth()->user()->isAdmin() || auth()->user()->isStaff()) && $pending_reseller_count > 0 ? '•' : '' }}</span>
                             </a>
                         </li>
                     </ul>
@@ -145,14 +142,14 @@
                     </a>
                 </li>
 
-                <!-- @if(auth()->user()->isAdmin())
-                <li class="sidebar-item">
+                @if(auth()->user()->isAdmin())
+                <!-- <li class="sidebar-item">
                     <a href="{{ route('configuration.index') }}" class='sidebar-link'>
                         <i class="bi bi-gear-fill"></i>
                         <span>Pengaturan</span>
                     </a>
-                </li>
-                @endif -->
+                </li> -->
+                @endif
 
                 <li class="sidebar-item">
                     <a onclick="event.preventDefault(); document.getElementById('logout-form').submit();" href="#" class='sidebar-link text-danger'>

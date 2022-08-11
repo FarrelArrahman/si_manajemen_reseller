@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Reseller;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
@@ -66,7 +67,7 @@ class LoginController extends Controller
         ];
 
         if(auth()->attempt($data, $remember_me)) {
-            if(auth()->user()->status == 0) {
+            if(auth()->user()->status == 0 || (auth()->user()->reseller && auth()->user()->reseller->reseller_status == Reseller::INACTIVE)) {
                 auth()->logout();
                 return redirect()->back()->withErrors(['error' => 'Akun terdaftar namun telah dinonaktifkan. Silahkan kontak admin melalui WhatsApp.'])->withInput($request->all());
             }

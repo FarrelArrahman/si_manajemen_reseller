@@ -22,5 +22,5 @@ Broadcast::channel('channel-reseller.{id}', function ($user, $id) {
 });
 
 Broadcast::channel('channel-admin', function ($user) {
-    return $user->isAdmin();
+    return $user->isAdmin() || $user()->isStaff();
 });
