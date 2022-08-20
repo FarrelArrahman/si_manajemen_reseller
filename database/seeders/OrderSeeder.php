@@ -8,13 +8,12 @@ use App\Models\OrderPayment;
 use App\Models\OrderShipping;
 use App\Models\ProductVariant;
 use App\Models\User;
-use App\Traits\OwnerConfiguration;
 use App\Traits\Rajaongkir;
 use Illuminate\Database\Seeder;
 
 class OrderSeeder extends Seeder
 {
-    use Rajaongkir, OwnerConfiguration;
+    use Rajaongkir;
 
     private $couriers = [
         [
@@ -53,7 +52,7 @@ class OrderSeeder extends Seeder
     ];
 
     private $beginDate = "2022-01-01";
-    private $currentDate = "2022-07-29";
+    private $currentDate;
     
     /**
      * Run the database seeds.
@@ -62,6 +61,7 @@ class OrderSeeder extends Seeder
      */
     public function run()
     {
+        $this->currentDate = date('Y-m-d');
         // Ambil semua data user dengan role reseller
         $users = User::where('role', 'Reseller')->get();
         foreach($users as $user) {
@@ -80,10 +80,9 @@ class OrderSeeder extends Seeder
                     'ordered_by' => $reseller->id,
                     'handled_by' => 1,
                     'notes' => null,
-                    'discount' => 0,
                     'total_price' => 0,
                     'date' => date('Y-m-d h:i:s', $dateRandom),
-                    'status' => Order::APPROVED,
+                    'status' => Order::DONE,
                     'admin_notes' => null,
                 ]);
 
@@ -105,7 +104,6 @@ class OrderSeeder extends Seeder
                         'product_variant_id' => $productVariant->id,
                         'quantity' => $quantityRandom,
                         'price' => $productVariant->reseller_price,
-                        'discount' => 0,
                     ]);
                 }
 

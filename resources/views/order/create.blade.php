@@ -130,9 +130,9 @@ Memesan barang yang telah dimasukkan pada keranjang.
                                         <div class="form-group">
                                             <label for="send-from-vertical">Dikirim dari</label>
                                             <p class="text-primary fw-bold">
-                                                <span id="send-from-address">{{ $configuration->address }}</span><br>
-                                                <span id="send-from-city">{{ $configuration->city }}</span>, <span id="send-from-province">{{ $configuration->province }}</span><br>
-                                                <span id="send-from-postal-code">{{ $configuration->postal_code }}</span><br>
+                                                <span id="send-from-address">{{ $configuration::configName('address') }}</span><br>
+                                                <span id="send-from-city">{{ $configuration::configName('city') }}</span>, <span id="send-from-province">{{ $configuration::configName('province') }}</span><br>
+                                                <span id="send-from-postal-code">{{ $configuration::configName('postal_code') }}</span><br>
                                             </p>
                                         </div>
                                     </div>

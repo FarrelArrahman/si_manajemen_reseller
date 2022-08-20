@@ -30,7 +30,7 @@ class NotifyMail extends Mailable
      */
     public function build()
     {
-        $this->subject("Tes judul dari NotifyMail")->markdown('email.notify');
+        $this->subject($this->data['subject'])->markdown('email.notify');
         return $this;
     }
 }

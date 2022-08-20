@@ -13,23 +13,27 @@ Laporan Penjualan Produk
         <div class="col-md-12">
             <div class="card" id="interval_card">
                 <div class="card-body">
+                    <form id="productSellingExcel" action="{{ route('report.productSellingExcel') }}" method="POST">
                     <div class="row">
+                        @csrf
+                        <input type="hidden" name="product_name" id="product_name">
                         <div class="col-6" id="product">
                             <small>Varian Produk</small>
-                            <select class="form-select" id="product_select">
+                            <select class="form-select" name="product" id="product_select">
                                 <option selected disabled value="">Pilih varian produk...</option>
                             </select>
                         </div>
                         <div class="col-6" id="date">
                             <small>Rentang Tanggal</small>
                             <div class="input-group mb-3">
-                                <input type="date" class="form-control" id="start_date" value="{{ date('Y-m-01') }}">
+                                <input type="date" class="form-control" name="start_date" id="start_date" value="{{ date('Y-m-01') }}">
                                 <span class="input-group-text" id="basic-addon2">s/d</span>
-                                <input type="date" class="form-control" id="end_date" value="{{ date('Y-m-d') }}">
-                                <button class="btn btn-primary reload_button"><i class="fa fa-sync-alt"></i> Reload</button>
+                                <input type="date" class="form-control" name="end_date" id="end_date" value="{{ date('Y-m-d') }}">
+                                <button type="button" class="btn btn-primary reload_button"><i class="fa fa-sync-alt"></i> Reload</button>
                             </div>
                         </div>
                     </div>
+                    </form>
                 </div>
             </div>
 
@@ -53,6 +57,7 @@ Laporan Penjualan Produk
                 <div class="card-body">
                     <div class="row">
                         <div class="col-12">
+                            <button onclick="$('#productSellingExcel').submit()" class="btn btn-primary mb-2 float-end">Download Excel</button>
                             <table class="table table-bordered fs-6" id="product_selling">
                                 <thead>
                                     <tr class="table-primary">
@@ -104,6 +109,10 @@ Laporan Penjualan Produk
                     }
                 }
             },
+        })
+
+        productSelect.on('change', function() {
+            $('#product_name').val($(this).find(':selected').text())
         })
 
         let generateReport = (url, product, start, end) => {

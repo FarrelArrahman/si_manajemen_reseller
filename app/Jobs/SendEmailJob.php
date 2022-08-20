@@ -38,12 +38,6 @@ class SendEmailJob implements ShouldQueue
     {
         $email = new NotifyMail($this->details);
         Mail::to($this->details['email'])
-            ->subject("Tes judul dari SendEmailJob")
             ->send($email);
-    }
-
-    public function failed(Exception $ex)
-    {
-        info($ex->getMessage());
     }
 }

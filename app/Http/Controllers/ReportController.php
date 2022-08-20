@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ProductSellingExport;
 use App\Exports\SellingRecapExport;
 use Illuminate\Http\Request;
 use App\Traits\GeneralSellingReport;
@@ -76,12 +77,12 @@ class ReportController extends Controller
      */
     public function sellingRecapExcel(Request $request)
     {
-        if($request->start == "" || $request->end == "") {
+        if($request->start_date == "" || $request->end_date == "") {
             return abort(404);
         }
 
-        $title = "SellingRecap_" . $request->start . "_" . $request->end;
-        $data = $this->sellingRecapReportInit($request->start, $request->end)->getSellingRecap();
+        $title = "SellingRecap_" . $request->start_date . "_" . $request->end_date . '.xlsx';
+        $data = $this->sellingRecapReportInit($request->start_date, $request->end_date)->getSellingRecap();
         return Excel::download(new SellingRecapExport($data), $title);
     }
 
@@ -111,5 +112,22 @@ class ReportController extends Controller
             // 'data' => $request->all(),
             'statusCode' => 200
         ], 200);
+    }
+
+    /**
+     * Export product selling report as spreadsheet.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function productSellingExcel(Request $request)
+    {
+        dd($request->all());
+        if($request->start_date == "" || $request->end_date == "") {
+            return abort(404);
+        }
+
+        $title = "ProductSelling_" . trim($request->product_name) . "_" . $request->start_date . "_" . $request->end_date . '.xlsx';
+        $data = $this->productSellingReportInit($request->product, $request->start_date, $request->end_date)->getProductSelling();
+        return Excel::download(new ProductSellingExport($data), $title);
     }
 }

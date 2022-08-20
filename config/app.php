@@ -165,6 +165,7 @@ return [
         /*
          * Package Service Providers...
          */
+        Mavinoo\Batch\BatchServiceProvider::class,
         Yajra\DataTables\DataTablesServiceProvider::class,
 
         /*
@@ -229,6 +230,8 @@ return [
         'URL' => Illuminate\Support\Facades\URL::class,
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
+        // Package Class Aliases...
+        'Batch' => Mavinoo\Batch\BatchFacade::class,
         'DataTables' => Yajra\DataTables\Facades\DataTables::class,
     ],
 

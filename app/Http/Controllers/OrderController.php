@@ -12,14 +12,14 @@ use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\OrderPayment;
 use App\Models\OrderShipping;
+use App\Models\ProductVariant;
 use App\Traits\Rajaongkir;
-use App\Traits\OwnerConfiguration;
 use DataTables;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
-    use Rajaongkir, OwnerConfiguration;
+    use Rajaongkir;
 
     /**
      * Display a listing of the resource.
@@ -41,7 +41,7 @@ class OrderController extends Controller
         $data = [];
         
         if(auth()->user()->isAdmin() || auth()->user()->isStaff()) {
-            $data = Order::select('*');
+            $data = Order::select('*')->latest();
         } else {
             $data = Order::where('ordered_by', auth()->user()->reseller->id)->latest();
         }
@@ -107,7 +107,7 @@ class OrderController extends Controller
     {
         $totalWeight = 0;
         $courier = Courier::all();
-        $configuration = Configuration::first();
+        $configuration = new Configuration();
         $cart = Cart::where([
             'reseller_id' => auth()->user()->reseller->id,
             'status' => Cart::ACTIVE
@@ -169,32 +169,46 @@ class OrderController extends Controller
             'admin_notes' => null,
         ]);
 
+        $orderDetails = [];
+        // $productVariants = [];
         foreach($cart->cartDetail as $item) {
             $totalWeight += $item->quantity * $item->productVariant->weight;
             $totalPrice += $item->quantity * $item->productVariant->reseller_price;
 
-            $item->productVariant->update([
-                'stock' => $item->productVariant->stock - $item->quantity
-            ]);
+            // $productVariants[] = [
+            //     'id' => $item->productVariant->id,
+            //     'stock' => ['-', $item->quantity]
+            // ];
 
-            $orderDetail = OrderDetail::create([
+            $orderDetails[] = [
                 'order_id' => $order->id,
                 'product_variant_id' => $item->product_variant_id,
                 'quantity' => $item->quantity,
                 'price' => $item->productVariant->reseller_price,
-                'discount' => 0,
-            ]);
-
-            $item->delete();
+            ];
         }
-        
-        $cart->delete();
+
+        batch()->insert(
+            new OrderDetail, 
+            ['order_id', 'product_variant_id', 'quantity', 'price'],
+            $orderDetails,
+            500
+        );
+
+        // batch()->update(
+        //     new ProductVariant, 
+        //     $productVariants,
+        //     'id'
+        // );
+
+        if($cart->cartDetail) $cart->cartDetail()->delete();
+        if($cart) $cart->delete();
 
         $order->total_price = $totalPrice;
         $order->saveQuietly();
 
         $serviceDetail = $this->serviceDetailAPI(
-            $this->configuration()->city, 
+            Configuration::configName('city'), 
             auth()->user()->reseller->city,
             $totalWeight,
             $request->courier,
@@ -239,8 +253,8 @@ class OrderController extends Controller
 
         // Notify Admin via Email
         dispatch(new SendEmailJob([
-            'email' => "admin@laudable-me.com",
-            'subject' => "Pengajuan Pesanan Baru",
+            'email' => Configuration::configName('email'),
+            'subject' => "Pengajuan Pesanan [#" . $order->code . "]",
             'message' => $message,
             'button' => 'Ke Menu Pesanan',
             'url' => route('order.index')
@@ -394,14 +408,7 @@ class OrderController extends Controller
     {
         if($order->orderShipping) $order->orderShipping->delete();
         if($order->orderPayment) $order->orderPayment->delete();
-
-        foreach($order->orderDetail as $item) {
-            $item->productVariant->update([
-                'stock' => $item->productVariant->stock + $item->quantity
-            ]);
-
-            $item->delete();
-        }
+        if($order->orderDetail->count() > 0) $order->orderDetail()->delete();
 
         if($order->delete()) {
             return response()->json([

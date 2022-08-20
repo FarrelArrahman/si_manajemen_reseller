@@ -12,8 +12,7 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $configuration = Configuration::first();
-        $customerServiceWhatsapp = substr_replace($configuration->customer_service_phone_number, "62", 0, 1);
+        $customerServiceWhatsapp = substr_replace(Configuration::configName('customer_service_phone_number'), "62", 0, 1);
         $stats = (object) [
             'reseller' => User::where('role', 'reseller')->count(),
             'product_variant' => ProductVariant::all()->count(),

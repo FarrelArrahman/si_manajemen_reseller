@@ -16,12 +16,15 @@ Laporan Rekap Penjualan
                     <div class="row">
                         <div class="col-12 interval_filter" id="date">
                             <small>Rentang Tanggal</small>
+                            <form id="sellingRecapExcel" action="{{ route('report.sellingRecapExcel') }}" method="POST">
+                            @csrf
                             <div class="input-group mb-3">
-                                <input type="date" class="form-control" id="start_date" value="{{ date('Y-m-01') }}">
+                                <input type="date" class="form-control" name="start_date" id="start_date" value="{{ date('Y-m-01') }}">
                                 <span class="input-group-text" id="basic-addon2">s/d</span>
-                                <input type="date" class="form-control" id="end_date" value="{{ date('Y-m-d') }}">
-                                <button class="btn btn-primary reload_button"><i class="fa fa-sync-alt"></i> Reload</button>
+                                <input type="date" class="form-control" name="end_date" id="end_date" value="{{ date('Y-m-d') }}">
+                                <button type="button" class="btn btn-primary reload_button"><i class="fa fa-sync-alt"></i> Reload</button>
                             </div>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -47,6 +50,7 @@ Laporan Rekap Penjualan
                 <div class="card-body">
                     <div class="row">
                         <div class="col-12">
+                            <button onclick="$('#sellingRecapExcel').submit()" class="btn btn-primary mb-2 float-end">Download Excel</button>
                             <table class="table table-bordered fs-6" id="selling_recap">
                                 <thead>
                                     <tr class="table-primary">

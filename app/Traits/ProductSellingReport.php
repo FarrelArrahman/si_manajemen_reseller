@@ -65,8 +65,7 @@ trait ProductSellingReport {
             ->orderBy('orders.date')
             ->orderBy('products.product_name')
             ->orderBy('product_variants.product_variant_name')
-            ->get()
-            ->toArray();
+            ->get();
         
         return $orders;
     }

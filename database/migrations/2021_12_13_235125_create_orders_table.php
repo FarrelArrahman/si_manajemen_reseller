@@ -20,7 +20,6 @@ class CreateOrdersTable extends Migration
             $table->foreignId('handled_by')->nullable()->constrained('users');
             $table->text('notes')->nullable();
             $table->bigInteger('total_price');
-            $table->integer('discount');
             $table->datetime('date');
             $table->string('status');
             $table->text('admin_notes')->nullable();

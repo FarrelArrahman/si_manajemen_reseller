@@ -19,8 +19,6 @@ class CreateOrderDetailsTable extends Migration
             $table->foreignId('product_variant_id')->constrained();
             $table->integer('quantity');
             $table->integer('price');
-            $table->integer('discount')->nullable();
-            $table->timestamps();
         });
     }
 

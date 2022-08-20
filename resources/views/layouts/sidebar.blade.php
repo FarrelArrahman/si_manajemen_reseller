@@ -143,13 +143,20 @@
                 </li>
 
                 @if(auth()->user()->isAdmin())
-                <!-- <li class="sidebar-item">
+                <li class="sidebar-item">
                     <a href="{{ route('configuration.index') }}" class='sidebar-link'>
                         <i class="bi bi-gear-fill"></i>
                         <span>Pengaturan</span>
                     </a>
-                </li> -->
+                </li>
                 @endif
+
+                <li class="sidebar-item">
+                    <a href="{{ route('help.index') }}" class='sidebar-link'>
+                        <i class="fa fa-question-circle"></i>
+                        <span>Bantuan</span>
+                    </a>
+                </li>
 
                 <li class="sidebar-item">
                     <a onclick="event.preventDefault(); document.getElementById('logout-form').submit();" href="#" class='sidebar-link text-danger'>

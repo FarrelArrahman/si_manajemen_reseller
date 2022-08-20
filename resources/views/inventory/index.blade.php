@@ -482,6 +482,12 @@ Daftar seluruh varian produk yang tersedia.
             }
         })
 
+        qtyInput.on('keyup', function(event) {
+            if(event.keyCode === 13) {
+                $('#add_to_cart_button').click()
+            }
+        })
+
         let addToCart = (data) => {
             var url = "{{ route('cart.store') }}"
 

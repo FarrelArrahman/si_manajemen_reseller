@@ -98,7 +98,7 @@ Daftar pembayaran dari pesanan reseller.
                                 <p class="col-form-label" id="total_price_text"></p>
                             </div>
                             @if(auth()->user()->isReseller())
-                            <p class="text-success">Silakan transfer ke rekening <strong>{{ $configuration->bank_name }} {{ $configuration->account_number }} (A.N {{ $configuration->account_holder_name }})</strong> sesuai dengan nominal di atas.</p>
+                            <p class="text-success">Silakan transfer ke rekening <strong>{{ $configuration::configName('bank_name') }} {{ $configuration::configName('account_number') }} (A.N {{ $configuration::configName('account_holder_name') }})</strong> sesuai dengan nominal di atas.</p>
                             @endif
                         </div>
                         @if(auth()->user()->isReseller())

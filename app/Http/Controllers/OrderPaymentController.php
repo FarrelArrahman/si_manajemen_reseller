@@ -8,6 +8,7 @@ use App\Jobs\SendEmailJob;
 use App\Models\Configuration;
 use App\Models\Order;
 use App\Models\OrderPayment;
+use App\Models\ProductVariant;
 use App\Models\ProductVariantStockLog;
 use DataTables;
 use Illuminate\Http\Request;
@@ -22,7 +23,7 @@ class OrderPaymentController extends Controller
      */
     public function index()
     {
-        $configuration = Configuration::first();
+        $configuration = new Configuration;
         
         return view('order_payment.index', compact('configuration'));
     }
@@ -187,8 +188,8 @@ class OrderPaymentController extends Controller
 
                 // Notify Admin via Email
                 dispatch(new SendEmailJob([
-                    'email' => "admin@laudable-me.com",
-                    'subject' => "Pembayaran Diterima",
+                    'email' => Configuration::configName('email'),
+                    'subject' => "Pembayaran [#" . $order->code . "] Diterima",
                     'message' => $message,
                     'button' => 'Ke Menu Pembayaran',
                     'url' => route('order_payment.index')
@@ -236,17 +237,42 @@ class OrderPaymentController extends Controller
 
         if($request->status == OrderPayment::APPROVED) {
             // Catat perubahan stok pada varian produk jika diterima
+            $productVariants = [];
+            $productVariantStockLogs = [];
             foreach($order->orderDetail as $item) {
-                ProductVariantStockLog::create([
+                $productVariantStockLogs[] = [
                     'product_variant_id' => $item->productVariant->id,
                     'qty_change' => 0 - $item->quantity,
-                    'qty_before' => $item->productVariant->stock + $item->quantity,
+                    'qty_before' => $item->productVariant->stock,
                     'qty_after' => $item->productVariant->stock - $item->quantity,
                     'date' => now(),
-                    'note' => "Penjualan produk kepada Reseller",
+                    'note' => "Penjualan produk [#" . $order->code . "]",
                     'handled_by' => auth()->user()->id,
-                ]);
+                ];
+
+                $productVariants[] = [
+                    'id' => $item->productVariant->id,
+                    'stock' => ['-', $item->quantity],
+                ];
             }
+
+            batch()->insert(
+                new ProductVariantStockLog, [
+                    'product_variant_id',
+                    'qty_change',
+                    'qty_before',
+                    'qty_after',
+                    'date',
+                    'note',
+                    'handled_by',
+                ], $productVariantStockLogs, 500
+            );
+            
+            batch()->update(
+                new ProductVariant, 
+                $productVariants,
+                'id'
+            );
 
             $order->orderPayment->approved_by = auth()->user()->id;
             $order->status = Order::DONE;

@@ -26,7 +26,6 @@ class Order extends Model
         'handled_by',
         'notes',
         'total_price',
-        'discount',
         'date',
         'status',
         'admin_notes',

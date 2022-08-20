@@ -396,11 +396,12 @@ Daftar reseller yang ada pada sistem.
                 $('#photo').attr('src', reseller.user.photo)
                 $('#status_badge').html(reseller.status_badge)
                 $('#verification_status').html(reseller.verification_status)
+                
                 if(reseller.verification_status == "AKTIF") {
                     $('#approval_date').show()
                     $('#approval_date_label').text(reseller.approval_date)
                     $('#approved_by').show()
-                    $('#approved_by_label').text(reseller.approved_by.name)
+                    $('#approved_by_label').text(reseller.approved_by?.name ?? "-")
                     $('#verify_button').hide()
                 } else {
                     $('#approval_date').hide()

@@ -8,8 +8,12 @@ Konfigurasi
 Konfigurasi sistem seperti email, alamat dan rekening yang digunakan oleh Laudable.me.
 @endsection
 
+@section('css')
+<link rel="stylesheet" href="{{ asset('vendors/quill/quill.snow.css') }}">
+@endsection
+
 @section('content')
-<form action="{{ route('configuration.update') }}" method="POST">
+<form action="{{ route('configuration.update') }}" method="POST" enctype="multipart/form-data">
 @csrf
 @method('PUT')
 <section class="section">
@@ -22,7 +26,7 @@ Konfigurasi sistem seperti email, alamat dan rekening yang digunakan oleh Laudab
                 <div class="col-md-12">
                     <div class="form-group">
                         <label for="address">Alamat</label>
-                        <input type="text" class="form-control" id="address" name="address" value="{{ $configuration->address }}">
+                        <input type="text" class="form-control" id="address" name="address" value="{{ $configuration::configName('address') }}">
                     </div>
                 </div>
                 <div class="col-md-12">
@@ -41,7 +45,7 @@ Konfigurasi sistem seperti email, alamat dan rekening yang digunakan oleh Laudab
                 <div class="col-md-12">
                     <div class="form-group">
                         <label for="city-vertical">Kabupaten/Kota</label>
-                        <select data-postal-code="{{ $configuration->postal_code ?? '' }}" id="city" name="city" class="form-control @error('city') is-invalid @enderror select2">
+                        <select data-postal-code="{{ $configuration::configName('postal_code') ?? '' }}" id="city" name="city" class="form-control @error('city') is-invalid @enderror select2">
                             <option value="" disabled selected>Pilih kabupaten/kota...</option>
                         </select>
                         @error('city')
@@ -55,7 +59,7 @@ Konfigurasi sistem seperti email, alamat dan rekening yang digunakan oleh Laudab
                     <div class="form-group">
                         <label for="postal_code">Kode Pos <small class="text-muted fw-bold">contoh: 80226</small></label>
                         <input type="text" id="postal_code" class="form-control @error('postal_code') is-invalid @enderror"
-                            name="postal_code" value="{{ $configuration->postal_code ?? old('postal_code') }}" placeholder="xxxxx">
+                            name="postal_code" value="{{ $configuration::configName('postal_code') ?? old('postal_code') }}" placeholder="xxxxx">
                         @error('postal_code')
                         <div class="invalid-feedback">
                             {{ $message }}
@@ -66,13 +70,13 @@ Konfigurasi sistem seperti email, alamat dan rekening yang digunakan oleh Laudab
                 <div class="col-md-12">
                     <div class="form-group">
                         <label for="email">Email</label>
-                        <input type="text" class="form-control" id="email" name="email">
+                        <input type="text" class="form-control" id="email" name="email" value="{{ $configuration::configName('email') }}">
                     </div>
                 </div>
                 <div class="col-md-12">
                     <div class="form-group">
                         <label for="customer_service_phone_number">Nomor Telepon Customer Service</label>
-                        <input type="text" class="form-control" id="customer_service_phone_number" name="customer_service_phone_number">
+                        <input type="text" class="form-control" id="customer_service_phone_number" name="customer_service_phone_number" value="{{ $configuration::configName('customer_service_phone_number') }}">
                     </div>
                 </div>
             </div>
@@ -98,7 +102,7 @@ Konfigurasi sistem seperti email, alamat dan rekening yang digunakan oleh Laudab
                             <div class="form-group">
                                 <label for="account-holder-name-vertical">Nama Pemilik Rekening</label>
                                 <input type="text" id="account-holder-name-vertical" class="form-control @error('account_holder_name') is-invalid @enderror"
-                                    name="account_holder_name" value="{{ $configuration->account_holder_name ?? old('account_holder_name') }}" placeholder="Nama pemilik rekening">
+                                    name="account_holder_name" value="{{ $configuration::configName('account_holder_name') ?? old('account_holder_name') }}" placeholder="Nama pemilik rekening">
                                 @error('account_holder_name')
                                 <div class="invalid-feedback">
                                     {{ $message }}
@@ -109,8 +113,8 @@ Konfigurasi sistem seperti email, alamat dan rekening yang digunakan oleh Laudab
                         <div class="col-12">
                             <div class="form-group">
                                 <label for="bank-name-vertical">Nama Bank</label>
-                                <input type="hidden" name="bank_name" value="{{ $configuration->bank_name ?? '' }}" id="bank_name">
-                                <select data-bank-code="{{ $configuration->bank_code ?? 0 }}" id="bank_code" name="bank_code" class="form-control @error('bank_code') is-invalid @enderror select2">
+                                <input type="hidden" name="bank_name" value="{{ $configuration::configName('bank_name') ?? '' }}" id="bank_name">
+                                <select data-bank-code="{{ $configuration::configName('bank_code') ?? 0 }}" id="bank_code" name="bank_code" class="form-control @error('bank_code') is-invalid @enderror select2">
                                     <option data-bank-name="" value="" disabled selected>Pilih bank...</option>
                                 </select>
                                 @error('bank_code')
@@ -124,7 +128,7 @@ Konfigurasi sistem seperti email, alamat dan rekening yang digunakan oleh Laudab
                             <div class="form-group">
                                 <label for="account-number-vertical">Nomor Rekening</label>
                                 <input type="text" id="account-number-vertical" class="form-control @error('account_number') is-invalid @enderror"
-                                    name="account_number" value="{{ $configuration->account_number ?? old('account_number') }}" placeholder="Nomor rekening">
+                                    name="account_number" value="{{ $configuration::configName('account_number') ?? old('account_number') }}" placeholder="Nomor rekening">
                                 @error('account_number')
                                 <div class="invalid-feedback">
                                     {{ $message }}
@@ -141,7 +145,7 @@ Konfigurasi sistem seperti email, alamat dan rekening yang digunakan oleh Laudab
     <div class="card">
         <div class="card-content">
             <div class="card-header">
-                <h4 class="card-title mb-0 pb-0">Foto Background (Halaman Login dan Register)</h4>
+                <h4 class="card-title mb-0 pb-0">Background Login dan Register <a target="_blank" href="{{ Storage::url($configuration::configName('auth_background_image')) }}" class="btn btn-sm btn-primary float-end">Lihat Foto Background</a></h4>
             </div>
             <div class="card-body">
                 <div class="form-body">
@@ -149,9 +153,35 @@ Konfigurasi sistem seperti email, alamat dan rekening yang digunakan oleh Laudab
                         <div class="col-12">
                             <div class="form-group">
                                 <label for="auth_background_image">Upload File <small class="text-muted fw-bold">(.jpg / .png)</small></label>
-                                <input type="file" id="auth_background_image" class="form-control @error('auth_background_image') is-invalid @enderror"
-                                    name="auth_background_image">
+                                <div class="input-group">
+                                    <input type="file" id="auth_background_image" class="form-control @error('auth_background_image') is-invalid @enderror" name="auth_background_image">
+                                </div>
                                 @error('auth_background_image')
+                                <div class="invalid-feedback">
+                                    {{ $message }}
+                                </div>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-content">
+            <div class="card-header">
+                <h4 class="card-title mb-0 pb-0">Konten Halaman Bantuan</h4>
+            </div>
+            <div class="card-body">
+                <div class="form-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group">
+                                <div id="editor">{!! old('help') ?? $configuration::configName('help') !!}</div>
+                                <input type="hidden" name="help" value="{{ old('help') ?? $configuration::configName('help') }}">
+                                @error('help')
                                 <div class="invalid-feedback">
                                     {{ $message }}
                                 </div>
@@ -174,6 +204,7 @@ Konfigurasi sistem seperti email, alamat dan rekening yang digunakan oleh Laudab
 @section('js')
 <script src="{{ url('js/app.js') }}"></script>
 <script src="{{ asset('js/rajaongkir-shipping-cost.js') }}"></script>
+<script src="{{ asset('vendors/quill/quill.min.js') }}"></script>
 <script>
     $(document).ready(function() {
         let bankName = $('#bank_name')
@@ -210,8 +241,8 @@ Konfigurasi sistem seperti email, alamat dan rekening yang digunakan oleh Laudab
             }
             $('#province').append(provinces)
 
-            @if($configuration && $configuration->province != NULL)
-            let provinceId = {{ $configuration->province }}
+            @if($configuration && $configuration::configName('province') != NULL)
+            let provinceId = {{ $configuration::configName('province') }}
             $('#province').val(provinceId).trigger('change')
             @endif
         })
@@ -228,8 +259,8 @@ Konfigurasi sistem seperti email, alamat dan rekening yang digunakan oleh Laudab
                 $('#city').append(cities)
                 $('#city').prop('disabled', false)
 
-                @if($configuration && $configuration->city != NULL)
-                let cityId = {{ $configuration->city }}
+                @if($configuration && $configuration::configName('city') != NULL)
+                let cityId = {{ $configuration::configName('city') }}
                 $('#city').val(cityId).trigger('change')
                 @endif
             })
@@ -245,5 +276,33 @@ Konfigurasi sistem seperti email, alamat dan rekening yang digunakan oleh Laudab
             }
         })
     })
+
+    var toolbarOptions = [
+        ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+        ['link', 'blockquote', 'code-block'],
+
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
+        [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
+
+        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+
+        [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
+        [{ 'font': [] }],
+        [{ 'align': [] }],
+
+        ['clean']                                         // remove formatting button
+        ];
+
+    var quill = new Quill('#editor', {
+        modules: {
+            toolbar: toolbarOptions
+        },
+        theme: 'snow'
+    });
+
+    quill.on('text-change', function(delta, oldDelta, source) {
+        document.querySelector("input[name='help']").value = quill.root.innerHTML;
+    });
 </script>
 @endsection

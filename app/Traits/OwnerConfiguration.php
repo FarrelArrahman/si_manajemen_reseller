@@ -1,16 +1,16 @@
 <?php 
 
-namespace App\Traits;
+// namespace App\Traits;
 
-use App\Models\Configuration;
+// use App\Models\Configuration;
 
-trait OwnerConfiguration {
+// trait OwnerConfiguration {
 
-    public function configuration()
-    {
-        return Configuration::first();
-    }
+//     public function getConfig($configName)
+//     {
+//         return Configuration::configName($configName);
+//     }
 
-}
+// }
 
 ?>

@@ -66,7 +66,7 @@ class ProductVariant extends Model
 
     public function productVariantStockLog()
     {
-        return $this->hasMany(ProductVariantStockLog::class, 'product_variant_id', 'id');
+        return $this->hasMany(ProductVariantStockLog::class, 'product_variant_id', 'id')->orderBy('date', 'DESC');
     }
 
     public function addedBy()

@@ -60,8 +60,7 @@ trait SellingRecapReport {
             ->whereBetween(DB::raw('DATE(orders.date)'), [$this->start, $this->end])
             ->groupBy('orders.code')
             ->orderBy('orders.date')
-            ->get()
-            ->toArray();
+            ->get();
         
         return $orders;
     }

@@ -75,7 +75,8 @@ class UserSeeder extends Seeder
                 'account_holder_name' => $user->name,
                 'rejection_reason' => NULL,
                 'reseller_status' => $this->resellerStatus($this->status),
-                'approval_date' => $this->approvalDate($this->status)
+                'approval_date' => $this->approvalDate($this->status),
+                'approved_by' => 1,
             ]);
         }
     }

@@ -6,6 +6,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ConfigurationController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\HelpController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderPaymentController;
@@ -190,8 +191,9 @@ Route::middleware(['auth'])->group(function() {
         // Report
         Route::get('/report/general', [ReportController::class, 'general'])->name('report.general');
         Route::get('/report/selling-recap', [ReportController::class, 'sellingRecap'])->name('report.sellingRecap');
-        Route::get('/report/selling-recap/excel', [ReportController::class, 'sellingRecapExcel'])->name('report.sellingRecapExcel');
+        Route::post('/report/selling-recap/excel', [ReportController::class, 'sellingRecapExcel'])->name('report.sellingRecapExcel');
         Route::get('/report/product-selling', [ReportController::class, 'productSelling'])->name('report.productSelling');
+        Route::post('/report/product-selling/excel', [ReportController::class, 'productSellingExcel'])->name('report.productSellingExcel');
 
         // Configuration
         Route::get('/configuration', [ConfigurationController::class, 'index'])->name('configuration.index');
@@ -234,4 +236,7 @@ Route::middleware(['auth'])->group(function() {
     Route::get('/order_payment', [OrderPaymentController::class, 'index'])->name('order_payment.index');
     Route::post('/order_payment/{order}/upload', [OrderPaymentController::class, 'upload'])->name('order_payment.upload');
     Route::get('/order_payment/{order}/pdf', [OrderPaymentController::class, 'pdf'])->name('order_payment.pdf');
+
+    // FAQ
+    Route::get('/help', [HelpController::class, 'index'])->name('help.index');
 });
