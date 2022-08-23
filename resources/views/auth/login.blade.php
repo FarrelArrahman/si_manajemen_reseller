@@ -30,7 +30,7 @@
                     <p class="auth-subtitle mb-4">Log in dengan email dan password Anda.</p>
                     @if($errors->has('error'))
                     <div class="alert alert-danger">
-                        {{ $errors->first('error') }}
+                        {!! $errors->first('error') !!}
                     </div>
                     @endif
                     <form action="{{ route('login') }}" method="POST">

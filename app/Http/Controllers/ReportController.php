@@ -121,7 +121,7 @@ class ReportController extends Controller
      */
     public function productSellingExcel(Request $request)
     {
-        dd($request->all());
+        // dd($request->all());
         if($request->start_date == "" || $request->end_date == "") {
             return abort(404);
         }
