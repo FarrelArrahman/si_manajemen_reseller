@@ -64,11 +64,6 @@ class Order extends Model
         return $this->hasOne(Admin::class, 'id', 'handled_by');
     }
 
-    public function orderType()
-    {
-        return $this->hasOne(OrderType::class, 'id', 'order_type_id');
-    }
-
     public function orderShipping()
     {
         return $this->belongsTo(OrderShipping::class, 'id', 'order_id');

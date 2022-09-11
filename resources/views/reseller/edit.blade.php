@@ -226,6 +226,9 @@ Mengisi data reseller agar dapat dilakukan verifikasi oleh Admin.
                     <div class="card-content">
                         <div class="card-header">
                             <h4 class="card-title mb-0 pb-0">Scan / Foto Bukti Pembelian Pertama </h4>
+                            <p class="card-category mb-0 pb-0">
+                                Pembelian pertama produk Laudable.me dengan harga umum sesuai dengan <a class="fw-bold" href="{{ route('help.index') }}">syarat dan ketentuan</a>.
+                            </p>
                         </div>
                         <div class="card-body">
                             <div class="form-body">

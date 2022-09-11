@@ -51,8 +51,8 @@ Daftar seluruh varian produk yang tersedia.
                 <div class="col-md-4">
                     <small>Harga (Rp.)</small>
                     <div id="slider-range" class="price-filter-range" name="rangeInput"></div>
-                    <input type="number" min=0 max="95000" oninput="validity.valid||(value='0');" id="min_price" class="price-range-field filter" />
-                    <input type="number" min=0 max="100000" oninput="validity.valid||(value='100000');" id="max_price" class="price-range-field filter" />
+                    <input type="number" min="{{ $lowestPrice }}" max="{{ $highestPrice - 5000 }}" oninput="validity.valid||(value='0');" id="min_price" class="price-range-field filter" readonly>
+                    <input type="number" min="{{ $lowestPrice }}" max="{{ $highestPrice }}" oninput="validity.valid||(value='100000');" id="max_price" class="price-range-field filter" readonly>
                 </div>
             </div>
         </div>
@@ -126,7 +126,7 @@ Daftar seluruh varian produk yang tersedia.
                                             <div class="input-group mb-2">
                                                 <button class="btn btn-outline-secondary input-group-text" id="decrease">-</button>
                                                 <input type="hidden" id="product_variant_id">
-                                                <input type="number" class="form-control" id="qty" value="0" min="0">
+                                                <input type="number" class="form-control" id="qty" value="0" min="0" onfocus="this.select()" onmouseup="return false;">
                                                 <button class="btn btn-outline-secondary input-group-text" id="increase">+</button>
                                             </div>
                                             <p class="text-success" id="in-cart-qty-label">Qty Keranjang: <span id="in-cart-qty"></span></p>
@@ -181,7 +181,9 @@ Daftar seluruh varian produk yang tersedia.
                                 </tr>
                             </thead>
                             <tbody id="cart_detail_body">
-                                
+                                <tr>
+                                    <td class="text-center" colspan="5">Loading...</td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -206,8 +208,66 @@ Daftar seluruh varian produk yang tersedia.
 
 @section('js')
 <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.min.js" integrity="sha256-eTyxS0rkjpLEo16uXTS0uVCS4815lc40K2iVpWDvdSY=" crossorigin="anonymous"></script>
-<script src="{{ asset('js/price_range_script.js') }}"></script>
+<script>
+    $(document).ready(function(){
+        $("#min_price,#max_price").on('change', function () {
+            var min_price_range = parseInt($("#min_price").val());
+            var max_price_range = parseInt($("#max_price").val());
 
+            if (min_price_range > max_price_range) {
+                $('#max_price').val(min_price_range);
+            }
+
+            $("#slider-range").slider({
+                values: [min_price_range, max_price_range]
+            })
+        })
+
+        $("#min_price, #max_price").on("paste keyup", function () {                                        
+            var min_price_range = parseInt($("#min_price").val());
+            var max_price_range = parseInt($("#max_price").val());
+        
+            if(min_price_range == max_price_range){
+                max_price_range = min_price_range + 100;
+                $("#min_price").val(min_price_range);		
+                $("#max_price").val(max_price_range);
+            }
+
+            $("#slider-range").slider({
+                values: [min_price_range, max_price_range]
+            })
+        })
+
+        $(function () {
+            let minPrice = parseInt($('#min_price').attr('min'))
+            let maxPrice = parseInt($('#max_price').attr('max'))
+
+            $("#slider-range").slider({
+                range: true,
+                orientation: "horizontal",
+                min: minPrice,
+                max: maxPrice,
+                values: [minPrice, maxPrice],
+                step: 5000,
+
+                slide: function (event, ui) {
+                    if (ui.values[0] == ui.values[1]) {
+                        return false
+                    }
+                    
+                    $("#min_price").val(ui.values[0])
+                    $("#max_price").val(ui.values[1])
+                },
+                stop: function (event, ui) {
+                    table.draw()
+                }
+        })
+
+        $("#min_price").val($("#slider-range").slider("values", 0))
+        $("#max_price").val($("#slider-range").slider("values", 1))
+        })
+    })
+</script>
 <script>
     let inCartQtyLabel = $('#in-cart-qty-label');
     inCartQtyLabel.hide();
@@ -364,7 +424,7 @@ Daftar seluruh varian produk yang tersedia.
                             ${item.product_variant.reseller_price.toLocaleString('id-ID')}
                         </td>
                         <td class="text-center">
-                            <input data-cart-detail-id="${item.id}" type="number" class="form-control change-quantity" value="${item.quantity}" min="1" max="${item.product_variant.stock}">
+                            <input onfocus="this.select()" onmouseup="return false;" data-cart-detail-id="${item.id}" type="number" class="form-control change-quantity" value="${item.quantity}" min="1" max="${item.product_variant.stock}">
                         </td>
                     </tr>`
                 }
@@ -584,10 +644,6 @@ Daftar seluruh varian produk yang tersedia.
             wto = setTimeout(function () {
                 changeQuantity(cartDetail, quantity).then(json => {
                     // console.log(json)
-                    getCartDetail().then(json => {
-                        let cartDetail = json.data
-                        setCartDetailTable(cartDetail)
-                    })
                     $('#order_now').removeClass('disabled')
                 })
             }, 1000)

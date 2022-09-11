@@ -15,8 +15,8 @@ class CreateProductsTable extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->string('product_name');
-            $table->string('sku')->nullable();
+            $table->string('product_name', 100);
+            $table->string('sku', 30)->nullable();
             $table->foreignId('unit_id')->constrained();
             $table->foreignId('category_id')->default(0)->constrained();
             $table->string('default_photo')->nullable();

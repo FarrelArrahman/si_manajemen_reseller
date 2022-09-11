@@ -8,6 +8,10 @@ Tambah Master Produk
 Menambah master produk baru.
 @endsection
 
+@section('css')
+<link rel="stylesheet" href="{{ asset('vendors/quill/quill.snow.css') }}">
+@endsection
+
 @section('content')
 <!-- Basic Vertical form layout section start -->
 <section id="basic-vertical-layouts">
@@ -86,7 +90,8 @@ Menambah master produk baru.
                                     <div class="col-12">
                                         <div class="form-group">
                                             <label for="description-vertical">Deskripsi</label>
-                                            <textarea class="form-control @error('description') is-invalid @enderror" id="description-vertical" rows="3" name="description">{{ old('description') }}</textarea>
+                                            <div id="editor">{!! old('description') !!}</div>
+                                            <input type="hidden" name="description" value="{{ old('description') }}">
                                             @error('description')
                                             <div class="invalid-feedback">
                                                 {{ $message }}
@@ -119,4 +124,14 @@ Menambah master produk baru.
 @endsection
 
 @section('js')
+<script src="{{ asset('vendors/quill/quill.min.js') }}"></script>
+<script>
+    var quill = new Quill('#editor', {
+        theme: 'snow'
+    });
+
+    quill.on('text-change', function(delta, oldDelta, source) {
+        document.querySelector("input[name='description']").value = quill.root.innerHTML;
+    });
+</script>
 @endsection

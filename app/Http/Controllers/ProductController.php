@@ -103,7 +103,7 @@ class ProductController extends Controller
      */
     public function index_api(Request $request)
     {
-        $products = Product::select(['id', 'product_name']);
+        $products = Product::select(['id', 'product_name'])->where('product_status', 1);
 
         if($request->has('category_id') && $request->category_id != 0) {
             $products = $products->where('category_id', $request->category_id);

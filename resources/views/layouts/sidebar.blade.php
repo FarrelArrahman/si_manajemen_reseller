@@ -19,7 +19,7 @@
                         <div class="row">
                             <div class="col-3">
                                 <div class="avatar avatar-lg bg-warning">
-                                    <img src="{{ Storage::url(auth()->user()->photo) }}" alt="">
+                                    <img style="object-fit: cover" src="{{ Storage::url(auth()->user()->photo) }}" alt="">
                                 </div>
                             </div>
                             <div class="col-9">
@@ -35,7 +35,7 @@
                     </a>
                 </li>
                 
-                <li class="sidebar-item {{ request()->is('dashboard') ? 'active' : '' }}">
+                <li class="sidebar-item {{ request()->is('dashboard') || request()->is('profile') || request()->is('reseller/edit') ? 'active' : '' }}">
                     <a href="{{ route('dashboard') }}" class='sidebar-link'>
                         <i class="bi bi-house-door-fill"></i>
                         <span>Dashboard</span>
@@ -68,7 +68,7 @@
                     </ul>
                 </li>
 
-                <li class="sidebar-item {{ request()->is('*order') ? 'active' : '' }}">
+                <li class="sidebar-item {{ request()->is('*order') || request()->is('*order/create') ? 'active' : '' }}">
                     <a href="{{ route('order.index') }}" class='sidebar-link'>
                         <i class="bi bi-cart-fill"></i>
                         <span>Pesanan</span>
@@ -111,7 +111,7 @@
                 @endif
                 
                 @if(auth()->user()->isAdmin() || auth()->user()->isStaff())
-                <li class="sidebar-item has-sub {{ request()->is('user*') ? 'active' : '' }}">
+                <li class="sidebar-item has-sub {{ request()->is('user*') || request()->is('*reseller*') ? 'active' : '' }}">
                     <a href="#" class='sidebar-link'>
                         <i class="bi bi-people-fill"></i>
                         <span>User</span>
@@ -119,7 +119,7 @@
                         <span id="pending_reseller_count" class="badge bg-danger">{{ (auth()->user()->isAdmin() || auth()->user()->isStaff()) && $pending_reseller_count > 0 ? $pending_reseller_count : '' }}</span>
                         @endif
                     </a>
-                    <ul class="submenu {{ request()->is('user*') ? 'active' : '' }}">
+                    <ul class="submenu {{ request()->is('user*') || request()->is('*reseller*') ? 'active' : '' }}">
                         <li class="submenu-item {{ request()->is('*staff*') ? 'active' : '' }}">
                             <a href="{{ route('user.index', 'staff') }}">
                                 Staff
@@ -143,7 +143,7 @@
                 </li>
 
                 @if(auth()->user()->isAdmin())
-                <li class="sidebar-item">
+                <li class="sidebar-item {{ request()->is('*configuration*') ? 'active' : '' }}">
                     <a href="{{ route('configuration.index') }}" class='sidebar-link'>
                         <i class="bi bi-gear-fill"></i>
                         <span>Pengaturan</span>
@@ -151,7 +151,7 @@
                 </li>
                 @endif
 
-                <li class="sidebar-item">
+                <li class="sidebar-item {{ request()->is('*help*') ? 'active' : '' }}">
                     <a href="{{ route('help.index') }}" class='sidebar-link'>
                         <i class="fa fa-question-circle"></i>
                         <span>Bantuan</span>

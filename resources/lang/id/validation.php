@@ -34,6 +34,8 @@ return [
         'reseller_price' => 'Harga Reseller',
         'service' => 'Jenis Layanan',
         'social_media' => 'Media Sosial',
+        'start_from' => 'Tanggal Mulai',
+        'valid_until' => 'Tanggal Selesai',
         'shop_name' => 'Nama Toko',
         'shop_address' => 'Alamat Toko',
         'reseller_registration_proof_of_payment' => 'Bukti Pembayaran Pembelian Pertama',

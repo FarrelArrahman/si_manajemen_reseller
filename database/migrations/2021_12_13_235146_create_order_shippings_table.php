@@ -17,11 +17,11 @@ class CreateOrderShippingsTable extends Migration
             $table->id();
             $table->foreignId('order_id')->constrained();
             $table->text('address');
-            $table->string('province');
-            $table->string('city');
-            $table->string('postal_code');
+            $table->integer('province');
+            $table->integer('city');
+            $table->integer('postal_code');
             $table->foreignId('courier_id')->constrained();
-            $table->string('service');
+            $table->string('service', 50);
             $table->integer('total_weight');
             $table->bigInteger('total_price');
         });

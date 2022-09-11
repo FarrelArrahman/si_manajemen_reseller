@@ -45,6 +45,7 @@ class Announcement extends Model
         'start_from', 'valid_until'
     ];
 
+    // Relationship
     public function createdBy()
     {
         return $this->hasOne(User::class, 'id', 'created_by');

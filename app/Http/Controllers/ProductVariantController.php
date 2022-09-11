@@ -13,16 +13,6 @@ use Storage;
 class ProductVariantController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
      * Display a listing of the resource for DataTables.
      *
      * @return \Illuminate\Http\Response

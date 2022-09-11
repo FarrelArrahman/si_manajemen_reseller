@@ -18,7 +18,7 @@ Daftar kategori produk.
 <!-- Basic Tables start -->
 <section class="section">
     <div class="card">
-        <div class="card-body">
+        <div class="card-body table-responsive">
             <table class="table yajra-datatable">
                 <thead>
                     <tr>

@@ -13,24 +13,21 @@ use Storage;
 class InventoryController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Menampilkan halaman daftar seluruh varian produk.
      *
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request)
     {
+        // Ambil semua data kategori
         $categories = Category::all();
-        $products = Product::withTrashed()->get();
-        
-        if($request->show == "allWithTrashed") {
-            $products = Product::withTrashed()->get();
-        } else if($request->show == "onlyTrashed") {
-            $products = Product::onlyTrashed()->get();
-        } else {
-            $products = Product::all();
-        }
+        // Ambil semua data produk
+        $products = Product::where('product_status', 1)->get();
+        // Ambil harga termurah dan termahal dari produk (untuk keperluan range harga)
+        $lowestPrice = ProductVariant::min('reseller_price');
+        $highestPrice = ProductVariant::max('reseller_price');
 
-        return view('inventory.index', compact('products', 'categories'));
+        return view('inventory.index', compact('products', 'categories', 'lowestPrice', 'highestPrice'));
     }
 
     /**

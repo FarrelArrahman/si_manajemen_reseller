@@ -5,6 +5,7 @@ Laporan Umum
 @endsection
 
 @section('sub-title')
+Menampilkan laporan penjualan berdasarkan harga dan kuantitas.
 @endsection
 
 @section('content')
@@ -14,7 +15,7 @@ Laporan Umum
             <div class="card" id="interval_card">
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-4">
+                        <div class="col-md-4 col-sm-12">
                             <small>Interval</small>
                             <div class="input-group mb-3">
                                 <select class="form-select filter" id="interval_select">
@@ -25,7 +26,7 @@ Laporan Umum
                                 </select>
                             </div>
                         </div>
-                        <div class="col-8 interval_filter" id="date" style="display: none">
+                        <div class="col-md-8 col-sm-12 interval_filter" id="date" style="display: none">
                             <small>Rentang Tanggal</small>
                             <div class="input-group mb-3">
                                 <input type="date" class="form-control" id="start_date" value="{{ date('Y-m-01') }}">
@@ -34,7 +35,7 @@ Laporan Umum
                                 <button class="btn btn-primary reload_button"><i class="fa fa-sync-alt"></i> Reload</button>
                             </div>
                         </div>
-                        <div class="col-8 interval_filter" id="month" style="display: none">
+                        <div class="col-md-8 col-sm-12 interval_filter" id="month" style="display: none">
                             <small>Rentang Bulan</small>
                             <div class="input-group mb-3">
                                 <input type="month" class="form-control" id="start_month" value="{{ date('Y-m') }}">
@@ -43,7 +44,7 @@ Laporan Umum
                                 <button class="btn btn-primary reload_button"><i class="fa fa-sync-alt"></i> Reload</button>
                             </div>
                         </div>
-                        <div class="col-8 interval_filter" id="year" style="display: none">
+                        <div class="col-md-8 col-sm-12 interval_filter" id="year" style="display: none">
                             <small>Rentang Tahun</small>
                             <div class="input-group mb-3">
                                 <input type="number" class="form-control" id="start_year" value="{{ date('Y') }}">
@@ -75,15 +76,15 @@ Laporan Umum
             <div class="card" id="general_report_card" style="display: none">
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-6 col-md-6 col-sm-12">
+                        <div class="col-md-6 col-sm-12">
                             <h5 class="mt-2">Total Penjualan (Harga)</h5>
                             <div id="selling_price"></div>
                         </div>
-                        <div class="col-6 col-md-6 col-sm-12">
+                        <div class="col-md-6 col-sm-12">
                             <h5 class="mt-2">Total Penjualan (Qty)</h5>
                             <div id="selling_quantity"></div>
                         </div>
-                        <div class="col-6 col-md-6 col-sm-12 mt-3">
+                        <div class="col-md-6 col-sm-12 mt-3">
                             <h5 class="mt-2">Produk Terjual Terbanyak (Harga)</h5>
                             <table class="table table-bordered table-striped" id="top_selling_price">
                                 <thead>
@@ -96,7 +97,7 @@ Laporan Umum
                                 <tbody></tbody>
                             </table>
                         </div>
-                        <div class="col-6 col-md-6 col-sm-12 mt-3">
+                        <div class="col-md-6 col-sm-12 mt-3">
                             <h5 class="mt-2">Produk Terjual Terbanyak (Qty)</h5>
                             <table class="table table-bordered table-striped" id="top_selling_quantity">
                                 <thead>

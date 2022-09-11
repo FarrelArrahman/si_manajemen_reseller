@@ -67,7 +67,7 @@
                                             <div class="col-12">
                                                 <div class="form-group">
                                                     <label for="description-vertical">Deskripsi</label>
-                                                    <p class="fs-5 text-dark">{{ $product->description ?? '-' }}</p>
+                                                    <p class="fs-5 text-dark">{!! $product->description ?? '-' !!}</p>
                                                 </div>
                                             </div>
                                             <div class="col-12">
@@ -323,7 +323,7 @@
                 deleteProductVariant(id)
                     .then((json) => {
                         toast(json.success, json.message)
-                        table.draw()
+                        table.draw(false)
                     })
                     .catch(error => error)
             }
@@ -336,7 +336,7 @@
         restoreProductVariant(id)
             .then((json) => {
                 toast(json.success, json.message)
-                table.draw()
+                table.draw(false)
             })
             .catch(error => error)
     })
@@ -348,9 +348,7 @@
         changeProductVariantStatus(id, status)
             .then((json) => {
                 // toast(json.success, json.message)
-                if($('#product_variant_status').val() != "") {
-                    table.draw()
-                }
+                table.draw(false)
             })
             .catch(error => error)
     })

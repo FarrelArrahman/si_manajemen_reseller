@@ -50,7 +50,14 @@ class ResellerController extends Controller
             })
             ->addColumn('last_order_date', function($row) {
                 if($row->orders->count() > 0) {
-                    return Order::where('ordered_by', $row->id)->orderBy('date', 'DESC')->first()->date->format('Y-m-d');
+                    $textColor = "text-dark";
+                    $lastOrder = Order::where('ordered_by', $row->id)->orderBy('date', 'DESC')->first();
+                    
+                    if($lastOrder->date->diffInMonths(today()) >= 2) {
+                        $textColor = "text-danger";
+                    }
+
+                    return '<span class="' . $textColor . '">' . $lastOrder->date->format('Y-m-d') . "</span>";
                 }
                 return "-";
             })
@@ -64,7 +71,7 @@ class ResellerController extends Controller
                 return $row->statusBadge();
             })
             ->filter(function ($instance) use ($request) {
-                if($request->get('reseller_status') != null) {
+                if($request->get('reseller_status') != null && $request->get('reseller_status') != "VAKUM") {
                     $instance->where('reseller_status', $request->get('reseller_status'));
                 }
 
@@ -84,7 +91,7 @@ class ResellerController extends Controller
                     });
                 }
             })
-            ->rawColumns(['action','photo','reseller_status','switch_button','dropdown','phone_number'])
+            ->rawColumns(['action','photo','reseller_status','switch_button','dropdown','phone_number','last_order_date'])
             ->make(true);
     }
 

@@ -141,7 +141,7 @@ class OrderController extends Controller
         ]);
 
         // dd($request->all());
-        $totalWeight = 1000;
+        $totalWeight = 0;
         $totalPrice = 0;
 
         $cart = Cart::where([

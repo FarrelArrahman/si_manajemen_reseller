@@ -323,6 +323,7 @@ $(document).ready(function() {
     $('#courier').on('change', function() {
         let courier = $(this).val()
         let weight = {{ $totalWeight }}
+        console.log("Weight: " + weight)
 
         resetPrice()
         $('#service').prop('disabled', true)
@@ -332,6 +333,7 @@ $(document).ready(function() {
             $('#service').empty()
             let services = `<option value="" disabled selected>Pilih layanan...</option>`
             for(const item of json.data.rajaongkir.results[0].costs) {
+                console.log(`${courier} ${item.service} Cost: ${item.cost[0].value}`)
                 services += `<option data-etd="${item.cost[0].etd}" data-price="${item.cost[0].value}" value="${item.service}">${item.service}</option>`
             }
             $('#service').append(services)

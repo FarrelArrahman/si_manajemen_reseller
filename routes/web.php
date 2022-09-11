@@ -10,6 +10,7 @@ use App\Http\Controllers\HelpController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderPaymentController;
+use App\Http\Controllers\PelangganController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductVariantController;
 use App\Http\Controllers\ProductVariantStockLogController;
@@ -31,22 +32,22 @@ use Carbon\Carbon;
 */
 
 // Route for testing and debugging
-Route::get('/test', function() {
-    return Carbon::createFromDate('2022', '07', 1)->endOfMonth();
-});
+// Route::get('/test', function() {
+//     return Carbon::createFromDate('2022', '07', 1)->endOfMonth();
+// });
 
-Route::get('/test-email', function() {
-    $details = [
-        'email' => "testkirim@laudable-me.com",
-        'subject' => "Verifikasi Data Reseller Baru",
-        'message' => 'User **Heheboi** telah mengajukan data reseller untuk diverifikasi. Silakan kunjungi halaman **Reseller** pada menu **User > Reseller** atau klik tombol di bawah ini.',
-        'button' => 'Lihat Daftar Reseller',
-        'url' => route('user.index', 'reseller')
-    ];
+// Route::get('/test-email', function() {
+//     $details = [
+//         'email' => "testkirim@laudable-me.com",
+//         'subject' => "Verifikasi Data Reseller Baru",
+//         'message' => 'User **Heheboi** telah mengajukan data reseller untuk diverifikasi. Silakan kunjungi halaman **Reseller** pada menu **User > Reseller** atau klik tombol di bawah ini.',
+//         'button' => 'Lihat Daftar Reseller',
+//         'url' => route('user.index', 'reseller')
+//     ];
 
-    dispatch(new App\Jobs\SendEmailJob($details));
-    dd("Email sent!");
-});
+//     dispatch(new App\Jobs\SendEmailJob($details));
+//     dd("Email sent!");
+// });
 
 // Route::get('/test', function(Request $request) {
 //     dd(App\Models\Order::find(1)->orderShipping);
@@ -134,6 +135,9 @@ Route::middleware(['auth'])->group(function() {
         
         // Report API (Product Selling)
         Route::post('/report/product-selling', [ReportController::class, 'productSellingReport'])->name('report.productSellingReport');
+
+        //Pelanggan API
+        Route::get('/pelanggan/datatable', [PelangganController::class, 'index_dt'])->name('pelanggan.index_dt');
     });
     
     // Base URL (Redirect to Dashboard)
@@ -200,16 +204,22 @@ Route::middleware(['auth'])->group(function() {
         Route::put('/configuration', [ConfigurationController::class, 'update'])->name('configuration.update');
     });
     
-    // Route Group khusus Reseller
-    Route::middleware('role:Reseller')->group(function() {
-        // 
+    // Route Group untuk Admin, Staff dan Reseller (hanya yang sudah diverifikasi)
+    Route::middleware('reseller.active')->group(function() {
+        // Product
+        Route::resource('product', ProductController::class)->only(['show']);
+        
+        // Product Variant
+        Route::get('/product/{product}/variant/{productVariant}', [ProductVariantController::class, 'show'])->name('product_variant.show');
+
+        // Order
+        Route::get('/order/create', [OrderController::class, 'create'])->name('order.create');
+        Route::post('/order', [OrderController::class, 'store'])->name('order.store');
+        Route::delete('/order/{order}/cancel', [OrderController::class, 'destroy'])->name('order.destroy');
     });
 
     // Product
-    Route::resource('product', ProductController::class)->only(['index','show']);
-
-    // Product Variant
-    Route::get('/product/{product}/variant/{productVariant}', [ProductVariantController::class, 'show'])->name('product_variant.show');
+    Route::resource('product', ProductController::class)->only(['index']);
 
     // Inventory
     Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
@@ -228,15 +238,16 @@ Route::middleware(['auth'])->group(function() {
 
     // Order
     Route::get('/order', [OrderController::class, 'index'])->name('order.index');
-    Route::get('/order/create', [OrderController::class, 'create'])->name('order.create');
-    Route::post('/order', [OrderController::class, 'store'])->name('order.store');
-    Route::delete('/order/{order}/cancel', [OrderController::class, 'destroy'])->name('order.destroy');
     
     // Order Payment
     Route::get('/order_payment', [OrderPaymentController::class, 'index'])->name('order_payment.index');
     Route::post('/order_payment/{order}/upload', [OrderPaymentController::class, 'upload'])->name('order_payment.upload');
-    Route::get('/order_payment/{order}/pdf', [OrderPaymentController::class, 'pdf'])->name('order_payment.pdf');
 
     // FAQ
     Route::get('/help', [HelpController::class, 'index'])->name('help.index');
+   
+    // Pelanggan
+    Route::get('/pelanggan', [PelangganController::class, 'index'])->name('pelanggan.index');
+    Route::get('/pelanggan/create', [PelangganController::class, 'create'])->name('pelanggan.create');
+    Route::delete('/pelanggan/{pelanggan}/destroy', [PelangganController::class, 'destroy'])->name('pelanggan.destroy');
 });

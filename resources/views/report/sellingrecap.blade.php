@@ -5,6 +5,7 @@ Laporan Rekap Penjualan
 @endsection
 
 @section('sub-title')
+Menampilkan laporan rekap penjualan pada periode tertentu.
 @endsection
 
 @section('content')
@@ -49,7 +50,7 @@ Laporan Rekap Penjualan
             <div class="card" id="selling_recap_report_card" style="display: none">
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-12">
+                        <div class="col-12 table-responsive">
                             <button onclick="$('#sellingRecapExcel').submit()" class="btn btn-primary mb-2 float-end">Download Excel</button>
                             <table class="table table-bordered fs-6" id="selling_recap">
                                 <thead>

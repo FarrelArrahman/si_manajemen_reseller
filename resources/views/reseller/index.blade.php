@@ -312,7 +312,7 @@ Daftar reseller yang ada pada sistem.
             changeResellerStatus(id, status)
                 .then((json) => {
                     // toast(json.success, json.message)
-                    table.draw()
+                    table.draw(false)
                 })
                 .catch(error => error)
         })

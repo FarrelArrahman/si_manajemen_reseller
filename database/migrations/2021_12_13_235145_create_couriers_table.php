@@ -15,9 +15,9 @@ class CreateCouriersTable extends Migration
     {
         Schema::create('couriers', function (Blueprint $table) {
             $table->id();
-            $table->string('code')->unique();
+            $table->string('code', 10)->unique();
             $table->string('name');
-            $table->string('description');
+            $table->text('description');
             $table->integer('status');
         });
     }

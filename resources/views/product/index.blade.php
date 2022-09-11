@@ -16,6 +16,7 @@ Katalog yang berisi daftar produk.
 @endif
 @endsection
 
+@if((auth()->user()->isReseller() && auth()->user()->reseller && auth()->user()->reseller->isActive()) || (auth()->user()->isAdmin() || auth()->user()->isStaff()))
 @section('content')
 <!-- Basic Tables start -->
 <section class="section">
@@ -73,7 +74,7 @@ Katalog yang berisi daftar produk.
                 @endif
             </div>
         </div>
-        <div class="card-body">
+        <div class="card-body table-responsive">
             <table class="table yajra-datatable">
                 <thead>
                     <tr>
@@ -99,6 +100,7 @@ Katalog yang berisi daftar produk.
     @method('DELETE')
 </form>
 @endsection
+@endif
 
 @section('js')
 <script>

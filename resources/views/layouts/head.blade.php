@@ -25,7 +25,7 @@
     <!-- Magnific Popup core CSS file -->
     <link rel="stylesheet" href="{{ asset('css/magnific-popup.css') }}">
     
-    <link rel="shortcut icon" href="{{ asset('mazer-admin/images/favicon.svg') }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
     <style>
         table.dataTable td{
             padding: 15px 8px;

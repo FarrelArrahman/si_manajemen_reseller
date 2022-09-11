@@ -18,7 +18,7 @@ class CreateOrderPaymentsTable extends Migration
             $table->foreignId('order_id')->constrained();
             $table->integer('amount');
             $table->datetime('date')->nullable();
-            $table->string('payment_status');
+            $table->string('payment_status', 20);
             $table->string('proof_of_payment')->nullable();
             $table->foreignId('approved_by')->nullable()->constrained('users');
             $table->text('admin_notes')->nullable();

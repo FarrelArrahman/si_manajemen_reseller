@@ -5,6 +5,7 @@ Laporan Penjualan Produk
 @endsection
 
 @section('sub-title')
+Menampilkan laporan penjualan per produk.
 @endsection
 
 @section('content')
@@ -17,13 +18,13 @@ Laporan Penjualan Produk
                     <div class="row">
                         @csrf
                         <input type="hidden" name="product_name" id="product_name">
-                        <div class="col-6" id="product">
+                        <div class="col-md-6 col-sm-12" id="product">
                             <small>Varian Produk</small>
                             <select class="form-select" name="product" id="product_select">
                                 <option selected disabled value="">Pilih varian produk...</option>
                             </select>
                         </div>
-                        <div class="col-6" id="date">
+                        <div class="col-md-6 col-sm-12" id="date">
                             <small>Rentang Tanggal</small>
                             <div class="input-group mb-3">
                                 <input type="date" class="form-control" name="start_date" id="start_date" value="{{ date('Y-m-01') }}">
@@ -56,7 +57,7 @@ Laporan Penjualan Produk
             <div class="card" id="product_selling_report_card" style="display: none">
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-12">
+                        <div class="col-12 table-responsive">
                             <button onclick="$('#productSellingExcel').submit()" class="btn btn-primary mb-2 float-end">Download Excel</button>
                             <table class="table table-bordered fs-6" id="product_selling">
                                 <thead>

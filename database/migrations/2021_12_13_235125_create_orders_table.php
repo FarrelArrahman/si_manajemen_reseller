@@ -21,7 +21,7 @@ class CreateOrdersTable extends Migration
             $table->text('notes')->nullable();
             $table->bigInteger('total_price');
             $table->datetime('date');
-            $table->string('status');
+            $table->string('status', 20);
             $table->text('admin_notes')->nullable();
             $table->timestamps();
         });
