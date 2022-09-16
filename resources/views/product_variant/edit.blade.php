@@ -105,7 +105,7 @@ Mengubah data varian produk.
                                             @enderror
                                         </div>
                                     </div>
-                                    <div class="col-12">
+                                    <!-- <div class="col-12">
                                         <div class="form-group">
                                             <label for="product-variant-vertical">Harga Pokok <span class="text-danger">*</span></label>
                                             <div class="input-group mb-3">
@@ -118,7 +118,7 @@ Mengubah data varian produk.
                                                 @enderror
                                             </div>
                                         </div>
-                                    </div>
+                                    </div> -->
                                     <div class="col-12">
                                         <div class="form-group">
                                             <label for="product-variant-vertical">Harga Umum <span class="text-danger">*</span></label>

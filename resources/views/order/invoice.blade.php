@@ -170,7 +170,7 @@
                                     <tbody>
                                         <tr>
                                             <td class="text-end">Sub Total</td>
-                                            <td class="text-end">Rp. {{ number_format($subTotal, 0, '', '.') }}</td>
+                                            <td class="text-end"PHP >Rp. {{ number_format($subTotal, 0, '', '.') }}</td>
                                         </tr>
                                         <tr>
                                             <td class="text-end">Biaya Pengiriman</td>
@@ -182,7 +182,7 @@
                                         </tr>
                                         @if($order->orderPayment && $order->orderPayment->isApproved())
                                         <tr>
-                                            <td class="fw-bold text-primary">Terbayar</td>
+                                            <td class="fw-bold text-end text-primary">Terbayar</td>
                                             <td class="fw-bold text-end text-primary">Rp. {{ number_format($order->orderPayment->amount, 0, '', '.') }}</td>
                                         </tr>
                                         @endif

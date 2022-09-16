@@ -118,7 +118,6 @@ Daftar reseller yang ada pada sistem.
                                     <a href="#" class="p-1 social-media-link" id="twitter"><i class="fab fa-twitter text-info fa-fw"></i></a>
                                     <a href="#" class="p-1 social-media-link" id="tiktok"><i class="fab fa-tiktok text-dark fa-fw"></i></a>
                                     <a href="#" class="p-1 social-media-link" id="instagram"><i class="fab fa-instagram text-danger fa-fw"></i></a>
-                                    <a href="#" class="p-1" id="shopee"><i class="fa fa-shopping-bag fa-fw" style="color: #ff6600"></i></a>
                                 </div>
                                 <div class="col-md-12 pb-0 mb-0">
                                     <div class="form-group row align-items-center pb-0 mb-0">
