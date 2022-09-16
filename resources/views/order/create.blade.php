@@ -323,7 +323,6 @@ $(document).ready(function() {
     $('#courier').on('change', function() {
         let courier = $(this).val()
         let weight = {{ $totalWeight }}
-        console.log("Weight: " + weight)
 
         resetPrice()
         $('#service').prop('disabled', true)

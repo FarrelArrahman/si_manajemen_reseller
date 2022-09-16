@@ -20,17 +20,8 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         $categories = Category::all();
-        $products = Product::withTrashed()->get();
-        
-        if($request->show == "allWithTrashed") {
-            $products = Product::withTrashed()->get();
-        } else if($request->show == "onlyTrashed") {
-            $products = Product::onlyTrashed()->get();
-        } else {
-            $products = Product::all();
-        }
 
-        return view('product.index', compact('products','categories'));
+        return view('product.index', compact('categories'));
     }
 
     /**
@@ -40,8 +31,12 @@ class ProductController extends Controller
      */
     public function index_dt(Request $request)
     {
-        $data = Product::select('*');
-
+        if(auth()->user()->isAdmin() || auth()->user()->isStaff()) {
+            $data = Product::select('*');
+        } else {
+            $data = Product::select('*')->where('product_status', 1);
+        }
+        
         return DataTables::of($data)
             ->addIndexColumn()
             ->addColumn('action', function($row){

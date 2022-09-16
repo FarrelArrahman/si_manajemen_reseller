@@ -298,8 +298,8 @@ class OrderPaymentController extends Controller
             'email' => $order->reseller->user->email,
             'subject' => $request->status == OrderPayment::APPROVED ? "Pembayaran Diterima" : "Pembayaran Ditolak",
             'message' => $message,
-            'button' => $request->status == OrderPayment::APPROVED ? "Ke Halaman Pesanan" : "Ke Halaman Pembayaran",
-            'url' => $request->status == OrderPayment::APPROVED ? route('order.index') : route('order_payment.index')
+            'button' => $request->status == OrderPayment::APPROVED ? "Download Invoice" : "Ke Halaman Pembayaran",
+            'url' => $request->status == OrderPayment::APPROVED ? route('order.invoice', ['code' => $order->code]) : route('order_payment.index')
         ]));
         
         if($order->orderPayment->save() && $order->save()) {

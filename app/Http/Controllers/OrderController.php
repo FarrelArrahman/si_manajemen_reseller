@@ -12,10 +12,10 @@ use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\OrderPayment;
 use App\Models\OrderShipping;
-use App\Models\ProductVariant;
 use App\Traits\Rajaongkir;
 use DataTables;
 use Illuminate\Http\Request;
+use PDF;
 
 class OrderController extends Controller
 {
@@ -376,8 +376,8 @@ class OrderController extends Controller
                 'email' => $order->reseller->user->email,
                 'subject' => $request->status == Order::APPROVED ? "Pesanan Diterima" : "Pesanan Ditolak",
                 'message' => $message,
-                'button' => $request->status == Order::APPROVED ? "Ke Halaman Pembayaran" : "Ke Halaman Pesanan",
-                'url' => $request->status == Order::APPROVED ? route('order_payment.index') : route('order.index')
+                'button' => $request->status == Order::APPROVED ? "Download Invoice" : "Ke Halaman Pesanan",
+                'url' => $request->status == Order::APPROVED ? route('order.invoice', ['code' => $order->code]) : route('order.index')
             ]));
 
             return response()->json([
@@ -447,5 +447,30 @@ class OrderController extends Controller
             ],
             'statusCode' => 200
         ], 200);
+    }
+
+    /**
+     * Export invoice ke dalam pdf.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function invoice(Request $request, $code)
+    {
+        $order = Order::where('code', $code)->first();
+        
+        if(auth()->user()->isReseller() && auth()->user()->reseller->id != $order->ordered_by) {
+            abort(404);
+        }
+        
+        $configuration = new Configuration();
+        
+        $address = (object) [
+            'from' => $this->singleCityAPI($configuration::configName('province'), $configuration::configName('city')),
+            'to' => $this->singleCityAPI($order->orderShipping->province, $order->orderShipping->city),
+        ];
+
+        // return view('order.invoice', compact('order', 'configuration', 'address'));
+        $pdf = PDF::loadView('order.invoice', compact('order', 'configuration', 'address'));
+        return $pdf->download('laudableme-invoice-' . $order->code . '.pdf');
     }
 }

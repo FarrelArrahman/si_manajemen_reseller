@@ -78,6 +78,7 @@ Daftar pesanan produk dari reseller.
                     aria-label="Close">
                     <i data-feather="x"></i>
                 </button>
+                <a id="download_invoice" href="#" class="btn btn-sm btn-info"><i class="fa fa-download me-1"></i> Download Invoice</a>
             </div>
             <div class="modal-body">
                 <div class="row">
@@ -198,9 +199,10 @@ Daftar pesanan produk dari reseller.
     let adminNotes = $('#admin_notes')
     let adminNotesInput = $('#admin_notes_input')
     let adminNotesText = $('#admin_notes_text')
-
+    
     orderDetail.hide()
     adminNotes.hide()
+    $('#download_invoice').hide()
 
     provinces().then(json => {
         provinceList = json.rajaongkir.results
@@ -353,6 +355,7 @@ Daftar pesanan produk dari reseller.
         orderDetailTableBody.append(el)
     }
 
+    let invoiceURL = "{{ route('order.invoice', ['code' => 'x']) }}"
     var orderDetailModal = document.getElementById('order_detail_modal')
     orderDetailModal.addEventListener('show.bs.modal', function (event) {
         var button = event.relatedTarget
@@ -370,6 +373,7 @@ Daftar pesanan produk dari reseller.
             $('#shop_name').text(reseller.shop_name)
             $('#shop_address').text(`${reseller.shop_address}, ${c.city_name}, ${p.province} ${reseller.postal_code}`)
             $('#order_code').text(`${order.code}`)
+            $('#download_invoice').attr('href', invoiceURL.replace("x", order.code))
             $('#ordered_by').text(`${reseller.shop_name}`)
             $('#date').text(`${order.date_formatted}`)
             $('#order_status').html(order.status_badge)
@@ -382,6 +386,7 @@ Daftar pesanan produk dari reseller.
                 $('#handled_by').show()
                 $('#handled_by_label').text(order.handled_by.name)
                 $('#verify_button').hide()
+                $('#download_invoice').show()
             } else if(order.status == "DITOLAK") {
                 adminNotes.show()
                 @if(auth()->user()->isAdmin() || auth()->user()->isStaff())
@@ -392,6 +397,9 @@ Daftar pesanan produk dari reseller.
                 $('#approval_date').hide()
                 $('#handled_by').hide()
                 $('#verify_button').show()
+                $('#download_invoice').hide()
+            } else {
+                $('#download_invoice').show()
             }
 
             setOrderDetailTable(orderDetailItems, orderShipping != null ? orderShipping.total_price : 0)
@@ -407,6 +415,7 @@ Daftar pesanan produk dari reseller.
         adminNotes.hide()
         adminNotesText.text("")
         adminNotesInput.val("")
+        $('#download_invoice').hide()
         $('#link').val("")
         $('#verify_button').prop('disabled', false)
         $('#verify_button_label').text("Simpan")

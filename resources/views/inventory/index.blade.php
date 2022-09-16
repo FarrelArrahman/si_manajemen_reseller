@@ -126,7 +126,7 @@ Daftar seluruh varian produk yang tersedia.
                                             <div class="input-group mb-2">
                                                 <button class="btn btn-outline-secondary input-group-text" id="decrease">-</button>
                                                 <input type="hidden" id="product_variant_id">
-                                                <input type="number" class="form-control" id="qty" value="0" min="0" onfocus="this.select()" onmouseup="return false;">
+                                                <input type="text" class="form-control" id="qty" value="0" min="0" onfocus="this.select()" onmouseup="return false;">
                                                 <button class="btn btn-outline-secondary input-group-text" id="increase">+</button>
                                             </div>
                                             <p class="text-success" id="in-cart-qty-label">Qty Keranjang: <span id="in-cart-qty"></span></p>

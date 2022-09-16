@@ -216,6 +216,7 @@ Route::middleware(['auth'])->group(function() {
         Route::get('/order/create', [OrderController::class, 'create'])->name('order.create');
         Route::post('/order', [OrderController::class, 'store'])->name('order.store');
         Route::delete('/order/{order}/cancel', [OrderController::class, 'destroy'])->name('order.destroy');
+        Route::get('/order/{code}/invoice', [OrderController::class, 'invoice'])->name('order.invoice');
     });
 
     // Product

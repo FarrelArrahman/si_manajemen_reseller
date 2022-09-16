@@ -5,7 +5,7 @@
 @endsection
 
 @section('sub-title')
-Dibuat oleh <strong>{{ $announcement->createdBy->name }}</strong> pada <strong>{{ $announcement->created_at->isoFormat('dddd, DD MMMM Y hh:mm') . ' WITA' }}</strong>
+Dibuat oleh <strong>{{ $announcement->createdBy->name }}</strong> pada <strong>{{ $announcement->created_at->isoFormat('dddd, DD MMMM Y HH:mm') . ' WITA' }}</strong>
 @endsection
 
 @section('action-button')

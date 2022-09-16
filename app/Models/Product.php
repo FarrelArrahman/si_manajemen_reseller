@@ -56,6 +56,11 @@ class Product extends Model
     }
 
     // Relationship
+    public function unit()
+    {
+        return $this->hasOne(Unit::class, 'id', 'unit_id');
+    }
+
     public function category()
     {
         return $this->hasOne(Category::class, 'id', 'category_id');

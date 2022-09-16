@@ -61,7 +61,7 @@ class Order extends Model
 
     public function admin()
     {
-        return $this->hasOne(Admin::class, 'id', 'handled_by');
+        return $this->hasOne(User::class, 'id', 'handled_by');
     }
 
     public function orderShipping()

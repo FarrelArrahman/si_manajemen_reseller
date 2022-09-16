@@ -167,6 +167,7 @@ return [
          */
         Mavinoo\Batch\BatchServiceProvider::class,
         Yajra\DataTables\DataTablesServiceProvider::class,
+        Barryvdh\DomPDF\ServiceProvider::class,
 
         /*
          * Application Service Providers...
@@ -233,6 +234,7 @@ return [
         // Package Class Aliases...
         'Batch' => Mavinoo\Batch\BatchFacade::class,
         'DataTables' => Yajra\DataTables\Facades\DataTables::class,
+        'PDF' => Barryvdh\DomPDF\Facade::class
     ],
 
 ];
