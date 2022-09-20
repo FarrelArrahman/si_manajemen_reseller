@@ -50,8 +50,10 @@ class OrderController extends Controller
             ->addIndexColumn()
             ->addColumn('action', function($row) {
                 $actionBtn = '<button data-order-id="' . $row->id . '" data-bs-toggle="modal" data-bs-target="#order_detail_modal" class="btn btn-link p-0 text-info me-1 ms-1 showorderdetail-button"><i class="fa fa-search fa-sm"></i></button>';
-                if($row->isPending()) {
+                if($row->isPending() || $row->isRejected()) {
                     $actionBtn .= '<button data-order-id="' . $row->id . '" class="btn btn-link p-0 text-danger me-1 ms-1 deleteorder-button"><i class="fa fa-trash fa-sm"></i></button>';
+                } else {
+                    $actionBtn .= '<a href="'. route('order.invoice', ['code' => $row->code]) .'" class="btn btn-link p-0 text-primary me-1 ms-1"><i class="fa fa-print fa-sm"></i></a>';
                 }
                 return $actionBtn;
             })
@@ -346,7 +348,7 @@ class OrderController extends Controller
         $order->handled_by = auth()->user()->id;
 
         if($request->status == Order::APPROVED) {
-            $message = "Pesanan Anda: #" . $order->code . " telah berhasil terverifikasi oleh Admin. Segera lanjutkan ke proses pembayaran pada menu Pembayaran.";
+            $message = "Pesanan Anda: #" . $order->code . " telah berhasil diterima oleh Admin. Lakukan pembayaran sebelum " . now()->addHours(24)->isoFormat('dddd, DD MMMM Y HH:mm') . " WITA pada menu Pembayaran.";
         } else if($request->status == Order::REJECTED) {
             foreach($order->orderDetail as $item) {
                 $item->productVariant->update([

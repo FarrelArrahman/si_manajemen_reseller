@@ -1,21 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
+@extends('auth.layouts.template')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laudable.me Reseller | Login</title>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/bootstrap.css') }}">
-    <link rel="stylesheet" href="{{ asset('vendors/bootstrap-icons/bootstrap-icons.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-    <link rel="stylesheet" href="{{ asset('vendors/choices.js/choices.min.css') }}">
-    <style>
-        body{background-color:#e5cec1}#auth{height:100vh;overflow-x:hidden}#auth #auth-right{background:url(../../storage/auth-bg.jpg);background-size:cover;height:100%}#auth #auth-left{padding:3rem 4rem;}#auth #auth-left .auth-title{font-size:1.7rem;}#auth #auth-left .auth-subtitle{color:#000;font-size:1.2rem;}#auth #auth-left .auth-logo{margin-bottom:7rem}#auth #auth-left .auth-logo img{height:3rem}@media screen and (max-width:767px){#auth #auth-left{padding:5rem}}
-        #error{background-color:#ebf3ff;height:100vh;padding-top:5rem}#error .img-error{width:100%}#error .error-title{font-size:4rem;margin-top:3rem}
-    </style>
-</head>
+@section('title')
+Login
+@endsection
 
+@section('content')
 <body>
     <div id="auth">    
         <div class="row h-100">
@@ -43,8 +32,9 @@
                             </div>
                             @enderror
                         </div>
-                        <div class="form-group position-relative mb-4">
+                        <div class="form-group position-relative mb-2">
                             <input type="password" class="form-control form-control-lg @error('password') is-invalid @enderror" placeholder="Password" name="password">
+                            <p class="mt-2"><a class="font-bold" href="{{ route('password.request') }}">Lupa password?</a></p>
                             @error('password')
                             <div class="invalid-feedback">
                                 {{ $message }}
@@ -57,11 +47,10 @@
                                 Ingat saya
                             </label>
                         </div>
-                        <button class="btn btn-primary btn-block btn-lg shadow-lg mt-5">Log in</button>
+                        <button class="btn btn-primary btn-block btn-lg shadow-lg mt-4">Log in</button>
                     </form>
                     <div class="text-center mt-5 text-lg fs-6">
                         <p class="text-black">Belum punya akun reseller? <a href="{{ route('register') }}" class="font-bold">Daftar sekarang</a>.</p>
-                        <!-- <p><a class="font-bold" href="auth-forgot-password.html">Lupa password?</a></p> -->
                     </div>
                 </div>
             </div>
@@ -73,10 +62,4 @@
         </div>
     </div>
 </body>
-
-<script src="{{ asset('vendors/jquery/jquery.min.js') }}"></script>
-<!-- <script src="{{ asset('js/picsum.js') }}"></script> -->
-<script>
-    
-</script>
-</html>
+@endsection

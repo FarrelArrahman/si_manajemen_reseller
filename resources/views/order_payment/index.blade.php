@@ -34,6 +34,7 @@ Daftar pembayaran dari pesanan reseller.
                         </select>
                     </div>
                 </div>
+                @if(auth()->user()->isAdmin() || auth()->user()->isStaff())
                 <div class="col-md-6">
                     <small>Tanggal Pesan</small>
                     <div class="input-group mb-3">
@@ -42,6 +43,7 @@ Daftar pembayaran dari pesanan reseller.
                         <input type="date" class="form-control filter" id="end_date" value="{{ date('Y-m-d') }}">
                     </div>
                 </div>
+                @endif
             </div>
         </div>
         <div class="card-body">

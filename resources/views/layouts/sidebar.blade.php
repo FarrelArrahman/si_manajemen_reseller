@@ -72,7 +72,7 @@
                     <a href="{{ route('order.index') }}" class='sidebar-link'>
                         <i class="bi bi-cart-fill"></i>
                         <span>Pesanan</span>
-                        <span id="pending_order_count" class="badge bg-danger">{{ (auth()->user()->isAdmin() || auth()->user()->isStaff()) && $pending_order_count > 0 ? $pending_order_count : '' }}</span>
+                        <span id="pending_order_count" class="badge bg-danger">{{ $pending_order_count > 0 ? $pending_order_count : '' }}</span>
                     </a>
                 </li>   
 
@@ -80,7 +80,7 @@
                     <a href="{{ route('order_payment.index') }}" class='sidebar-link'>
                         <i class="bi bi-cash-stack"></i>
                         <span>Pembayaran</span>
-                        <span id="pending_order_payment_count" class="badge bg-danger">{{ (auth()->user()->isAdmin() || auth()->user()->isStaff()) && $pending_order_payment_count > 0 ? $pending_order_payment_count : '' }}</span>
+                        <span id="pending_order_payment_count" class="badge bg-danger">{{ $pending_order_payment_count > 0 ? $pending_order_payment_count : '' }}</span>
                     </a>
                 </li>
 
