@@ -68,7 +68,7 @@
                     </ul>
                 </li>
 
-                <li class="sidebar-item {{ request()->is('*order') || request()->is('*order/create') ? 'active' : '' }}">
+                <li class="sidebar-item {{ request()->is('*order') || request()->is('*order/create') || request()->is('history') ? 'active' : '' }}">
                     <a href="{{ route('order.index') }}" class='sidebar-link'>
                         <i class="bi bi-cart-fill"></i>
                         <span>Pesanan</span>

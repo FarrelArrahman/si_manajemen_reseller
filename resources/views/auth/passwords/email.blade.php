@@ -24,7 +24,7 @@ Lupa Password
                     @endif
                     <form action="{{ route('password.email') }}" method="POST">
                         @csrf
-                        <input type="hidden" name="token" value="{{ $token }}">
+                        <input type="hidden" name="token" value="{{ $token ?? '' }}">
                         <div class="form-group position-relative mb-4">
                             <input type="text" class="form-control form-control-lg @error('email') is-invalid @enderror" placeholder="Email" name="email" value="{{ old('email') }}">
                             @error('email')

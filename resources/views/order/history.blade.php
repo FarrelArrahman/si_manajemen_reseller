@@ -1,20 +1,47 @@
 @extends('layouts.template')
 
 @section('title')
-Pesanan
+Riwayat Pesanan
 @endsection
 
 @section('sub-title')
-Daftar pesanan produk dari reseller.
-@endsection
-
-@section('action-button')
+Daftar riwayat pesanan produk dari reseller.
 @endsection
 
 @if((auth()->user()->isReseller() && auth()->user()->reseller && auth()->user()->reseller->isActive()) || auth()->user()->isAdmin() || auth()->user()->isStaff())
 @section('content')
 <!-- Basic Tables start -->
 <section class="section">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title"></h4>
+            <div class="row">
+                <div class="col-md-6">
+                    <a href="{{ Storage::url($reseller->user->photo) }}" class="image-popup float-start me-3">
+                        <div class="avatar avatar-xl">
+                            <img style="object-fit: cover" src="{{ Storage::url($reseller->user->photo) }}" width="128">
+                        </div>    
+                    </a>
+                    <p class="pb-0 mb-0">
+                        <span class="fw-bold fs-5 me-1" id="reseller_name">{{ $reseller->user->name }}</span>
+                        <span>{!! $reseller->statusBadge() !!}</span>
+                    </p>
+                    <small id="address">
+                        {{ $reseller->shop_address }}, {{ $cityAndProvince->city_name }}, {{ $cityAndProvince->province }} {{ $cityAndProvince->postal_code }}
+                    </small>
+                </div>
+                <div class="col-md-3 text-center">
+                    <strong>Total Pesanan</strong>
+                    <h2>{{ $reseller->orders->count() }}</h2>
+                </div>
+                <div class="col-md-3 text-center">
+                    <strong>Tanggal Pesanan Terakhir</strong>
+                    <h2>{{ $reseller->orders->count() > 0 ? $reseller->orders()->orderBy('date', 'DESC')->first()->date->format('d-m-Y') : '-' }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="card">
         <div class="card-header">
             <h4 class="card-title"></h4>
@@ -119,7 +146,7 @@ Daftar pesanan produk dari reseller.
                         </div>
                         <div class="form-group row align-items-center pb-0 mb-0">
                             <div class="col-lg-4 col-4">
-                                <label class="col-form-label fw-bold">Tanggal Pesan</label>
+                                <label class="col-form-label fw-bold">Tanggal</label>
                             </div>
                             <div class="col-lg-8 col-8">
                                 <p class="col-form-label" id="date"></p>
@@ -150,14 +177,6 @@ Daftar pesanan produk dari reseller.
                             </div>
                             <div class="col-lg-8 col-8">
                                 <p class="col-form-label" id="order_status"></p>
-                            </div>
-                        </div>
-                        <div class="form-group row align-items-center pb-0 mb-0" id="payment_due">
-                            <div class="col-lg-4 col-4">
-                                <label class="col-form-label fw-bold">Batas Pembayaran</label>
-                            </div>
-                            <div class="col-lg-8 col-8">
-                                <p class="col-form-label" id="payment_due_text"></p>
                             </div>
                         </div>
                         <div class="form-group row align-items-center py-2 my-2" id="admin_notes">
@@ -223,7 +242,6 @@ Daftar pesanan produk dari reseller.
     
     orderDetail.hide()
     adminNotes.hide()
-    $('#payment_due').hide()
     $('#download_invoice').hide()
 
     provinces().then(json => {
@@ -234,7 +252,7 @@ Daftar pesanan produk dari reseller.
         cityList = json.rajaongkir.results
     })
 
-    let cancelOrder = (id) => {
+    let deleteOrder = (id) => {
         var url = "{{ route('order.destroy', 'x') }}/".replace('x', id)
         return fetch(url, {
             method: 'DELETE',
@@ -247,12 +265,13 @@ Daftar pesanan produk dari reseller.
     }
 
     // Jquery Datatable
+    var dtURL = "{{ route('order.index_dt') }}" + "?reseller_id=" + "{{ $reseller->id }}"
     var table = $('.yajra-datatable').DataTable({
         processing: true,
         serverSide: true,
         searchDelay: 1000,
         ajax: {
-            url: "{{ route('order.index_dt') }}",
+            url: dtURL,
             data: function (d) {
                 d.status = $('#status').val(),
                 d.begin_date = $('#begin_date').val(),
@@ -265,7 +284,7 @@ Daftar pesanan produk dari reseller.
             {
                 targets: 0,
                 className: 'text-center'
-            },
+            }
         ],
         columns: [
             {
@@ -322,10 +341,10 @@ Daftar pesanan produk dari reseller.
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
-            confirmButtonText: 'Ya, Batalkan'
+            confirmButtonText: 'Hapus'
         }).then((result) => {
             if (result.isConfirmed) {
-                cancelOrder(id)
+                deleteOrder(id)
                     .then((json) => {
                         toast(json.success, json.message)
                         table.draw()
@@ -412,13 +431,6 @@ Daftar pesanan produk dari reseller.
             $('#verification_status').html(order.verification_status)
             $('#courier').text(order.order_shipping.courier.name)
             $('#service').text(order.order_shipping.service)
-            
-            if(order.payment_due != null) {
-                $('#payment_due_text').text(order.payment_due)
-                $('#payment_due').show()
-            } else {
-                $('#payment_due').hide()
-            }
 
             if(order.status == "DITERIMA") {
                 adminNotes.hide()
@@ -426,17 +438,13 @@ Daftar pesanan produk dari reseller.
                 $('#handled_by_label').text(order.handled_by.name)
                 $('#verify_button').hide()
                 $('#download_invoice').show()
-            } else if(order.status == "DITOLAK" || order.status == "DIBATALKAN") {
-                if(order.admin_notes != "") {
-                    adminNotes.show()
-                    @if(auth()->user()->isAdmin() || auth()->user()->isStaff())
-                    adminNotesInput.val(order.admin_notes)
-                    @else
-                    adminNotesText.text(order.admin_notes)
-                    @endif
-                } else {
-                    adminNotes.hide()
-                }
+            } else if(order.status == "DITOLAK") {
+                adminNotes.show()
+                @if(auth()->user()->isAdmin() || auth()->user()->isStaff())
+                adminNotesInput.val(order.admin_notes)
+                @else
+                adminNotesText.text(order.admin_notes)
+                @endif
                 $('#approval_date').hide()
                 $('#handled_by').hide()
                 $('#verify_button').show()

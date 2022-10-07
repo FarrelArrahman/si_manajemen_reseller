@@ -37,10 +37,18 @@ Daftar pembayaran dari pesanan reseller.
                 @if(auth()->user()->isAdmin() || auth()->user()->isStaff())
                 <div class="col-md-6">
                     <small>Tanggal Pesan</small>
-                    <div class="input-group mb-3">
+                    <div class="input-group mb-1">
                         <input type="date" class="form-control filter" id="begin_date" value="{{ date('Y-m-d') }}">
                         <span class="input-group-text" id="basic-addon2">s/d</span>
                         <input type="date" class="form-control filter" id="end_date" value="{{ date('Y-m-d') }}">
+                    </div>
+                    <div class="input-group">
+                        <div class="form-check">
+                            <input class="form-check-input me-2 filter" type="checkbox" id="show_all">
+                            <label class="form-check-label" for="show_all">
+                                Tampilkan semua tanggal
+                            </label>
+                        </div>
                     </div>
                 </div>
                 @endif
@@ -54,6 +62,7 @@ Daftar pembayaran dari pesanan reseller.
                             <th width="10%">#</th>
                             <th>Kode Pesanan</th>
                             <th>Tanggal Pesan</th>
+                            <th>Tanggal Bayar</th>
                             <th>Total Harga (Rp.)</th>
                             <th>Status Bayar</th>
                         </tr>
@@ -215,12 +224,21 @@ Daftar pembayaran dari pesanan reseller.
                 d.status = $('#status').val(),
                 d.begin_date = $('#begin_date').val(),
                 d.end_date = $('#end_date').val(),
+                d.show_all = $('#show_all').is(':checked') ? "yes" : "no",
                 d.search = $('input[type="search"]').val()
             }
         },
         columnDefs: [
             {
                 targets: 0,
+                className: 'text-center'
+            },
+            {
+                targets: 4,
+                className: 'text-end'
+            },
+            {
+                targets: 5,
                 className: 'text-center'
             }
         ],
@@ -233,6 +251,7 @@ Daftar pembayaran dari pesanan reseller.
             },
             {data: 'code', name: 'code'},
             {data: 'date', name: 'date'},
+            {data: 'payment_date', name: 'payment_date'},
             {data: 'total_price', name: 'total_price'},
             {data: 'payment_status', name: 'payment_status'},
         ],
@@ -258,6 +277,12 @@ Daftar pembayaran dari pesanan reseller.
 
     $('.filter').on('change', function() {
         table.draw()
+    })
+
+    $('#show_all').on('change', function() {
+        let isChecked = $(this).is(':checked')
+        $('#begin_date').prop('disabled', isChecked)
+        $('#end_date').prop('disabled', isChecked)
     })
 
     var orderPaymentModal = document.getElementById('order_payment_modal')
@@ -312,7 +337,7 @@ Daftar pembayaran dari pesanan reseller.
         $('#verify_button_label').text("Simpan")
         $('#upload_payment').prop('disabled', false)
         $('#upload_payment_label').text("Upload")
-        adminNotes.slideDown()
+        adminNotes.slideUp()
     })
 
     $('#payment_status').on('change', '#payment_verification_status', function() {

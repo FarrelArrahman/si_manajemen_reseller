@@ -10,6 +10,7 @@ use App\Models\Reseller;
 use App\Traits\Rajaongkir;
 use DataTables;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Storage;
 
 class ResellerController extends Controller
@@ -39,7 +40,8 @@ class ResellerController extends Controller
         return DataTables::of($data)
             ->addIndexColumn()
             ->addColumn('action', function($row) {
-                $actionBtn = '<button data-reseller-id="' . $row->id . '" data-bs-toggle="modal" data-bs-target="#reseller_detail_modal" class="text-info me-1 ms-1 btn btn-link"><i class="fa fa-search fa-sm"></i></button>';
+                $actionBtn = '<button data-reseller-id="' . $row->id . '" data-bs-toggle="modal" data-bs-target="#reseller_detail_modal" class="text-info btn btn-link"><i class="fa fa-search fa-sm"></i></button>';
+                $actionBtn .= '<a target="_blank" href="' . route('order.history', Crypt::encrypt($row->id)) . '" class="text-primary"><i class="fa fa-shopping-cart fa-sm"></i></button>';
                 return $actionBtn;
             })
             ->addColumn('name', function($row) {
@@ -53,7 +55,7 @@ class ResellerController extends Controller
                     $textColor = "text-dark";
                     $lastOrder = Order::where('ordered_by', $row->id)->orderBy('date', 'DESC')->first();
                     
-                    if($lastOrder->date->diffInMonths(today()) >= 2) {
+                    if($lastOrder->date->diffInMonths(today()) >= 3) {
                         $textColor = "text-danger";
                     }
 

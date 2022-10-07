@@ -48,6 +48,10 @@ class OrderPayment extends Model
         // 
     ];
 
+    protected $dates = [
+        'date'
+    ];
+
     // Relationship
     public function order()
     {

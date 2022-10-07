@@ -12,9 +12,11 @@ use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\OrderPayment;
 use App\Models\OrderShipping;
+use App\Models\Reseller;
 use App\Traits\Rajaongkir;
 use DataTables;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use PDF;
 
 class OrderController extends Controller
@@ -40,8 +42,10 @@ class OrderController extends Controller
     {
         $data = [];
         
-        if(auth()->user()->isAdmin() || auth()->user()->isStaff()) {
+        if((auth()->user()->isAdmin() || auth()->user()->isStaff()) && $request->get('reseller_id') == null) {
             $data = Order::select('*')->latest();
+        } else if((auth()->user()->isAdmin() || auth()->user()->isStaff()) && $request->get('reseller_id') != null){
+            $data = Order::where('ordered_by', $request->get('reseller_id'))->latest();
         } else {
             $data = Order::where('ordered_by', auth()->user()->reseller->id)->latest();
         }
@@ -50,15 +54,18 @@ class OrderController extends Controller
             ->addIndexColumn()
             ->addColumn('action', function($row) {
                 $actionBtn = '<button data-order-id="' . $row->id . '" data-bs-toggle="modal" data-bs-target="#order_detail_modal" class="btn btn-link p-0 text-info me-1 ms-1 showorderdetail-button"><i class="fa fa-search fa-sm"></i></button>';
-                if($row->isPending() || $row->isRejected()) {
+                if($row->isPending()) {
                     $actionBtn .= '<button data-order-id="' . $row->id . '" class="btn btn-link p-0 text-danger me-1 ms-1 deleteorder-button"><i class="fa fa-trash fa-sm"></i></button>';
-                } else {
+                } else if($row->isApproved() || $row->isDone()){
                     $actionBtn .= '<a href="'. route('order.invoice', ['code' => $row->code]) .'" class="btn btn-link p-0 text-primary me-1 ms-1"><i class="fa fa-print fa-sm"></i></a>';
                 }
                 return $actionBtn;
             })
             ->addColumn('reseller', function($row) {
-                return $row->reseller->shop_name;
+                return $row->reseller->user->name;
+            })
+            ->addColumn('payment_due', function($row) {
+                return $row->isApproved() ? $row->updated_at->addHours(24)->format('d-m-Y h:i:s') . ' WITA' : null;
             })
             ->editColumn('status', function($row) {
                 return $row->statusBadge();
@@ -73,15 +80,17 @@ class OrderController extends Controller
                 if($request->get('status') != null) {
                     $instance->where('status', $request->get('status'));
                 }
-                                
-                if($request->get('begin_date') != null) {
-                    $instance->whereDate('date', '>=', $request->get('begin_date'));
+
+                if($request->get('show_all') == "no") {
+                    if($request->get('begin_date') != null) {
+                        $instance->whereDate('date', '>=', $request->get('begin_date'));
+                    }
+    
+                    if($request->get('end_date') != null) {
+                        $instance->whereDate('date', '<=', $request->get('end_date'));
+                    }
                 }
 
-                if($request->get('end_date') != null) {
-                    $instance->whereDate('date', '<=', $request->get('end_date'));
-                }
-                
                 if( ! empty($request->get('search'))) {
                     $search = $request->get('search');
 
@@ -234,7 +243,7 @@ class OrderController extends Controller
         $orderPayment = OrderPayment::create([
             'order_id' => $order->id,
             'amount' => $order->total_price + $orderShipping->total_price,
-            'date' => now(),
+            'date' => null,
             'payment_status' => OrderPayment::NOT_YET,
             'proof_of_payment' => null,
             'approved_by' => null,
@@ -273,11 +282,12 @@ class OrderController extends Controller
      */
     public function detail($order)
     {
-        $order = Order::with(['orderDetail.productVariant.product', 'reseller', 'orderShipping.courier'])->find($order);
+        $order = Order::with(['orderDetail.productVariant.product', 'reseller', 'orderShipping.courier', 'orderPayment'])->find($order);
         $order->status_badge = auth()->user()->isAdmin() || auth()->user()->isStaff() 
             ? $order->verificationStatus()
             : $order->statusBadge();
         $order->date_formatted = $order->date->isoFormat('dddd, DD MMMM Y hh:mm:ss');
+        $order->payment_due = $order->isApproved() && $order->orderPayment->isNotYet() ? ($order->updated_at->addHours(24)->format('d-m-Y h:i:s') . ' WITA') : null;
 
         if($order) {
             return response()->json([
@@ -408,15 +418,17 @@ class OrderController extends Controller
      */
     public function destroy(Order $order)
     {
-        if($order->orderShipping) $order->orderShipping->delete();
-        if($order->orderPayment) $order->orderPayment->delete();
-        if($order->orderDetail->count() > 0) $order->orderDetail()->delete();
+        // if($order->orderShipping) $order->orderShipping->delete();
+        // if($order->orderPayment) $order->orderPayment->delete();
+        // if($order->orderDetail->count() > 0) $order->orderDetail()->delete();
 
-        if($order->delete()) {
+        if($order->update([
+            'status' => Order::CANCELED
+        ])) {
             return response()->json([
                 'success' => true,
-                'type' => 'delete_order',
-                'message' => 'Pesanan berhasil dihapus.',
+                'type' => 'cancel_order',
+                'message' => 'Pesanan berhasil dibatalkan.',
                 'data' => [],
                 'statusCode' => 200
             ], 200);
@@ -424,8 +436,8 @@ class OrderController extends Controller
 
         return response()->json([
             'success' => false,
-            'type' => 'delete_order',
-            'message' => 'Gagal menghapus pesanan, silahkan coba lagi.',
+            'type' => 'cancel_order',
+            'message' => 'Gagal membatalkan pesanan, silahkan coba lagi.',
             'data' => [],
             'statusCode' => 404
         ], 404);
@@ -474,5 +486,17 @@ class OrderController extends Controller
         // return view('order.invoice', compact('order', 'configuration', 'address'));
         $pdf = PDF::loadView('order.invoice', compact('order', 'configuration', 'address'));
         return $pdf->download('laudableme-invoice-' . $order->code . '.pdf');
+    }
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function history(Request $request, $reseller)
+    {        
+        $reseller = Reseller::find(Crypt::decrypt($reseller));
+        $cityAndProvince = $this->singleCityAPI($reseller->province, $reseller->city);
+        return view('order.history', compact('reseller', 'cityAndProvince'));
     }
 }

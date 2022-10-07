@@ -41,9 +41,9 @@
             </div>
             @endif
 
-            @if(auth()->user()->isReseller() && auth()->user()->reseller && auth()->user()->reseller->orders->count() > 0 && \App\Models\Order::where('ordered_by', auth()->user()->reseller->id)->orderBy('date', 'DESC')->first()->date->diffInMonths(today()) >= 1)
-            <div class="alert alert-warning alert-dismissible fade show" role="alert" id="no-orders-within-2-months">
-                <i class="fa fa-exclamation-triangle me-1"></i> Anda belum melakukan pemesanan dalam 2 bulan terakhir, harap melakukan pemesanan agar reseller Anda tetap aktif.</a>
+            @if(auth()->user()->isReseller() && auth()->user()->reseller && auth()->user()->reseller->orders->count() > 0 && \App\Models\Order::where('ordered_by', auth()->user()->reseller->id)->orderBy('date', 'DESC')->first()->date->diffInMonths(today()) >= 3)
+            <div class="alert alert-warning alert-dismissible fade show" role="alert" id="no-orders-within-3-months">
+                <i class="fa fa-exclamation-triangle me-1"></i> Anda belum melakukan pemesanan dalam 3 bulan terakhir, harap melakukan pemesanan agar reseller Anda tetap aktif.</a>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
             @endif

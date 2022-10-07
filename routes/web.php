@@ -188,6 +188,7 @@ Route::middleware(['auth'])->group(function() {
 
         // Order
         Route::patch('/order/{order}/verify', [OrderController::class, 'verify'])->name('order.verify');
+        Route::get('/order/{reseller}/history', [OrderController::class, 'history'])->name('order.history');
 
         // Order Payment
         Route::patch('/order_payment/{order}/verify', [OrderPaymentController::class, 'verify'])->name('order_payment.verify');

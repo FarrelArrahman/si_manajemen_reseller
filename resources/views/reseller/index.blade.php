@@ -56,7 +56,7 @@ Daftar reseller yang ada pada sistem.
                 <table class="table yajra-datatable">
                     <thead>
                         <tr>
-                            <th width="10%">#</th>
+                            <th width="15%">#</th>
                             <th>Foto</th>
                             <th>Nama User</th>
                             <th>Nomor Telepon</th>

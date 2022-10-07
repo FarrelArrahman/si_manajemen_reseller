@@ -47,10 +47,14 @@ class OrderPaymentController extends Controller
             ->addIndexColumn()
             ->addColumn('action', function($row) {
                 $actionBtn = '<button data-admin-notes="' . ($row->orderPayment ? $row->orderPayment->admin_notes : '') . '" data-reseller-account="' . $row->reseller->bank_name . ' ' . $row->reseller->account_number . ' (A.N '. $row->reseller->account_holder_name . ')" data-total-price="Rp. ' . number_format($row->orderPayment->amount, 0, '', '.') . '" data-payment-status="' . $row->orderPayment->payment_status . '" data-proof-of-payment="' . ($row->orderPayment->proof_of_payment ? Storage::url($row->orderPayment->proof_of_payment) : "") . '" data-order-code="' . $row->code . '" data-order-id="' . $row->id . '" data-bs-toggle="modal" data-bs-target="#order_payment_modal" class="btn btn-link p-0 text-info me-1 ms-1 showpaymentdetail-button ' . ((auth()->user()->isAdmin() || auth()->user()->isStaff()) && $row->orderPayment->proof_of_payment == null ? 'text-muted disabled' : '') . '"><i class="fa fa-search fa-sm"></i></button>';
+                $actionBtn .= '<a href="'. route('order.invoice', ['code' => $row->code]) .'" class="btn btn-link p-0 text-primary me-1 ms-1"><i class="fa fa-print fa-sm"></i></a>';
                 return $actionBtn;
             })
             ->addColumn('proof_of_payment', function($row) {
                 return $row->orderPayment->proofOfPayment();
+            })
+            ->addColumn('payment_date', function($row) {
+                return $row->orderPayment->date ? $row->orderPayment->date->format('Y-m-d') : "-";
             })
             ->editColumn('payment_status', function($row) {
                 return $row->orderPayment->statusBadge();
@@ -69,12 +73,14 @@ class OrderPaymentController extends Controller
                     });
                 }
 
-                if($request->get('begin_date') != null) {
-                    $instance->whereDate('date', '>=', $request->get('begin_date'));
-                }
-
-                if($request->get('end_date') != null) {
-                    $instance->whereDate('date', '<=', $request->get('end_date'));
+                if($request->get('show_all') == "no") {
+                    if($request->get('begin_date') != null) {
+                        $instance->whereDate('date', '>=', $request->get('begin_date'));
+                    }
+    
+                    if($request->get('end_date') != null) {
+                        $instance->whereDate('date', '<=', $request->get('end_date'));
+                    }
                 }
                 
                 if( ! empty($request->get('search'))) {
